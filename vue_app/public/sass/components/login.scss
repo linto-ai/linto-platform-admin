@@ -1,0 +1,34 @@
+#login-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  z-index: 2;
+  background-image: url('../img/bg-login.jpg');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+}
+
+#login-wrapper {
+  justify-content: center;
+  align-items: center;
+
+  .login-logo {
+    width: 340px;
+    height: auto;
+    margin-bottom: 40px;
+  }
+
+  .login-form-container{
+    max-width: 800px;
+    padding: 40px;
+    justify-content: center;
+    & > div {
+      justify-content: center;
+    }
+  }
+}
+
+

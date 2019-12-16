@@ -1,0 +1,20 @@
+<template>
+  <header id="header" class="flex row" :class="extraClass">
+    <div class="header__logo flex1">
+      <img src="/assets/img/admin-logo-dark@2x.png" alt="linto admin">
+    </div>
+    <div class="header__nav flex3"></div>
+  </header>
+</template>
+<script>
+export default {
+  props:['extraClass'],
+  data () {
+    return {}
+  }
+}
+</script>
+
+<style scoped>
+
+</style>

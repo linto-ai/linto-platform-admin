@@ -1,0 +1,186 @@
+.button {
+  display: inline-block;
+  border: 1px solid #fff;
+  padding: 0px 10px;
+  height: 30px;
+  background-color: #fff;
+  @include transition(all 0.3s ease-in);
+  @include buttonShadow();
+  @include borderRadius(3px);
+  outline: none;
+  cursor: pointer;
+  width: auto;
+  position: relative;
+  margin: 0;
+
+  .label {
+    display: inline-block;
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 30px;
+    color: $blueLinto;
+    vertical-align: top;
+  }
+
+
+  &.button--full{
+    width: 100%;
+    padding: 0;
+  }
+
+  &.button--valid {
+    border-color: $valid;
+    .label {
+      color: $valid;
+    }
+    &:hover {
+      background-color: $valid;
+      .label {
+        color: #fff;
+      }
+    }
+  }
+  &.button--important {
+    border-color: $error;
+    .label {
+      color: $error;
+    }
+    &:hover {
+      background-color: $error;
+      .label {
+        color: #fff;
+      }
+    }
+  }
+  &.button--cancel {
+    border-color: #666;
+    .label {
+      color: #666;
+    }
+
+    &:hover {
+      background-color: #666;
+      .label {
+        color: #fff;
+      }
+    }
+  }
+
+  /* Login Submit */
+  &.button--login-submit{
+    margin: 20px 0 5px 0;
+    font-size: 18px;
+    max-width: 100%;
+    &.button--login-disabled {
+      &,
+      &:hover,
+      &:focus {
+        color: #fff;
+        border-color: #fff;
+        background-color: transparent;
+        @include cancelBoxShadow();
+      }
+    }
+    &.button--login-enabled {
+      border-color: $blueLinto;
+      background-color: #fff;
+      color: $blueLinto;
+
+      &:hover{
+        background-color: $blueLinto;
+        color: #fff;
+      }
+    }
+  }
+
+  /* Full screen */
+  &.button--img{
+    @include transition(none);
+    @include cancelBoxShadow();
+    padding: 0;
+    margin: 0;
+
+    // Full Screen
+    &.button--img__fullscreen{
+      width: 30px;
+      height: 30px;
+      background-image: url('../img/full-screen-icons@2x.png');
+      background-size: 60px 60px;
+      &.disabled {
+        background-position: 0 0;
+        &:hover {
+        background-position: 0 -30px;
+        @include cancelBoxShadow();
+        }
+      }
+
+      &.enabled {
+        background-position: -30px 0;
+        &:hover {
+        background-position: -30px -30px;
+        @include cancelBoxShadow();
+        }
+      }
+    }
+
+    // Close (modal)
+    &.button--img__close {
+      width: 30px;
+      height: 30px;
+      background-image: url('../img/close-icon@2x.png');
+      background-size: 30px 60px;
+      background-position: 0 0;
+      background-repeat: no-repeat;
+
+      &:hover {
+        background-position: 0 -30px;
+      }
+
+    }
+  }
+  &.button--with-desc{
+    &:hover{
+      &::after {
+        content: attr(data-desc);
+        position: absolute;
+        font-size: 14px;
+        width: auto;
+        top: 0;
+        left: 105%;
+        padding: 5px;
+        color: #ffffff;
+        background-color: $blueLinto;
+        white-space: nowrap;
+        @include borderRadius(3px);
+        z-index: 10;
+      }
+    }
+  }
+
+  .button__icon {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    margin: 0 3px;
+    vertical-align: top;
+    background-image: url('../img/btn-icons@2x.png');
+    background-repeat: no-repeat;
+    background-size: 60px 60px;
+
+    &.button__icon--load {
+      background-position: 0 0;
+    }
+    &.button__icon--save {
+      background-position: -30px 0;
+    }
+  }
+
+  &:hover {
+    @include buttonShadowHover();
+
+    .button__icon{
+      background-position-y: -30px;
+    }
+  }
+
+}
