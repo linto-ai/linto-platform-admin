@@ -3,68 +3,9 @@ const model = new DBmodel()
 const moment = require('moment')
 const axios = require('axios')
 const uuid = require('uuid/v1')
-/*
-  [{tab},{node},{node}...] => {id, label, nodes[]}
-*/
-function formatFlowGroupedNodes (flow, workspaceId, workspaceLabel) {
-  let formattedFlow = {}
-  let nodesArray = []
+const middlewares = require(`${process.cwd()}/lib/webserver/middlewares`)
 
-  flow.map(f => {
-    if (f.type === 'tab') {
-      formattedFlow = {
-        id: workspaceId,
-        label: workspaceLabel,
-        configs: [],
-        nodes: []
-      }
-    } else {
-      f.z = workspaceId
-      f.id= uuid()
-      nodesArray.push(f)
-    }
-  })
-  formattedFlow.nodes = nodesArray
-  return formattedFlow
-}
 
-/*
-  {id, label, nodes[]} => [{tab},{node},{node}...]
-*/
-function formaFlowSplitNodes (flow, workspaceId) {
-  let formattedFlow = []
-  let tabNode = {
-    id: workspaceId,
-    type: 'tab',
-    label: flow.label,
-    disabled: false,
-    info: ''
-  }
-  formattedFlow.push(tabNode)
-
-  flow.nodes.map(n => {
-    formattedFlow.push(n)
-  })
-  return formattedFlow
-}
-
-/* update existing workflow with a flow pattern */
-function updateGroupedNodesId (workFlow, patternFlow) {
-  const workspaceId = workFlow.id
-  let formatted = workFlow
-
-  let updatedNodes = []
-  patternFlow.flow.map(p => {
-    if (p.type !== 'tab') {
-      if (p.z !== workspaceId) {
-        p.z = workspaceId
-      }
-      updatedNodes.push(p)
-    }
-  })
-  formatted.nodes = updatedNodes
-  return formatted
-}
 
 module.exports = (webServer) => {
   return [{
@@ -162,15 +103,8 @@ module.exports = (webServer) => {
     //requireAuth: true,
     controller: async (req, res, next) => {
       try {
-        /*const accessToken = await this.getAccessToken()
-        const workflow = this.enableFlow(payload)
-        // Check if modules need to be installed
-        const checkModules = await this.checkForModulesToInstall()*/
-
-        // Get current workspace data
-
+        // const accessToken = await this.getAccessToken()
         const workspaceId = req.body.workspaceId
-
         const getCurrentWorkspaceFlow = await axios(`${process.env.BUSINESS_LOGIC_SERVER_URI}/flow/${workspaceId}`,
         {})
         const currentFlow = getCurrentWorkspaceFlow.data // GroupedNodes
@@ -182,7 +116,7 @@ module.exports = (webServer) => {
         let pattern = getPattern.flow
 
         // Format Pattern for "PUT" && update IDs
-        let formattedPattern = formatFlowGroupedNodes(pattern, workspaceId, workspaceLabel)
+        let formattedPattern = middlewares.createFlowPattern(pattern, workspaceId, workspaceLabel)
 
         let blsUpdate = await axios(`${process.env.BUSINESS_LOGIC_SERVER_URI}/flow/${workspaceId}`, {
           method: 'put',
@@ -213,7 +147,6 @@ module.exports = (webServer) => {
       }
     }
   },
-
   {
     path: '/tmp',
     method: 'get',

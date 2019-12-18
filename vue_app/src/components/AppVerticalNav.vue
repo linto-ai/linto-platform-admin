@@ -39,35 +39,8 @@
         href="/admin/workflows"
       >NLU</a>
     </div>
-    <!-- PARENT LINK WITH CHILDREN -->
-    <!--
-      <div class="vertical-nav-item flex col">
-      <a
-        class="vertical-nav-item__link vertical-nav-item__link--parent flex1 closed"
-        href="#"
-        @click="toggleChildren($event, 'childrens')"
-      >Parent</a>
-      <div
-        class="vertical-nav-item--children flex col hidden"
-        id="childrens"
-      >
-        <a class="vertical-nav-item__link vertical-nav-item__link--children flex1" href="#">Children</a>
-        <a class="vertical-nav-item__link vertical-nav-item__link--children flex1
-        " href="#">Children</a>
-      </div>
-    </div>
-    -->
-    <!-- PARENT LINK WITHOUT CHILDREN -->
-    <!-- <div class="vertical-nav-item flex col">
-      <a
-        class="vertical-nav-item__link vertical-nav-item__link"
-        href="#"
-      >Link</a>
-    </div>
-    -->
   </div>
 </template>
-
 <script>
 export default {
   props: ['extraClass'],

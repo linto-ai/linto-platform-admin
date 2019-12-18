@@ -1,5 +1,5 @@
 <template>
-  <div class="flex col">
+  <div>
     <h1>Node Red Editor</h1>
     <div class="block block--transparent block--no-margin block--no-padding flex1 flex">
       <NodeRedIframe :contextFrame="'manager'" v-if="sandBoxFound" :blsurl="sandBoxUrl"></NodeRedIframe>
@@ -23,7 +23,6 @@ export default {
     }
   },
   components: {
-
     NodeRedIframe,
     LoadPatternModal,
     SavePatternModal

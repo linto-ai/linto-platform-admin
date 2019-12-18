@@ -8,6 +8,7 @@ export default new Vuex.Store({
   strict: false,
   state: {
     contextTypes: '',
+    contextFleet: '',
     flowPatterns: '',
     flowPatternTmp: '',
     lintoFleet: '',
@@ -18,6 +19,9 @@ export default new Vuex.Store({
   mutations: {
     SET_LINTO_FLEET: (state, data) => {
       state.lintoFleet = data
+    },
+    SET_CONTEXT_FLEET: (state, data) => {
+      state.contextFleet = data
     },
     SET_CONTEXT_TYPES: (state, data) => {
       state.contextTypes = data
@@ -44,6 +48,19 @@ export default new Vuex.Store({
         const getLintos = await axios.get(`${process.env.VUE_APP_URL}/api/lintos/fleet`)
         commit('SET_LINTO_FLEET', getLintos.data)
         return state.lintoFleet
+      } catch (error) {
+        return { error }
+      }
+    },
+    getFleetContexts: async ({ commit, state }) => {
+      try {
+        try {
+          const getFleetContexts = await axios.get(`${process.env.VUE_APP_URL}/api/context/fleet`)
+          commit('SET_CONTEXT_FLEET', getFleetContexts.data)
+          return state.contextFleet
+        } catch (error) {
+          return { error }
+        }
       } catch (error) {
         return { error }
       }
@@ -109,42 +126,28 @@ export default new Vuex.Store({
   getters: {
     ASSOCIATED_LINTO_FLEET: (state) => {
       try {
-        let lintos = state.lintoFleet
-        let associatedLintos = []
-        for (let i in lintos) {
-          if (lintos[i].associated_context !== null) {
-            associatedLintos.push(lintos[i])
-          }
-        }
-        return associatedLintos
+        return state.lintoFleet.filter(f => f.associated_context !== null)
       } catch (error) {
         return { error }
       }
     },
     NOT_ASSOCIATED_LINTO_FLEET: (state) => {
       try {
-        let lintos = state.lintoFleet
-        let notAssociatedLintos = []
-        for (let i in lintos) {
-          if (lintos[i].associated_context === null) {
-            notAssociatedLintos.push(lintos[i])
-          }
-        }
-        return notAssociatedLintos
+        return state.lintoFleet.filter(f => f.associated_context === null)
       } catch (error) {
         return { error }
       }
     },
     LINTO_FLEET_BY_SN: (state) => (sn) => {
       try {
-        let lintos = state.lintoFleet
-        let resp = null
-        for (let i in lintos) {
-          if (lintos[i].sn === sn) {
-            resp = lintos[i]
-          }
-        }
-        return resp
+        return state.lintoFleet.filter(f => f.sn === sn)[0]
+      } catch (error) {
+        return { error }
+      }
+    },
+    CONTEXT_BY_ID: (state) => (id) => {
+      try {
+        return state.contextFleet.filter(context => context._id === id)[0]
       } catch (error) {
         return { error }
       }

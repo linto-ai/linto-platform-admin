@@ -63,7 +63,7 @@
 /******/
 /******/ 	var hotApplyOnUpdate = true;
 /******/ 	// eslint-disable-next-line no-unused-vars
-/******/ 	var hotCurrentHash = "365105e01f077ccaabef";
+/******/ 	var hotCurrentHash = "b2c6692fa4a0c2b68fdd";
 /******/ 	var hotRequestTimeout = 10000;
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule;
@@ -2586,33 +2586,6 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
 /* harmony default export */ __webpack_exports__["default"] = ({
   props: ['extraClass'],
   data: function data() {
@@ -3363,11 +3336,28 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
+      loading: true,
+      lintoLoaded: false,
+      mqttLoaded: false,
+      sttLoaded: false,
+      nluLoaded: false,
+      patternLoaded: false,
+      contextTypeLoaded: false,
       contextName: {
         value: '',
         error: null,
@@ -3394,34 +3384,26 @@ __webpack_require__.r(__webpack_exports__);
         valid: false,
         configs: {}
       },
+      mqttServer: {
+        host: '',
+        port: '',
+        scope: ''
+      },
       sttService: {
         value: '',
         error: null,
         valid: false,
         configs: {}
-      },
-      mqttServer: {
-        host: '',
-        port: '',
-        scope: ''
       }
     };
   },
-
-  /*
-  mounted () {
-    setTimeout(()=> {
-      console.log(this.$store)
-    },1000)
-  },
-  */
   created: function created() {
-    this.dispatchContextTypes();
-    this.dispatchPatterns();
-    this.dispatchNluConfigs();
-    this.dispatchMqttDefaultSettings();
-    this.dispatchSttConfigs();
-    this.dispatchLintos();
+    this.dispatchStore('getmqttDefaultSettings');
+    this.dispatchStore('getSttSettings');
+    this.dispatchStore('getNluSettings');
+    this.dispatchStore('getFlowPatterns');
+    this.dispatchStore('getContextTypes');
+    this.dispatchStore('getLintoFleet');
   },
   watch: {
     'nluService.value': function nluServiceValue(data) {
@@ -3432,21 +3414,8 @@ __webpack_require__.r(__webpack_exports__);
           if (n.service_name === data) {
             _this.nluService.configs = {
               host: n.host,
-              app_name: n.app_name,
+              appname: n.appname,
               namespace: n.namespace
-            };
-          }
-        });
-      }
-    },
-    'sttService.value': function sttServiceValue(data) {
-      var _this2 = this;
-
-      if (data.length > 0) {
-        this.sttServices.map(function (s) {
-          if (s.service_name === data) {
-            _this2.sttService.configs = {
-              host: s.host
             };
           }
         });
@@ -3457,7 +3426,7 @@ __webpack_require__.r(__webpack_exports__);
       this.flowPattern.error = null;
       this.flowPattern.valid = false;
 
-      if (data === 'Client Hardware') {
+      if (data === 'Fleet') {
         this.mqttServer = this.mqttDefaultSettings;
       } else {
         this.mqttServer = {
@@ -3466,11 +3435,34 @@ __webpack_require__.r(__webpack_exports__);
           scope: ''
         };
       }
+    },
+    'sttService.value': function sttServiceValue(data) {
+      var _this2 = this;
+
+      if (data !== null || data !== '') {
+        this.sttServices.map(function (s) {
+          if (s.serviceId === data) {
+            _this2.sttService.configs = s;
+          }
+        });
+      } else {
+        this.sttService = {
+          value: '',
+          error: null,
+          valid: false,
+          configs: {}
+        };
+      }
+    },
+    dataLoaded: function dataLoaded(data) {
+      if (data) {
+        this.loading = false;
+      }
     }
   },
   computed: {
     availableLintos: function availableLintos() {
-      return this.$store.getters.NOT_ASSOCIATED_LINTOS;
+      return this.$store.getters.NOT_ASSOCIATED_LINTO_FLEET;
     },
     contextTypes: function contextTypes() {
       return this.$store.state.contextTypes;
@@ -3502,6 +3494,9 @@ __webpack_require__.r(__webpack_exports__);
     },
     formValid: function formValid() {
       return this.contextName.valid && this.contextType.valid && this.flowPattern.valid && this.linto.valid && this.sttService.valid && this.nluService.valid;
+    },
+    dataLoaded: function dataLoaded() {
+      return this.lintoLoaded && this.contextTypeLoaded && this.sttLoaded && this.nluLoaded && this.mqttLoaded && this.patternLoaded;
     }
   },
   methods: {
@@ -3511,11 +3506,13 @@ __webpack_require__.r(__webpack_exports__);
       this.testSelectField(this.contextType);
       this.testSelectField(this.nluService);
       this.testSelectField(this.sttService);
-      console.log(payload);
-      console.log('Form valid:', this.formValid);
+
+      if (this.contextType.value === 'Fleet') {
+        this.testSelectField(this.linto);
+      }
 
       if (this.formValid) {
-        this.sendForm;
+        this.sendForm();
       }
     },
     sendForm: function () {
@@ -3530,7 +3527,7 @@ __webpack_require__.r(__webpack_exports__);
                 payload = {
                   context_name: this.contextName.value,
                   type: this.contextType.value,
-                  pattern: this.flowPattern.value,
+                  workflowPattern: this.flowPattern.value,
                   mqtt: this.mqttDefaultSettings,
                   stt: {
                     service_name: this.sttService.value,
@@ -3540,7 +3537,7 @@ __webpack_require__.r(__webpack_exports__);
                     service_name: this.nluService.value,
                     configs: this.nluService.configs
                   },
-                  linto: this.linto.value
+                  linto: this.contextType.value === 'Fleet' ? this.linto.value : []
                 };
                 _context.next = 3;
                 return axios__WEBPACK_IMPORTED_MODULE_4___default()("".concat("", "/api/context"), {
@@ -3550,7 +3547,16 @@ __webpack_require__.r(__webpack_exports__);
 
               case 3:
                 createContext = _context.sent;
-                console.log(createContext);
+
+                if (createContext.data.status === 'error') {
+                  if (createContext.data.code === 'contextName') {
+                    this.contextName.error = createContext.data.msg;
+                    this.contextName.valid = false;
+                  } else {// TODO ERROR
+                  }
+                } else {} // TODO SUCCESS
+                  // TODO > NOTIF
+
 
               case 5:
               case "end":
@@ -3579,7 +3585,7 @@ __webpack_require__.r(__webpack_exports__);
         this.contextName.error = null;
       } else {
         this.contextName.valid = false;
-        this.contextName.error = 'Ivalid context name';
+        this.contextName.error = 'Invalid context name';
       }
     },
     testSelectField: function testSelectField(obj) {
@@ -3598,48 +3604,237 @@ __webpack_require__.r(__webpack_exports__);
         obj.error = null;
       }
     },
-    dispatchLintos: function dispatchLintos() {
-      this.$store.dispatch('getLintos').then(function (resp) {
-        if (!!resp.error) {
-          console.log('Dispatch Lintos : Error');
-        }
-      });
-    },
-    dispatchMqttDefaultSettings: function dispatchMqttDefaultSettings() {
-      this.$store.dispatch('getmqttDefaultSettings').then(function (resp) {
-        if (!!resp.error) {
-          console.log('Dispatch Mqtt settings types : Error');
-        }
-      });
-    },
-    dispatchSttConfigs: function dispatchSttConfigs() {
-      this.$store.dispatch('getSttSettings').then(function (resp) {
-        if (!!resp.error) {
-          console.log('Dispatch Stt settings types : Error');
-        }
-      });
-    },
-    dispatchNluConfigs: function dispatchNluConfigs() {
-      this.$store.dispatch('getNluSettings').then(function (resp) {
-        if (!!resp.error) {
-          console.log('Dispatch Nlu Configs : Error');
-        }
-      });
-    },
-    dispatchContextTypes: function dispatchContextTypes() {
-      this.$store.dispatch('getContextTypes').then(function (resp) {
-        if (!!resp.error) {
-          console.log('Dispatch pattern types : Error');
-        }
-      });
-    },
-    dispatchPatterns: function dispatchPatterns() {
-      this.$store.dispatch('getFlowPatterns').then(function (resp) {
-        if (!!resp.error) {
-          console.log('Dispatch pattern types : Error');
-        }
-      });
+    dispatchStore: function dispatchStore(topic) {
+      var _this3 = this;
+
+      try {
+        this.$store.dispatch(topic).then(function (resp) {
+          if (!!resp.error) {
+            throw resp.error;
+          } else {
+            switch (topic) {
+              case 'getmqttDefaultSettings':
+                _this3.mqttLoaded = true;
+                break;
+
+              case 'getSttSettings':
+                _this3.sttLoaded = true;
+                break;
+
+              case 'getNluSettings':
+                _this3.nluLoaded = true;
+                break;
+
+              case 'getFlowPatterns':
+                _this3.patternLoaded = true;
+                break;
+
+              case 'getContextTypes':
+                _this3.contextTypeLoaded = true;
+                break;
+
+              case 'getLintoFleet':
+                _this3.lintoLoaded = true;
+                break;
+
+              default:
+                return;
+            }
+          }
+        });
+      } catch (error) {
+        console.log(error);
+      }
     }
+  }
+});
+
+/***/ }),
+
+/***/ "./node_modules/cache-loader/dist/cjs.js?!./node_modules/babel-loader/lib/index.js!./node_modules/cache-loader/dist/cjs.js?!./node_modules/vue-loader/lib/index.js?!./src/views/ContextOverview.vue?vue&type=script&lang=js&":
+/*!*******************************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/cache-loader/dist/cjs.js??ref--12-0!./node_modules/babel-loader/lib!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/views/ContextOverview.vue?vue&type=script&lang=js& ***!
+  \*******************************************************************************************************************************************************************************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+/* harmony default export */ __webpack_exports__["default"] = ({
+  data: function data() {
+    return {
+      loading: true,
+      contextLoaded: false
+    };
+  },
+  created: function created() {
+    this.dispatchFleetContext();
+  },
+  computed: {
+    fleetContexts: function fleetContexts() {
+      return this.$store.state.contextFleet;
+    },
+    dataLoaded: function dataLoaded() {
+      return this.contextLoaded;
+    }
+  },
+  watch: {
+    dataLoaded: function dataLoaded(data) {
+      if (data) {
+        this.loading = false;
+      }
+    }
+  },
+  methods: {
+    dispatchFleetContext: function dispatchFleetContext() {
+      var _this = this;
+
+      try {
+        this.$store.dispatch('getFleetContexts').then(function (resp) {
+          if (!!resp.error) {
+            throw resp.error;
+          } else {
+            _this.contextLoaded = true;
+          }
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  }
+});
+
+/***/ }),
+
+/***/ "./node_modules/cache-loader/dist/cjs.js?!./node_modules/babel-loader/lib/index.js!./node_modules/cache-loader/dist/cjs.js?!./node_modules/vue-loader/lib/index.js?!./src/views/ContextWorkflow.vue?vue&type=script&lang=js&":
+/*!*******************************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/cache-loader/dist/cjs.js??ref--12-0!./node_modules/babel-loader/lib!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/views/ContextWorkflow.vue?vue&type=script&lang=js& ***!
+  \*******************************************************************************************************************************************************************************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
+/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _components_NodeRedIframe_vue__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @/components/NodeRedIframe.vue */ "./src/components/NodeRedIframe.vue");
+/* harmony import */ var _components_LoadPatternModal_vue__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @/components/LoadPatternModal.vue */ "./src/components/LoadPatternModal.vue");
+/* harmony import */ var _components_SavePatternModal_vue__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @/components/SavePatternModal.vue */ "./src/components/SavePatternModal.vue");
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+
+
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+  data: function data() {
+    return {
+      loading: true,
+      contextLoaded: false,
+      contextId: '',
+      blsUrl: ''
+    };
+  },
+  mounted: function mounted() {
+    var _this = this;
+
+    setTimeout(function () {
+      console.log(_this.$store.state);
+    }, 1000);
+  },
+  created: function created() {
+    this.dispatchContext();
+    this.contextId = this.$route.params.id;
+  },
+  computed: {
+    context: function context() {
+      return this.$store.getters.CONTEXT_BY_ID(this.contextId);
+    },
+    dataLoaded: function dataLoaded() {
+      return this.contextLoaded;
+    }
+  },
+  watch: {
+    dataLoaded: function dataLoaded(data) {
+      if (data) {
+        this.loading = false;
+        this.blsUrl = "".concat("http://localhost:10000/redui", "/#flow/").concat(this.context.flowId);
+      }
+    }
+  },
+  methods: {
+    dispatchContext: function dispatchContext() {
+      var _this2 = this;
+
+      try {
+        this.$store.dispatch('getFleetContexts').then(function (resp) {
+          if (!!resp.error) {
+            throw resp.error;
+          } else {
+            _this2.contextLoaded = true;
+          }
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  },
+  components: {
+    NodeRedIframe: _components_NodeRedIframe_vue__WEBPACK_IMPORTED_MODULE_1__["default"],
+    LoadPatternModal: _components_LoadPatternModal_vue__WEBPACK_IMPORTED_MODULE_2__["default"],
+    SavePatternModal: _components_SavePatternModal_vue__WEBPACK_IMPORTED_MODULE_3__["default"]
   }
 });
 
@@ -3728,13 +3923,34 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
-    return {};
+    return {
+      loading: true,
+      lintoLoaded: false
+    };
   },
   created: function created() {
     this.dispatchLintos();
+  },
+  watch: {
+    dataLoaded: function dataLoaded(data) {
+      if (data) {
+        this.loading = false;
+      }
+    }
   },
   computed: {
     lintos: function lintos() {
@@ -3745,15 +3961,26 @@ __webpack_require__.r(__webpack_exports__);
     },
     associated_lintos: function associated_lintos() {
       return this.$store.getters.ASSOCIATED_LINTO_FLEET;
+    },
+    dataLoaded: function dataLoaded() {
+      return this.lintoLoaded;
     }
   },
   methods: {
     dispatchLintos: function dispatchLintos() {
-      this.$store.dispatch('getLintoFleet').then(function (resp) {
-        if (!!resp.error) {
-          console.log('Dispatch Lintos : Error');
-        }
-      });
+      var _this = this;
+
+      try {
+        this.$store.dispatch('getLintoFleet').then(function (resp) {
+          if (!!resp.error) {
+            throw resp.error;
+          } else {
+            _this.lintoLoaded = true;
+          }
+        });
+      } catch (error) {
+        console.log(error);
+      }
     }
   }
 });
@@ -3779,10 +4006,55 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
-      sn: ''
+      sn: '',
+      lintoLoaded: false,
+      loading: true
     };
   },
   created: function created() {
@@ -3796,15 +4068,33 @@ __webpack_require__.r(__webpack_exports__);
       } else {
         return null;
       }
+    },
+    dataLoaded: function dataLoaded() {
+      return this.lintoLoaded;
+    }
+  },
+  watch: {
+    dataLoaded: function dataLoaded(data) {
+      if (data) {
+        this.loading = false;
+      }
     }
   },
   methods: {
     dispatchLintos: function dispatchLintos() {
-      this.$store.dispatch('getLintoFleet').then(function (resp) {
-        if (!!resp.error) {
-          console.log('Dispatch Lintos : Error');
-        }
-      });
+      var _this = this;
+
+      try {
+        this.$store.dispatch('getLintoFleet').then(function (resp) {
+          if (!!resp.error) {
+            throw resp.error;
+          } else {
+            _this.lintoLoaded = true;
+          }
+        });
+      } catch (error) {
+        console.log(error);
+      }
     }
   }
 });
@@ -4883,377 +5173,525 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("div", [
-    _c("h1", [_vm._v("Create a context")]),
-    _c("div", { staticClass: "block" }, [
-      _c("div", { staticClass: "flex row" }, [
-        _c("div", { staticClass: "flex col flex1" }, [
-          _c("h2", [_vm._v("Context informations")]),
-          _c("div", { staticClass: "flex col" }, [
-            _c("span", { staticClass: "form__label" }, [
-              _vm._v("Context name:")
-            ]),
-            _c("input", {
-              directives: [
-                {
-                  name: "model",
-                  rawName: "v-model",
-                  value: _vm.contextName.value,
-                  expression: "contextName.value"
-                }
-              ],
-              staticClass: "form__input",
-              class: [
-                _vm.contextName.error !== null ? "form__input--error" : "",
-                _vm.contextName.valid ? "form__input--valid" : ""
-              ],
-              attrs: { type: "text" },
-              domProps: { value: _vm.contextName.value },
-              on: {
-                blur: function($event) {
-                  return _vm.testContextName()
-                },
-                input: function($event) {
-                  if ($event.target.composing) {
-                    return
-                  }
-                  _vm.$set(_vm.contextName, "value", $event.target.value)
-                }
-              }
-            }),
-            _c("span", { staticClass: "form__error-field" }, [
-              _vm._v(_vm._s(_vm.contextName.error))
-            ])
-          ]),
-          _c("div", { staticClass: "flex col" }, [
-            _c("span", { staticClass: "form__label" }, [
-              _vm._v("Context type:")
-            ]),
-            _c(
-              "select",
-              {
-                directives: [
-                  {
-                    name: "model",
-                    rawName: "v-model",
-                    value: _vm.contextType.value,
-                    expression: "contextType.value"
-                  }
-                ],
-                staticClass: "form__select",
-                class: [
-                  _vm.contextType.error !== null ? "form__select--error" : "",
-                  _vm.contextType.valid ? "form__select--valid" : ""
-                ],
-                on: {
-                  change: [
-                    function($event) {
-                      var $$selectedVal = Array.prototype.filter
-                        .call($event.target.options, function(o) {
-                          return o.selected
-                        })
-                        .map(function(o) {
-                          var val = "_value" in o ? o._value : o.value
-                          return val
-                        })
-                      _vm.$set(
-                        _vm.contextType,
-                        "value",
-                        $event.target.multiple
-                          ? $$selectedVal
-                          : $$selectedVal[0]
-                      )
-                    },
-                    function($event) {
-                      return _vm.testSelectField(_vm.contextType)
-                    }
-                  ]
-                }
-              },
-              _vm._l(_vm.contextTypes, function(type) {
-                return _c(
-                  "option",
-                  { key: type._id, domProps: { value: type.name } },
-                  [_vm._v(_vm._s(type.name))]
-                )
-              }),
-              0
-            ),
-            _c("span", { staticClass: "form__error-field" }, [
-              _vm._v(_vm._s(_vm.contextType.error))
-            ])
-          ]),
-          _vm.contextType.value === "Client Hardware"
-            ? _c("div", { staticClass: "flex col" }, [
-                _c("span", { staticClass: "form__label" }, [
-                  _vm._v("Select a LinTO:")
-                ]),
-                _c(
-                  "select",
-                  {
+  return _c("div", { staticClass: "flex col" }, [
+    _vm.loading
+      ? _c("div", { staticClass: "flex col" }, [_vm._v("\n    LOADING\n  ")])
+      : _vm._e(),
+    _vm.dataLoaded
+      ? _c("div", { staticClass: "flex col" }, [
+          _c("h1", [_vm._v("Create a context")]),
+          _c("div", { staticClass: "block" }, [
+            _c("div", { staticClass: "flex row" }, [
+              _c("div", { staticClass: "flex col flex1" }, [
+                _c("h2", [_vm._v("Context informations")]),
+                _c("div", { staticClass: "flex col" }, [
+                  _c("span", { staticClass: "form__label" }, [
+                    _vm._v("Context name:")
+                  ]),
+                  _c("input", {
                     directives: [
                       {
                         name: "model",
                         rawName: "v-model",
-                        value: _vm.linto.value,
-                        expression: "linto.value"
+                        value: _vm.contextName.value,
+                        expression: "contextName.value"
                       }
                     ],
-                    staticClass: "form__select",
+                    staticClass: "form__input",
                     class: [
-                      _vm.linto.error !== null ? "form__select--error" : "",
-                      _vm.linto.valid ? "form__select--valid" : ""
+                      _vm.contextName.error !== null
+                        ? "form__input--error"
+                        : "",
+                      _vm.contextName.valid ? "form__input--valid" : ""
                     ],
+                    attrs: { type: "text" },
+                    domProps: { value: _vm.contextName.value },
                     on: {
-                      change: [
-                        function($event) {
-                          var $$selectedVal = Array.prototype.filter
-                            .call($event.target.options, function(o) {
-                              return o.selected
-                            })
-                            .map(function(o) {
-                              var val = "_value" in o ? o._value : o.value
-                              return val
-                            })
-                          _vm.$set(
-                            _vm.linto,
-                            "value",
-                            $event.target.multiple
-                              ? $$selectedVal
-                              : $$selectedVal[0]
-                          )
-                        },
-                        function($event) {
-                          return _vm.testSelectField(_vm.linto)
+                      blur: function($event) {
+                        return _vm.testContextName()
+                      },
+                      input: function($event) {
+                        if ($event.target.composing) {
+                          return
                         }
-                      ]
+                        _vm.$set(_vm.contextName, "value", $event.target.value)
+                      }
                     }
-                  },
-                  _vm._l(_vm.availableLintos, function(lin) {
-                    return _c(
-                      "option",
-                      { key: lin._id, domProps: { value: lin.sn } },
-                      [_vm._v(_vm._s(lin.sn))]
-                    )
                   }),
-                  0
-                ),
-                _c("span", { staticClass: "form__error-field" }, [
-                  _vm._v(_vm._s(_vm.linto.error))
+                  _c("span", { staticClass: "form__error-field" }, [
+                    _vm._v(_vm._s(_vm.contextName.error))
+                  ])
+                ]),
+                _c("div", { staticClass: "flex col" }, [
+                  _c("span", { staticClass: "form__label" }, [
+                    _vm._v("Context type:")
+                  ]),
+                  _c(
+                    "select",
+                    {
+                      directives: [
+                        {
+                          name: "model",
+                          rawName: "v-model",
+                          value: _vm.contextType.value,
+                          expression: "contextType.value"
+                        }
+                      ],
+                      staticClass: "form__select",
+                      class: [
+                        _vm.contextType.error !== null
+                          ? "form__select--error"
+                          : "",
+                        _vm.contextType.valid ? "form__select--valid" : ""
+                      ],
+                      on: {
+                        change: [
+                          function($event) {
+                            var $$selectedVal = Array.prototype.filter
+                              .call($event.target.options, function(o) {
+                                return o.selected
+                              })
+                              .map(function(o) {
+                                var val = "_value" in o ? o._value : o.value
+                                return val
+                              })
+                            _vm.$set(
+                              _vm.contextType,
+                              "value",
+                              $event.target.multiple
+                                ? $$selectedVal
+                                : $$selectedVal[0]
+                            )
+                          },
+                          function($event) {
+                            return _vm.testSelectField(_vm.contextType)
+                          }
+                        ]
+                      }
+                    },
+                    _vm._l(_vm.contextTypes, function(type) {
+                      return _c(
+                        "option",
+                        {
+                          key: type._id,
+                          attrs: {
+                            disabled:
+                              type.name === "Application" ? "disabled" : false
+                          },
+                          domProps: { value: type.name }
+                        },
+                        [_vm._v(_vm._s(type.name))]
+                      )
+                    }),
+                    0
+                  ),
+                  _c("span", { staticClass: "form__error-field" }, [
+                    _vm._v(_vm._s(_vm.contextType.error))
+                  ])
+                ]),
+                _vm.contextType.value === "Fleet"
+                  ? _c("div", { staticClass: "flex col" }, [
+                      _c("span", { staticClass: "form__label" }, [
+                        _vm._v("Select a LinTO:")
+                      ]),
+                      _c(
+                        "select",
+                        {
+                          directives: [
+                            {
+                              name: "model",
+                              rawName: "v-model",
+                              value: _vm.linto.value,
+                              expression: "linto.value"
+                            }
+                          ],
+                          staticClass: "form__select",
+                          class: [
+                            _vm.linto.error !== null
+                              ? "form__select--error"
+                              : "",
+                            _vm.linto.valid ? "form__select--valid" : ""
+                          ],
+                          on: {
+                            change: [
+                              function($event) {
+                                var $$selectedVal = Array.prototype.filter
+                                  .call($event.target.options, function(o) {
+                                    return o.selected
+                                  })
+                                  .map(function(o) {
+                                    var val = "_value" in o ? o._value : o.value
+                                    return val
+                                  })
+                                _vm.$set(
+                                  _vm.linto,
+                                  "value",
+                                  $event.target.multiple
+                                    ? $$selectedVal
+                                    : $$selectedVal[0]
+                                )
+                              },
+                              function($event) {
+                                return _vm.testSelectField(_vm.linto)
+                              }
+                            ]
+                          }
+                        },
+                        _vm._l(_vm.availableLintos, function(lin) {
+                          return _c(
+                            "option",
+                            { key: lin._id, domProps: { value: lin.sn } },
+                            [_vm._v(_vm._s(lin.sn))]
+                          )
+                        }),
+                        0
+                      ),
+                      _c("span", { staticClass: "form__error-field" }, [
+                        _vm._v(_vm._s(_vm.linto.error))
+                      ])
+                    ])
+                  : _vm._e(),
+                _c("div", { staticClass: "flex col" }, [
+                  _c("span", { staticClass: "form__label" }, [
+                    _vm._v("Workflow pattern:")
+                  ]),
+                  _c(
+                    "select",
+                    {
+                      directives: [
+                        {
+                          name: "model",
+                          rawName: "v-model",
+                          value: _vm.flowPattern.value,
+                          expression: "flowPattern.value"
+                        }
+                      ],
+                      staticClass: "form__select",
+                      class: [
+                        _vm.flowPattern.error !== null
+                          ? "form__select--error"
+                          : "",
+                        _vm.flowPattern.valid ? "form__select--valid" : ""
+                      ],
+                      attrs: {
+                        disabled: _vm.contextType.value === "" ? true : false
+                      },
+                      on: {
+                        change: [
+                          function($event) {
+                            var $$selectedVal = Array.prototype.filter
+                              .call($event.target.options, function(o) {
+                                return o.selected
+                              })
+                              .map(function(o) {
+                                var val = "_value" in o ? o._value : o.value
+                                return val
+                              })
+                            _vm.$set(
+                              _vm.flowPattern,
+                              "value",
+                              $event.target.multiple
+                                ? $$selectedVal
+                                : $$selectedVal[0]
+                            )
+                          },
+                          function($event) {
+                            return _vm.testSelectField(_vm.flowPattern)
+                          }
+                        ]
+                      }
+                    },
+                    _vm._l(_vm.flowPatterns, function(pattern) {
+                      return _c(
+                        "option",
+                        { key: pattern._id, domProps: { value: pattern.name } },
+                        [_vm._v(_vm._s(pattern.name))]
+                      )
+                    }),
+                    0
+                  ),
+                  _vm.contextType.value === ""
+                    ? _c("span", { staticClass: "form__info" }, [
+                        _vm._v("Select a context type")
+                      ])
+                    : _vm._e(),
+                  _c("span", { staticClass: "form__error-field" }, [
+                    _vm._v(_vm._s(_vm.flowPattern.error))
+                  ])
+                ]),
+                _c("h3", [_vm._v("NLU Service")]),
+                _c("div", { staticClass: "flex col" }, [
+                  _c("span", { staticClass: "form__label" }, [
+                    _vm._v("NLU service:")
+                  ]),
+                  _c(
+                    "select",
+                    {
+                      directives: [
+                        {
+                          name: "model",
+                          rawName: "v-model",
+                          value: _vm.nluService.value,
+                          expression: "nluService.value"
+                        }
+                      ],
+                      staticClass: "form__select",
+                      class: [
+                        _vm.nluService.error !== null
+                          ? "form__select--error"
+                          : "",
+                        _vm.nluService.valid ? "form__select--valid" : ""
+                      ],
+                      on: {
+                        change: [
+                          function($event) {
+                            var $$selectedVal = Array.prototype.filter
+                              .call($event.target.options, function(o) {
+                                return o.selected
+                              })
+                              .map(function(o) {
+                                var val = "_value" in o ? o._value : o.value
+                                return val
+                              })
+                            _vm.$set(
+                              _vm.nluService,
+                              "value",
+                              $event.target.multiple
+                                ? $$selectedVal
+                                : $$selectedVal[0]
+                            )
+                          },
+                          function($event) {
+                            return _vm.testSelectField(_vm.nluService)
+                          }
+                        ]
+                      }
+                    },
+                    _vm._l(_vm.nluServices, function(nlu) {
+                      return _c(
+                        "option",
+                        {
+                          key: nlu.service_name,
+                          domProps: { value: nlu.service_name }
+                        },
+                        [_vm._v(_vm._s(nlu.service_name))]
+                      )
+                    }),
+                    0
+                  ),
+                  _c("span", { staticClass: "form__error-field" }, [
+                    _vm._v(_vm._s(_vm.nluService.error))
+                  ])
+                ]),
+                _c("h3", [_vm._v("STT service")]),
+                _c("div", { staticClass: "flex col" }, [
+                  _c("span", { staticClass: "form__label" }, [
+                    _vm._v("STT service:")
+                  ]),
+                  _c(
+                    "select",
+                    {
+                      directives: [
+                        {
+                          name: "model",
+                          rawName: "v-model",
+                          value: _vm.sttService.value,
+                          expression: "sttService.value"
+                        }
+                      ],
+                      staticClass: "form__select",
+                      class: [
+                        _vm.sttService.error !== null
+                          ? "form__select--error"
+                          : "",
+                        _vm.sttService.valid ? "form__select--valid" : ""
+                      ],
+                      on: {
+                        change: [
+                          function($event) {
+                            var $$selectedVal = Array.prototype.filter
+                              .call($event.target.options, function(o) {
+                                return o.selected
+                              })
+                              .map(function(o) {
+                                var val = "_value" in o ? o._value : o.value
+                                return val
+                              })
+                            _vm.$set(
+                              _vm.sttService,
+                              "value",
+                              $event.target.multiple
+                                ? $$selectedVal
+                                : $$selectedVal[0]
+                            )
+                          },
+                          function($event) {
+                            return _vm.testSelectField(_vm.sttService)
+                          }
+                        ]
+                      }
+                    },
+                    _vm._l(_vm.sttServices, function(stt) {
+                      return _c(
+                        "option",
+                        { key: stt._id, domProps: { value: stt.serviceId } },
+                        [_vm._v(_vm._s(stt.serviceId))]
+                      )
+                    }),
+                    0
+                  ),
+                  _c("span", { staticClass: "form__error-field" }, [
+                    _vm._v(_vm._s(_vm.sttService.error))
+                  ])
+                ]),
+                _c("div", { staticClass: "flex row" }, [
+                  _c(
+                    "button",
+                    {
+                      staticClass: "button button--valid",
+                      on: {
+                        click: function($event) {
+                          return _vm.handleForm()
+                        }
+                      }
+                    },
+                    [
+                      _c("span", { staticClass: "label" }, [
+                        _vm._v("Create a context")
+                      ])
+                    ]
+                  )
                 ])
               ])
-            : _vm._e(),
-          _c("div", { staticClass: "flex col" }, [
-            _c("span", { staticClass: "form__label" }, [
-              _vm._v("Workflow pattern:")
-            ]),
-            _c(
-              "select",
-              {
-                directives: [
-                  {
-                    name: "model",
-                    rawName: "v-model",
-                    value: _vm.flowPattern.value,
-                    expression: "flowPattern.value"
-                  }
-                ],
-                staticClass: "form__select",
-                class: [
-                  _vm.flowPattern.error !== null ? "form__select--error" : "",
-                  _vm.flowPattern.valid ? "form__select--valid" : ""
-                ],
-                attrs: {
-                  disabled: _vm.contextType.value === "" ? true : false
-                },
-                on: {
-                  change: [
-                    function($event) {
-                      var $$selectedVal = Array.prototype.filter
-                        .call($event.target.options, function(o) {
-                          return o.selected
-                        })
-                        .map(function(o) {
-                          var val = "_value" in o ? o._value : o.value
-                          return val
-                        })
-                      _vm.$set(
-                        _vm.flowPattern,
-                        "value",
-                        $event.target.multiple
-                          ? $$selectedVal
-                          : $$selectedVal[0]
-                      )
-                    },
-                    function($event) {
-                      return _vm.testSelectField(_vm.flowPattern)
-                    }
-                  ]
-                }
-              },
-              _vm._l(_vm.flowPatterns, function(pattern) {
-                return _c(
-                  "option",
-                  { key: pattern._id, domProps: { value: pattern.name } },
-                  [_vm._v(_vm._s(pattern.name))]
-                )
-              }),
-              0
-            ),
-            _vm.contextType.value === ""
-              ? _c("span", { staticClass: "form__info" }, [
-                  _vm._v("Select a context type")
-                ])
-              : _vm._e(),
-            _c("span", { staticClass: "form__error-field" }, [
-              _vm._v(_vm._s(_vm.flowPattern.error))
             ])
-          ]),
-          _c("h3", [_vm._v("NLU Services")]),
-          _c("div", { staticClass: "flex col" }, [
-            _c("span", { staticClass: "form__label" }, [
-              _vm._v("Nlu service:")
-            ]),
-            _c(
-              "select",
-              {
-                directives: [
-                  {
-                    name: "model",
-                    rawName: "v-model",
-                    value: _vm.nluService.value,
-                    expression: "nluService.value"
-                  }
-                ],
-                staticClass: "form__select",
-                class: [
-                  _vm.nluService.error !== null ? "form__select--error" : "",
-                  _vm.nluService.valid ? "form__select--valid" : ""
-                ],
-                on: {
-                  change: [
-                    function($event) {
-                      var $$selectedVal = Array.prototype.filter
-                        .call($event.target.options, function(o) {
-                          return o.selected
-                        })
-                        .map(function(o) {
-                          var val = "_value" in o ? o._value : o.value
-                          return val
-                        })
-                      _vm.$set(
-                        _vm.nluService,
-                        "value",
-                        $event.target.multiple
-                          ? $$selectedVal
-                          : $$selectedVal[0]
-                      )
-                    },
-                    function($event) {
-                      return _vm.testSelectField(_vm.nluService)
-                    }
-                  ]
-                }
-              },
-              _vm._l(_vm.nluServices, function(nlu) {
-                return _c(
-                  "option",
-                  {
-                    key: nlu.service_name,
-                    domProps: { value: nlu.service_name }
-                  },
-                  [_vm._v(_vm._s(nlu.service_name))]
-                )
-              }),
-              0
-            ),
-            _c("span", { staticClass: "form__error-field" }, [
-              _vm._v(_vm._s(_vm.nluService.error))
-            ])
-          ]),
-          _c("h3", [_vm._v("STT Services")]),
-          _c("div", { staticClass: "flex col" }, [
-            _c("span", { staticClass: "form__label" }, [
-              _vm._v("STT service:")
-            ]),
-            _c(
-              "select",
-              {
-                directives: [
-                  {
-                    name: "model",
-                    rawName: "v-model",
-                    value: _vm.sttService.value,
-                    expression: "sttService.value"
-                  }
-                ],
-                staticClass: "form__select",
-                class: [
-                  _vm.sttService.error !== null ? "form__select--error" : "",
-                  _vm.sttService.valid ? "form__select--valid" : ""
-                ],
-                on: {
-                  change: [
-                    function($event) {
-                      var $$selectedVal = Array.prototype.filter
-                        .call($event.target.options, function(o) {
-                          return o.selected
-                        })
-                        .map(function(o) {
-                          var val = "_value" in o ? o._value : o.value
-                          return val
-                        })
-                      _vm.$set(
-                        _vm.sttService,
-                        "value",
-                        $event.target.multiple
-                          ? $$selectedVal
-                          : $$selectedVal[0]
-                      )
-                    },
-                    function($event) {
-                      return _vm.testSelectField(_vm.sttService)
-                    }
-                  ]
-                }
-              },
-              _vm._l(_vm.sttServices, function(stt) {
-                return _c(
-                  "option",
-                  {
-                    key: stt.service_name,
-                    domProps: { value: stt.service_name }
-                  },
-                  [_vm._v(_vm._s(stt.service_name))]
-                )
-              }),
-              0
-            ),
-            _c("span", { staticClass: "form__error-field" }, [
-              _vm._v(_vm._s(_vm.sttService.error))
-            ])
-          ]),
-          _c("div", { staticClass: "flex row" }, [
-            _c(
-              "button",
-              {
-                staticClass: "button button--valid button--full",
-                on: {
-                  click: function($event) {
-                    return _vm.handleForm()
-                  }
-                }
-              },
-              [
-                _c("span", { staticClass: "label" }, [
-                  _vm._v("Create a context")
-                ])
-              ]
-            )
           ])
         ])
+      : _vm._e()
+  ])
+}
+var staticRenderFns = []
+render._withStripped = true
+
+
+
+/***/ }),
+
+/***/ "./node_modules/cache-loader/dist/cjs.js?{\"cacheDirectory\":\"node_modules/.cache/vue-loader\",\"cacheIdentifier\":\"11f95644-vue-loader-template\"}!./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/cache-loader/dist/cjs.js?!./node_modules/vue-loader/lib/index.js?!./src/views/ContextOverview.vue?vue&type=template&id=6f385cfe&":
+/*!***************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"11f95644-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/views/ContextOverview.vue?vue&type=template&id=6f385cfe& ***!
+  \***************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "render", function() { return render; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return staticRenderFns; });
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("div", { staticClass: "flex col" }, [
+    _vm.loading ? _c("div", [_vm._v("\n    LOADING\n  ")]) : _vm._e(),
+    _vm.dataLoaded
+      ? _c("div", [
+          _c("h1", [_vm._v("Contexts overview")]),
+          _vm.fleetContexts.length > 0
+            ? _c("div", { staticClass: "block block--transparent" }, [
+                _c("h2", [_vm._v("Fleet")]),
+                _c("div", { staticClass: "flex row" }, [
+                  _c("table", { staticClass: "table table--full" }, [
+                    _vm._m(0),
+                    _c(
+                      "tbody",
+                      _vm._l(_vm.fleetContexts, function(context) {
+                        return _c("tr", { key: context._id }, [
+                          _c("td", { staticClass: "important" }, [
+                            _vm._v(_vm._s(context.name))
+                          ]),
+                          _c("td", [_vm._v(_vm._s(context.type))]),
+                          _c("td", [_vm._v(_vm._s(context.name))]),
+                          _c("td", [_vm._v(_vm._s(context.updated_date))]),
+                          _c("td", [_vm._v(_vm._s(context._id) + " ")])
+                        ])
+                      }),
+                      0
+                    )
+                  ])
+                ])
+              ])
+            : _c("div", [_vm._v("\n      No context found\n    ")])
+        ])
+      : _vm._e()
+  ])
+}
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("thead", [
+      _c("tr", [
+        _c("th", [_vm._v("Context name")]),
+        _c("th", [_vm._v("Type")]),
+        _c("th", [_vm._v("Associated LinTO")]),
+        _c("th", [_vm._v("Last update")]),
+        _c("th", [_vm._v("Worfklow")])
       ])
     ])
+  }
+]
+render._withStripped = true
+
+
+
+/***/ }),
+
+/***/ "./node_modules/cache-loader/dist/cjs.js?{\"cacheDirectory\":\"node_modules/.cache/vue-loader\",\"cacheIdentifier\":\"11f95644-vue-loader-template\"}!./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/cache-loader/dist/cjs.js?!./node_modules/vue-loader/lib/index.js?!./src/views/ContextWorkflow.vue?vue&type=template&id=2610b444&":
+/*!***************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/cache-loader/dist/cjs.js?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"11f95644-vue-loader-template"}!./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/cache-loader/dist/cjs.js??ref--0-0!./node_modules/vue-loader/lib??vue-loader-options!./src/views/ContextWorkflow.vue?vue&type=template&id=2610b444& ***!
+  \***************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "render", function() { return render; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return staticRenderFns; });
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("div", [
+    _vm.loading
+      ? _c("div", { staticClass: "flex col" }, [_vm._v("\n    LOADING\n  ")])
+      : _vm._e(),
+    _vm.dataLoaded
+      ? _c(
+          "div",
+          { staticClass: "flex col flex1" },
+          [
+            _c("h1", [_vm._v("Context : - Workflow editor")]),
+            _vm._v("\n    " + _vm._s(_vm.context) + "\n    "),
+            _c(
+              "div",
+              {
+                staticClass:
+                  "block block--transparent block--no-margin block--no-padding flex1 flex"
+              },
+              [
+                _c("NodeRedIframe", {
+                  attrs: { contextFrame: "contextEdit", blsurl: _vm.blsUrl }
+                })
+              ],
+              1
+            ),
+            _c("SavePatternModal"),
+            _c("LoadPatternModal")
+          ],
+          1
+        )
+      : _vm._e()
   ])
 }
 var staticRenderFns = []
@@ -5279,60 +5717,101 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c("div", { staticClass: "flex col" }, [
-    _c("h1", [_vm._v("Fleet management")]),
-    _c("div", { staticClass: "block block--transparent" }, [
-      _c("h2", [_vm._v("In use")]),
-      _c("div", { staticClass: "flex row" }, [
-        _c("table", { staticClass: "table table--full" }, [
-          _vm._m(0),
-          _c(
-            "tbody",
-            _vm._l(_vm.associated_lintos, function(linto) {
-              return _c("tr", { key: linto._id }, [
-                _c("td", { staticClass: "center status" }, [
-                  _c("span", {
-                    staticClass: "icon icon--status",
-                    class: linto.connexion
-                  })
-                ]),
-                _c("td", { staticClass: "important" }, [
-                  _vm._v(_vm._s(linto.sn))
-                ]),
-                _c("td", [_vm._v(_vm._s(linto.config.firmware))]),
-                _c("td", [_vm._v(_vm._s(linto.associated_context))]),
-                _c("td", [_vm._v(_vm._s(linto.last_up))]),
-                _c("td", [_vm._v(_vm._s(linto.last_down))]),
-                _c("td", [_vm._v("0.0.0.1")]),
-                _vm._m(1, true)
-              ])
-            }),
-            0
-          )
+    _vm.loading
+      ? _c("div", { staticClass: "flex col" }, [_vm._v("\n    Loading\n  ")])
+      : _vm._e(),
+    _vm.dataLoaded
+      ? _c("div", { staticClass: "flex col" }, [
+          _c("h1", [_vm._v("Fleet management")]),
+          _c("div", { staticClass: "block block--transparent" }, [
+            _c("h2", [_vm._v("In use")]),
+            _vm.associated_lintos.length > 0
+              ? _c("div", { staticClass: "flex row" }, [
+                  _c("table", { staticClass: "table table--full" }, [
+                    _vm._m(0),
+                    _c(
+                      "tbody",
+                      _vm._l(_vm.associated_lintos, function(linto) {
+                        return _c("tr", { key: linto._id }, [
+                          _c("td", { staticClass: "center status" }, [
+                            _c("span", {
+                              staticClass: "icon icon--status",
+                              class: linto.connexion
+                            })
+                          ]),
+                          _c("td", { staticClass: "important" }, [
+                            _vm._v(_vm._s(linto.sn))
+                          ]),
+                          _c("td", [_vm._v(_vm._s(linto.config.firmware))]),
+                          _c("td", [_vm._v(_vm._s(linto.associated_context))]),
+                          _c("td", [_vm._v(_vm._s(linto.last_up))]),
+                          _c("td", [_vm._v(_vm._s(linto.last_down))]),
+                          _c("td", [_vm._v("0.0.0.1")]),
+                          _c("td", [
+                            _c(
+                              "a",
+                              {
+                                staticClass: "button",
+                                attrs: {
+                                  href: "/admin/fleet/monitoring/" + linto.sn
+                                }
+                              },
+                              [
+                                _c("span", { staticClass: "label" }, [
+                                  _vm._v("Monitoring")
+                                ])
+                              ]
+                            )
+                          ])
+                        ])
+                      }),
+                      0
+                    )
+                  ])
+                ])
+              : _c("div", [_vm._v("\n        No LinTO in use for now\n      ")])
+          ]),
+          _c("div", { staticClass: "block block--transparent" }, [
+            _c("h2", [_vm._v("Provisionning")]),
+            _vm.not_associated_lintos.length > 0
+              ? _c("div", { staticClass: "flex row" }, [
+                  _c("table", { staticClass: "table table--shadow" }, [
+                    _vm._m(1),
+                    _c(
+                      "tbody",
+                      _vm._l(_vm.not_associated_lintos, function(linto) {
+                        return _c("tr", { key: linto._id }, [
+                          _c("td", { staticClass: "important" }, [
+                            _vm._v(_vm._s(linto.sn))
+                          ]),
+                          _c("td", [_vm._v(_vm._s(linto.config.firmware))]),
+                          _c("td", [
+                            _c(
+                              "a",
+                              {
+                                staticClass: "button",
+                                attrs: {
+                                  href: "/admin/fleet/monitoring/" + linto.sn
+                                }
+                              },
+                              [
+                                _c("span", { staticClass: "label" }, [
+                                  _vm._v("Monitoring")
+                                ])
+                              ]
+                            )
+                          ])
+                        ])
+                      }),
+                      0
+                    )
+                  ])
+                ])
+              : _c("div", [_vm._v("\n        No LinTO available\n      ")])
+          ]),
+          _vm._m(2)
         ])
-      ])
-    ]),
-    _c("div", { staticClass: "block block--transparent" }, [
-      _c("h2", [_vm._v("Provisionning")]),
-      _c("div", { staticClass: "flex row" }, [
-        _c("table", { staticClass: "table table--shadow" }, [
-          _vm._m(2),
-          _c(
-            "tbody",
-            _vm._l(_vm.not_associated_lintos, function(linto) {
-              return _c("tr", { key: linto._id }, [
-                _c("td", { staticClass: "important" }, [
-                  _vm._v(_vm._s(linto.sn))
-                ]),
-                _c("td", [_vm._v(_vm._s(linto.config.firmware))]),
-                _vm._m(3, true)
-              ])
-            }),
-            0
-          )
-        ])
-      ])
-    ]),
-    _vm._m(4)
+      : _vm._e()
   ])
 }
 var staticRenderFns = [
@@ -5357,31 +5836,11 @@ var staticRenderFns = [
     var _vm = this
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
-    return _c("td", [
-      _c("button", { staticClass: "button" }, [
-        _c("span", { staticClass: "label" }, [_vm._v("Monitoring")])
-      ])
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
     return _c("thead", [
       _c("tr", [
         _c("th", [_vm._v("Serial number")]),
         _c("th", [_vm._v("Firmware")]),
         _c("th", [_vm._v("Monitoring")])
-      ])
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("td", [
-      _c("button", { staticClass: "button" }, [
-        _c("span", { staticClass: "label" }, [_vm._v("Monitoring")])
       ])
     ])
   },
@@ -5418,7 +5877,8 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c("div", [
-    _vm.linto === null
+    _vm.loading ? _c("div", [_vm._v("\n    Loading\n  ")]) : _vm._e(),
+    _vm.dataLoaded && _vm.linto === null
       ? _c("div", [
           _vm._v(
             "\n    No LinTO found for this serial number : " +
@@ -5426,10 +5886,70 @@ var render = function() {
               "\n  "
           )
         ])
-      : _c("div", [_vm._v("\n    " + _vm._s(_vm.linto) + "\n  ")])
+      : _vm._e(),
+    _vm.dataLoaded && _vm.linto !== null
+      ? _c("div", { staticClass: "flex col" }, [
+          _c("h1", [_vm._v("Monitoring : LinTO - " + _vm._s(_vm.sn))]),
+          _c("div", { staticClass: "block block--transparent" }, [
+            _c("h2", [_vm._v("Global informations")]),
+            _c("div", { staticClass: "flex row" }, [
+              _c("table", { staticClass: "table table--full" }, [
+                _vm._m(0),
+                _c("tbody", [
+                  _c("tr", [
+                    _c("td", { staticClass: "center status" }, [
+                      _c("span", {
+                        staticClass: "icon icon--status",
+                        class: _vm.linto.connexion
+                      })
+                    ]),
+                    _c("td", { staticClass: "important" }, [
+                      _vm._v(_vm._s(_vm.linto.sn))
+                    ]),
+                    _c("td", [_vm._v(_vm._s(_vm.linto.type))]),
+                    _c("td", [_vm._v(_vm._s(_vm.linto.config.firmware))]),
+                    _c("td", [_vm._v(_vm._s(_vm.linto.associated_context))]),
+                    _c("td", [_vm._v(_vm._s(_vm.linto.last_up))]),
+                    _c("td", [_vm._v(_vm._s(_vm.linto.last_down))]),
+                    _c("td", [_vm._v("0.0.0.1")])
+                  ])
+                ])
+              ])
+            ])
+          ]),
+          _vm._m(1)
+        ])
+      : _vm._e()
   ])
 }
-var staticRenderFns = []
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("thead", [
+      _c("tr", [
+        _c("th", { staticClass: "status" }, [_vm._v("Connexion")]),
+        _c("th", [_vm._v("Serial number")]),
+        _c("th", [_vm._v("Type")]),
+        _c("th", [_vm._v("Firmware")]),
+        _c("th", [_vm._v("Context")]),
+        _c("th", [_vm._v("Last seen up")]),
+        _c("th", [_vm._v("Last seen down")]),
+        _c("th", [_vm._v("IP")])
+      ])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "block block--transparent" }, [
+      _c("h2", [_vm._v("Network informations")]),
+      _c("div", { staticClass: "flex row" }, [_vm._v("\n        TODO\n      ")])
+    ])
+  }
+]
 render._withStripped = true
 
 
@@ -5582,7 +6102,6 @@ var render = function() {
   var _c = _vm._self._c || _h
   return _c(
     "div",
-    { staticClass: "flex col" },
     [
       _c("h1", [_vm._v("Node Red Editor")]),
       _c(
@@ -24507,12 +25026,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _views_AdminDemo_vue__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./views/AdminDemo.vue */ "./src/views/AdminDemo.vue");
 /* harmony import */ var _views_AdminNodeRed_vue__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./views/AdminNodeRed.vue */ "./src/views/AdminNodeRed.vue");
 /* harmony import */ var _views_ContextAdd_vue__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./views/ContextAdd.vue */ "./src/views/ContextAdd.vue");
-/* harmony import */ var _views_WorkflowEditor_vue__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./views/WorkflowEditor.vue */ "./src/views/WorkflowEditor.vue");
-/* harmony import */ var _views_FleetManagement_vue__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./views/FleetManagement.vue */ "./src/views/FleetManagement.vue");
-/* harmony import */ var _views_FleetMonitoring_vue__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./views/FleetMonitoring.vue */ "./src/views/FleetMonitoring.vue");
+/* harmony import */ var _views_ContextOverview_vue__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./views/ContextOverview.vue */ "./src/views/ContextOverview.vue");
+/* harmony import */ var _views_ContextWorkflow_vue__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./views/ContextWorkflow.vue */ "./src/views/ContextWorkflow.vue");
+/* harmony import */ var _views_WorkflowEditor_vue__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./views/WorkflowEditor.vue */ "./src/views/WorkflowEditor.vue");
+/* harmony import */ var _views_FleetManagement_vue__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./views/FleetManagement.vue */ "./src/views/FleetManagement.vue");
+/* harmony import */ var _views_FleetMonitoring_vue__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./views/FleetMonitoring.vue */ "./src/views/FleetMonitoring.vue");
 
 
  // Views
+
+
 
 
 
@@ -24557,7 +25080,7 @@ var router = new vue_router__WEBPACK_IMPORTED_MODULE_2__["default"]({
   }, {
     path: '/admin/fleet',
     name: 'Fleet overview',
-    component: _views_FleetManagement_vue__WEBPACK_IMPORTED_MODULE_8__["default"],
+    component: _views_FleetManagement_vue__WEBPACK_IMPORTED_MODULE_10__["default"],
     meta: [{
       name: 'title',
       content: 'Linto Admin - Fleet management'
@@ -24568,7 +25091,7 @@ var router = new vue_router__WEBPACK_IMPORTED_MODULE_2__["default"]({
   }, {
     path: '/admin/fleet/monitoring/:sn',
     name: 'Fleet monitoring',
-    component: _views_FleetMonitoring_vue__WEBPACK_IMPORTED_MODULE_9__["default"],
+    component: _views_FleetMonitoring_vue__WEBPACK_IMPORTED_MODULE_11__["default"],
     meta: [{
       name: 'title',
       content: 'Linto Admin - Fleet monitoring'
@@ -24579,10 +25102,21 @@ var router = new vue_router__WEBPACK_IMPORTED_MODULE_2__["default"]({
   }, {
     path: '/admin/workflows',
     name: 'worflow editor',
-    component: _views_WorkflowEditor_vue__WEBPACK_IMPORTED_MODULE_7__["default"],
+    component: _views_WorkflowEditor_vue__WEBPACK_IMPORTED_MODULE_9__["default"],
     meta: [{
       name: 'title',
       content: 'Linto Admin - Flow patterns'
+    }, {
+      name: 'robots',
+      content: 'noindex, nofollow'
+    }]
+  }, {
+    path: '/admin/context',
+    name: 'Admin context overview',
+    component: _views_ContextOverview_vue__WEBPACK_IMPORTED_MODULE_7__["default"],
+    meta: [{
+      name: 'title',
+      content: 'Linto Admin - Context'
     }, {
       name: 'robots',
       content: 'noindex, nofollow'
@@ -24594,6 +25128,17 @@ var router = new vue_router__WEBPACK_IMPORTED_MODULE_2__["default"]({
     meta: [{
       name: 'title',
       content: 'Linto Admin - Create context'
+    }, {
+      name: 'robots',
+      content: 'noindex, nofollow'
+    }]
+  }, {
+    path: '/admin/context/workflow/:id',
+    name: 'worflow editor',
+    component: _views_ContextWorkflow_vue__WEBPACK_IMPORTED_MODULE_8__["default"],
+    meta: [{
+      name: 'title',
+      content: 'Linto Admin - Context workflow manger'
     }, {
       name: 'robots',
       content: 'noindex, nofollow'
@@ -24645,6 +25190,7 @@ vue__WEBPACK_IMPORTED_MODULE_2__["default"].use(vuex__WEBPACK_IMPORTED_MODULE_3_
   strict: false,
   state: {
     contextTypes: '',
+    contextFleet: '',
     flowPatterns: '',
     flowPatternTmp: '',
     lintoFleet: '',
@@ -24655,6 +25201,9 @@ vue__WEBPACK_IMPORTED_MODULE_2__["default"].use(vuex__WEBPACK_IMPORTED_MODULE_3_
   mutations: {
     SET_LINTO_FLEET: function SET_LINTO_FLEET(state, data) {
       state.lintoFleet = data;
+    },
+    SET_CONTEXT_FLEET: function SET_CONTEXT_FLEET(state, data) {
+      state.contextFleet = data;
     },
     SET_CONTEXT_TYPES: function SET_CONTEXT_TYPES(state, data) {
       state.contextTypes = data;
@@ -24716,51 +25265,64 @@ vue__WEBPACK_IMPORTED_MODULE_2__["default"].use(vuex__WEBPACK_IMPORTED_MODULE_3_
 
       return getLintoFleet;
     }(),
-    getContextTypes: function () {
-      var _getContextTypes = Object(_home_rlopez_projects_linagora_linto_admin_v2_vue_app_node_modules_babel_runtime_corejs2_helpers_esm_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1__["default"])(
+    getFleetContexts: function () {
+      var _getFleetContexts = Object(_home_rlopez_projects_linagora_linto_admin_v2_vue_app_node_modules_babel_runtime_corejs2_helpers_esm_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1__["default"])(
       /*#__PURE__*/
       regeneratorRuntime.mark(function _callee2(_ref2) {
-        var commit, state, getTypes;
+        var commit, state, _getFleetContexts2;
+
         return regeneratorRuntime.wrap(function _callee2$(_context2) {
           while (1) {
             switch (_context2.prev = _context2.next) {
               case 0:
                 commit = _ref2.commit, state = _ref2.state;
                 _context2.prev = 1;
-                _context2.next = 4;
-                return axios__WEBPACK_IMPORTED_MODULE_4___default.a.get("".concat("", "/api/context/types"));
+                _context2.prev = 2;
+                _context2.next = 5;
+                return axios__WEBPACK_IMPORTED_MODULE_4___default.a.get("".concat("", "/api/context/fleet"));
 
-              case 4:
-                getTypes = _context2.sent;
-                commit('SET_CONTEXT_TYPES', getTypes.data);
-                return _context2.abrupt("return", state.contextTypes);
+              case 5:
+                _getFleetContexts2 = _context2.sent;
+                commit('SET_CONTEXT_FLEET', _getFleetContexts2.data);
+                return _context2.abrupt("return", state.contextFleet);
 
-              case 9:
-                _context2.prev = 9;
-                _context2.t0 = _context2["catch"](1);
+              case 10:
+                _context2.prev = 10;
+                _context2.t0 = _context2["catch"](2);
                 return _context2.abrupt("return", {
                   error: _context2.t0
                 });
 
-              case 12:
+              case 13:
+                _context2.next = 18;
+                break;
+
+              case 15:
+                _context2.prev = 15;
+                _context2.t1 = _context2["catch"](1);
+                return _context2.abrupt("return", {
+                  error: _context2.t1
+                });
+
+              case 18:
               case "end":
                 return _context2.stop();
             }
           }
-        }, _callee2, null, [[1, 9]]);
+        }, _callee2, null, [[1, 15], [2, 10]]);
       }));
 
-      function getContextTypes(_x2) {
-        return _getContextTypes.apply(this, arguments);
+      function getFleetContexts(_x2) {
+        return _getFleetContexts.apply(this, arguments);
       }
 
-      return getContextTypes;
+      return getFleetContexts;
     }(),
-    getFlowPatterns: function () {
-      var _getFlowPatterns = Object(_home_rlopez_projects_linagora_linto_admin_v2_vue_app_node_modules_babel_runtime_corejs2_helpers_esm_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1__["default"])(
+    getContextTypes: function () {
+      var _getContextTypes = Object(_home_rlopez_projects_linagora_linto_admin_v2_vue_app_node_modules_babel_runtime_corejs2_helpers_esm_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1__["default"])(
       /*#__PURE__*/
       regeneratorRuntime.mark(function _callee3(_ref3) {
-        var commit, state, getPatterns;
+        var commit, state, getTypes;
         return regeneratorRuntime.wrap(function _callee3$(_context3) {
           while (1) {
             switch (_context3.prev = _context3.next) {
@@ -24768,12 +25330,12 @@ vue__WEBPACK_IMPORTED_MODULE_2__["default"].use(vuex__WEBPACK_IMPORTED_MODULE_3_
                 commit = _ref3.commit, state = _ref3.state;
                 _context3.prev = 1;
                 _context3.next = 4;
-                return axios__WEBPACK_IMPORTED_MODULE_4___default.a.get("".concat("", "/api/flow/patterns"));
+                return axios__WEBPACK_IMPORTED_MODULE_4___default.a.get("".concat("", "/api/context/types"));
 
               case 4:
-                getPatterns = _context3.sent;
-                commit('SET_PATTERNS', getPatterns.data);
-                return _context3.abrupt("return", state.flowPatterns);
+                getTypes = _context3.sent;
+                commit('SET_CONTEXT_TYPES', getTypes.data);
+                return _context3.abrupt("return", state.contextTypes);
 
               case 9:
                 _context3.prev = 9;
@@ -24790,18 +25352,17 @@ vue__WEBPACK_IMPORTED_MODULE_2__["default"].use(vuex__WEBPACK_IMPORTED_MODULE_3_
         }, _callee3, null, [[1, 9]]);
       }));
 
-      function getFlowPatterns(_x3) {
-        return _getFlowPatterns.apply(this, arguments);
+      function getContextTypes(_x3) {
+        return _getContextTypes.apply(this, arguments);
       }
 
-      return getFlowPatterns;
+      return getContextTypes;
     }(),
-    getTmpPattern: function () {
-      var _getTmpPattern = Object(_home_rlopez_projects_linagora_linto_admin_v2_vue_app_node_modules_babel_runtime_corejs2_helpers_esm_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1__["default"])(
+    getFlowPatterns: function () {
+      var _getFlowPatterns = Object(_home_rlopez_projects_linagora_linto_admin_v2_vue_app_node_modules_babel_runtime_corejs2_helpers_esm_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1__["default"])(
       /*#__PURE__*/
       regeneratorRuntime.mark(function _callee4(_ref4) {
-        var commit, state, _getTmpPattern2;
-
+        var commit, state, getPatterns;
         return regeneratorRuntime.wrap(function _callee4$(_context4) {
           while (1) {
             switch (_context4.prev = _context4.next) {
@@ -24809,12 +25370,12 @@ vue__WEBPACK_IMPORTED_MODULE_2__["default"].use(vuex__WEBPACK_IMPORTED_MODULE_3_
                 commit = _ref4.commit, state = _ref4.state;
                 _context4.prev = 1;
                 _context4.next = 4;
-                return axios__WEBPACK_IMPORTED_MODULE_4___default.a.get("".concat("", "/api/flow/tmp"));
+                return axios__WEBPACK_IMPORTED_MODULE_4___default.a.get("".concat("", "/api/flow/patterns"));
 
               case 4:
-                _getTmpPattern2 = _context4.sent;
-                commit('SET_TMP_PATTERN', _getTmpPattern2.data[0]);
-                return _context4.abrupt("return", state.flowPatternTmp);
+                getPatterns = _context4.sent;
+                commit('SET_PATTERNS', getPatterns.data);
+                return _context4.abrupt("return", state.flowPatterns);
 
               case 9:
                 _context4.prev = 9;
@@ -24831,17 +25392,18 @@ vue__WEBPACK_IMPORTED_MODULE_2__["default"].use(vuex__WEBPACK_IMPORTED_MODULE_3_
         }, _callee4, null, [[1, 9]]);
       }));
 
-      function getTmpPattern(_x4) {
-        return _getTmpPattern.apply(this, arguments);
+      function getFlowPatterns(_x4) {
+        return _getFlowPatterns.apply(this, arguments);
       }
 
-      return getTmpPattern;
+      return getFlowPatterns;
     }(),
-    getNluSettings: function () {
-      var _getNluSettings = Object(_home_rlopez_projects_linagora_linto_admin_v2_vue_app_node_modules_babel_runtime_corejs2_helpers_esm_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1__["default"])(
+    getTmpPattern: function () {
+      var _getTmpPattern = Object(_home_rlopez_projects_linagora_linto_admin_v2_vue_app_node_modules_babel_runtime_corejs2_helpers_esm_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1__["default"])(
       /*#__PURE__*/
       regeneratorRuntime.mark(function _callee5(_ref5) {
-        var commit, state, getSettings;
+        var commit, state, _getTmpPattern2;
+
         return regeneratorRuntime.wrap(function _callee5$(_context5) {
           while (1) {
             switch (_context5.prev = _context5.next) {
@@ -24849,12 +25411,12 @@ vue__WEBPACK_IMPORTED_MODULE_2__["default"].use(vuex__WEBPACK_IMPORTED_MODULE_3_
                 commit = _ref5.commit, state = _ref5.state;
                 _context5.prev = 1;
                 _context5.next = 4;
-                return axios__WEBPACK_IMPORTED_MODULE_4___default.a.get("".concat("", "/api/context/nlusettings"));
+                return axios__WEBPACK_IMPORTED_MODULE_4___default.a.get("".concat("", "/api/flow/tmp"));
 
               case 4:
-                getSettings = _context5.sent;
-                commit('SET_NLU_SETTINGS', getSettings.data);
-                return _context5.abrupt("return", state.nluSettings);
+                _getTmpPattern2 = _context5.sent;
+                commit('SET_TMP_PATTERN', _getTmpPattern2.data[0]);
+                return _context5.abrupt("return", state.flowPatternTmp);
 
               case 9:
                 _context5.prev = 9;
@@ -24871,14 +25433,14 @@ vue__WEBPACK_IMPORTED_MODULE_2__["default"].use(vuex__WEBPACK_IMPORTED_MODULE_3_
         }, _callee5, null, [[1, 9]]);
       }));
 
-      function getNluSettings(_x5) {
-        return _getNluSettings.apply(this, arguments);
+      function getTmpPattern(_x5) {
+        return _getTmpPattern.apply(this, arguments);
       }
 
-      return getNluSettings;
+      return getTmpPattern;
     }(),
-    getmqttDefaultSettings: function () {
-      var _getmqttDefaultSettings = Object(_home_rlopez_projects_linagora_linto_admin_v2_vue_app_node_modules_babel_runtime_corejs2_helpers_esm_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1__["default"])(
+    getNluSettings: function () {
+      var _getNluSettings = Object(_home_rlopez_projects_linagora_linto_admin_v2_vue_app_node_modules_babel_runtime_corejs2_helpers_esm_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1__["default"])(
       /*#__PURE__*/
       regeneratorRuntime.mark(function _callee6(_ref6) {
         var commit, state, getSettings;
@@ -24889,12 +25451,12 @@ vue__WEBPACK_IMPORTED_MODULE_2__["default"].use(vuex__WEBPACK_IMPORTED_MODULE_3_
                 commit = _ref6.commit, state = _ref6.state;
                 _context6.prev = 1;
                 _context6.next = 4;
-                return axios__WEBPACK_IMPORTED_MODULE_4___default.a.get("".concat("", "/api/context/getMqttDefaultSettings"));
+                return axios__WEBPACK_IMPORTED_MODULE_4___default.a.get("".concat("", "/api/context/nlusettings"));
 
               case 4:
                 getSettings = _context6.sent;
-                commit('SET_MQTT_SETTINGS', getSettings.data);
-                return _context6.abrupt("return", state.mqttDefaultSettings);
+                commit('SET_NLU_SETTINGS', getSettings.data);
+                return _context6.abrupt("return", state.nluSettings);
 
               case 9:
                 _context6.prev = 9;
@@ -24911,14 +25473,14 @@ vue__WEBPACK_IMPORTED_MODULE_2__["default"].use(vuex__WEBPACK_IMPORTED_MODULE_3_
         }, _callee6, null, [[1, 9]]);
       }));
 
-      function getmqttDefaultSettings(_x6) {
-        return _getmqttDefaultSettings.apply(this, arguments);
+      function getNluSettings(_x6) {
+        return _getNluSettings.apply(this, arguments);
       }
 
-      return getmqttDefaultSettings;
+      return getNluSettings;
     }(),
-    getSttSettings: function () {
-      var _getSttSettings = Object(_home_rlopez_projects_linagora_linto_admin_v2_vue_app_node_modules_babel_runtime_corejs2_helpers_esm_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1__["default"])(
+    getmqttDefaultSettings: function () {
+      var _getmqttDefaultSettings = Object(_home_rlopez_projects_linagora_linto_admin_v2_vue_app_node_modules_babel_runtime_corejs2_helpers_esm_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1__["default"])(
       /*#__PURE__*/
       regeneratorRuntime.mark(function _callee7(_ref7) {
         var commit, state, getSettings;
@@ -24929,12 +25491,12 @@ vue__WEBPACK_IMPORTED_MODULE_2__["default"].use(vuex__WEBPACK_IMPORTED_MODULE_3_
                 commit = _ref7.commit, state = _ref7.state;
                 _context7.prev = 1;
                 _context7.next = 4;
-                return axios__WEBPACK_IMPORTED_MODULE_4___default.a.get("".concat("", "/api/context/getsttservices"));
+                return axios__WEBPACK_IMPORTED_MODULE_4___default.a.get("".concat("", "/api/context/getMqttDefaultSettings"));
 
               case 4:
                 getSettings = _context7.sent;
-                commit('SET_STT_SETTINGS', getSettings.data);
-                return _context7.abrupt("return", state.sttSettings);
+                commit('SET_MQTT_SETTINGS', getSettings.data);
+                return _context7.abrupt("return", state.mqttDefaultSettings);
 
               case 9:
                 _context7.prev = 9;
@@ -24951,7 +25513,47 @@ vue__WEBPACK_IMPORTED_MODULE_2__["default"].use(vuex__WEBPACK_IMPORTED_MODULE_3_
         }, _callee7, null, [[1, 9]]);
       }));
 
-      function getSttSettings(_x7) {
+      function getmqttDefaultSettings(_x7) {
+        return _getmqttDefaultSettings.apply(this, arguments);
+      }
+
+      return getmqttDefaultSettings;
+    }(),
+    getSttSettings: function () {
+      var _getSttSettings = Object(_home_rlopez_projects_linagora_linto_admin_v2_vue_app_node_modules_babel_runtime_corejs2_helpers_esm_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1__["default"])(
+      /*#__PURE__*/
+      regeneratorRuntime.mark(function _callee8(_ref8) {
+        var commit, state, getSettings;
+        return regeneratorRuntime.wrap(function _callee8$(_context8) {
+          while (1) {
+            switch (_context8.prev = _context8.next) {
+              case 0:
+                commit = _ref8.commit, state = _ref8.state;
+                _context8.prev = 1;
+                _context8.next = 4;
+                return axios__WEBPACK_IMPORTED_MODULE_4___default.a.get("".concat("", "/api/context/getsttservices"));
+
+              case 4:
+                getSettings = _context8.sent;
+                commit('SET_STT_SETTINGS', getSettings.data);
+                return _context8.abrupt("return", state.sttSettings);
+
+              case 9:
+                _context8.prev = 9;
+                _context8.t0 = _context8["catch"](1);
+                return _context8.abrupt("return", {
+                  error: _context8.t0
+                });
+
+              case 12:
+              case "end":
+                return _context8.stop();
+            }
+          }
+        }, _callee8, null, [[1, 9]]);
+      }));
+
+      function getSttSettings(_x8) {
         return _getSttSettings.apply(this, arguments);
       }
 
@@ -24961,16 +25563,9 @@ vue__WEBPACK_IMPORTED_MODULE_2__["default"].use(vuex__WEBPACK_IMPORTED_MODULE_3_
   getters: {
     ASSOCIATED_LINTO_FLEET: function ASSOCIATED_LINTO_FLEET(state) {
       try {
-        var lintos = state.lintoFleet;
-        var associatedLintos = [];
-
-        for (var i in lintos) {
-          if (lintos[i].associated_context !== null) {
-            associatedLintos.push(lintos[i]);
-          }
-        }
-
-        return associatedLintos;
+        return state.lintoFleet.filter(function (f) {
+          return f.associated_context !== null;
+        });
       } catch (error) {
         return {
           error: error
@@ -24979,16 +25574,9 @@ vue__WEBPACK_IMPORTED_MODULE_2__["default"].use(vuex__WEBPACK_IMPORTED_MODULE_3_
     },
     NOT_ASSOCIATED_LINTO_FLEET: function NOT_ASSOCIATED_LINTO_FLEET(state) {
       try {
-        var lintos = state.lintoFleet;
-        var notAssociatedLintos = [];
-
-        for (var i in lintos) {
-          if (lintos[i].associated_context === null) {
-            notAssociatedLintos.push(lintos[i]);
-          }
-        }
-
-        return notAssociatedLintos;
+        return state.lintoFleet.filter(function (f) {
+          return f.associated_context === null;
+        });
       } catch (error) {
         return {
           error: error
@@ -24998,16 +25586,22 @@ vue__WEBPACK_IMPORTED_MODULE_2__["default"].use(vuex__WEBPACK_IMPORTED_MODULE_3_
     LINTO_FLEET_BY_SN: function LINTO_FLEET_BY_SN(state) {
       return function (sn) {
         try {
-          var lintos = state.lintoFleet;
-          var resp = null;
-
-          for (var i in lintos) {
-            if (lintos[i].sn === sn) {
-              resp = lintos[i];
-            }
-          }
-
-          return resp;
+          return state.lintoFleet.filter(function (f) {
+            return f.sn === sn;
+          })[0];
+        } catch (error) {
+          return {
+            error: error
+          };
+        }
+      };
+    },
+    CONTEXT_BY_ID: function CONTEXT_BY_ID(state) {
+      return function (id) {
+        try {
+          return state.contextFleet.filter(function (context) {
+            return context._id === id;
+          })[0];
         } catch (error) {
           return {
             error: error
@@ -25294,6 +25888,180 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _cache_loader_cacheDirectory_node_modules_cache_vue_loader_cacheIdentifier_11f95644_vue_loader_template_node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_ContextAdd_vue_vue_type_template_id_44463da8___WEBPACK_IMPORTED_MODULE_0__["render"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _cache_loader_cacheDirectory_node_modules_cache_vue_loader_cacheIdentifier_11f95644_vue_loader_template_node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_ContextAdd_vue_vue_type_template_id_44463da8___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
+
+
+
+/***/ }),
+
+/***/ "./src/views/ContextOverview.vue":
+/*!***************************************!*\
+  !*** ./src/views/ContextOverview.vue ***!
+  \***************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _ContextOverview_vue_vue_type_template_id_6f385cfe___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./ContextOverview.vue?vue&type=template&id=6f385cfe& */ "./src/views/ContextOverview.vue?vue&type=template&id=6f385cfe&");
+/* harmony import */ var _ContextOverview_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./ContextOverview.vue?vue&type=script&lang=js& */ "./src/views/ContextOverview.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport *//* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+
+
+
+
+
+/* normalize component */
+
+var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__["default"])(
+  _ContextOverview_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
+  _ContextOverview_vue_vue_type_template_id_6f385cfe___WEBPACK_IMPORTED_MODULE_0__["render"],
+  _ContextOverview_vue_vue_type_template_id_6f385cfe___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
+  false,
+  null,
+  null,
+  null
+  
+)
+
+/* hot reload */
+if (true) {
+  var api = __webpack_require__(/*! ./node_modules/vue-hot-reload-api/dist/index.js */ "./node_modules/vue-hot-reload-api/dist/index.js")
+  api.install(__webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.runtime.esm.js"))
+  if (api.compatible) {
+    module.hot.accept()
+    if (!api.isRecorded('6f385cfe')) {
+      api.createRecord('6f385cfe', component.options)
+    } else {
+      api.reload('6f385cfe', component.options)
+    }
+    module.hot.accept(/*! ./ContextOverview.vue?vue&type=template&id=6f385cfe& */ "./src/views/ContextOverview.vue?vue&type=template&id=6f385cfe&", function(__WEBPACK_OUTDATED_DEPENDENCIES__) { /* harmony import */ _ContextOverview_vue_vue_type_template_id_6f385cfe___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./ContextOverview.vue?vue&type=template&id=6f385cfe& */ "./src/views/ContextOverview.vue?vue&type=template&id=6f385cfe&");
+(function () {
+      api.rerender('6f385cfe', {
+        render: _ContextOverview_vue_vue_type_template_id_6f385cfe___WEBPACK_IMPORTED_MODULE_0__["render"],
+        staticRenderFns: _ContextOverview_vue_vue_type_template_id_6f385cfe___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]
+      })
+    })(__WEBPACK_OUTDATED_DEPENDENCIES__); })
+  }
+}
+component.options.__file = "src/views/ContextOverview.vue"
+/* harmony default export */ __webpack_exports__["default"] = (component.exports);
+
+/***/ }),
+
+/***/ "./src/views/ContextOverview.vue?vue&type=script&lang=js&":
+/*!****************************************************************!*\
+  !*** ./src/views/ContextOverview.vue?vue&type=script&lang=js& ***!
+  \****************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_cache_loader_dist_cjs_js_ref_12_0_node_modules_babel_loader_lib_index_js_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_ContextOverview_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../node_modules/cache-loader/dist/cjs.js??ref--12-0!../../node_modules/babel-loader/lib!../../node_modules/cache-loader/dist/cjs.js??ref--0-0!../../node_modules/vue-loader/lib??vue-loader-options!./ContextOverview.vue?vue&type=script&lang=js& */ "./node_modules/cache-loader/dist/cjs.js?!./node_modules/babel-loader/lib/index.js!./node_modules/cache-loader/dist/cjs.js?!./node_modules/vue-loader/lib/index.js?!./src/views/ContextOverview.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport */ /* harmony default export */ __webpack_exports__["default"] = (_node_modules_cache_loader_dist_cjs_js_ref_12_0_node_modules_babel_loader_lib_index_js_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_ContextOverview_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__["default"]); 
+
+/***/ }),
+
+/***/ "./src/views/ContextOverview.vue?vue&type=template&id=6f385cfe&":
+/*!**********************************************************************!*\
+  !*** ./src/views/ContextOverview.vue?vue&type=template&id=6f385cfe& ***!
+  \**********************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _cache_loader_cacheDirectory_node_modules_cache_vue_loader_cacheIdentifier_11f95644_vue_loader_template_node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_ContextOverview_vue_vue_type_template_id_6f385cfe___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!cache-loader?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"11f95644-vue-loader-template"}!../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../node_modules/cache-loader/dist/cjs.js??ref--0-0!../../node_modules/vue-loader/lib??vue-loader-options!./ContextOverview.vue?vue&type=template&id=6f385cfe& */ "./node_modules/cache-loader/dist/cjs.js?{\"cacheDirectory\":\"node_modules/.cache/vue-loader\",\"cacheIdentifier\":\"11f95644-vue-loader-template\"}!./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/cache-loader/dist/cjs.js?!./node_modules/vue-loader/lib/index.js?!./src/views/ContextOverview.vue?vue&type=template&id=6f385cfe&");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _cache_loader_cacheDirectory_node_modules_cache_vue_loader_cacheIdentifier_11f95644_vue_loader_template_node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_ContextOverview_vue_vue_type_template_id_6f385cfe___WEBPACK_IMPORTED_MODULE_0__["render"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _cache_loader_cacheDirectory_node_modules_cache_vue_loader_cacheIdentifier_11f95644_vue_loader_template_node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_ContextOverview_vue_vue_type_template_id_6f385cfe___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
+
+
+
+/***/ }),
+
+/***/ "./src/views/ContextWorkflow.vue":
+/*!***************************************!*\
+  !*** ./src/views/ContextWorkflow.vue ***!
+  \***************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _ContextWorkflow_vue_vue_type_template_id_2610b444___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./ContextWorkflow.vue?vue&type=template&id=2610b444& */ "./src/views/ContextWorkflow.vue?vue&type=template&id=2610b444&");
+/* harmony import */ var _ContextWorkflow_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./ContextWorkflow.vue?vue&type=script&lang=js& */ "./src/views/ContextWorkflow.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport *//* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+
+
+
+
+
+/* normalize component */
+
+var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__["default"])(
+  _ContextWorkflow_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
+  _ContextWorkflow_vue_vue_type_template_id_2610b444___WEBPACK_IMPORTED_MODULE_0__["render"],
+  _ContextWorkflow_vue_vue_type_template_id_2610b444___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
+  false,
+  null,
+  null,
+  null
+  
+)
+
+/* hot reload */
+if (true) {
+  var api = __webpack_require__(/*! ./node_modules/vue-hot-reload-api/dist/index.js */ "./node_modules/vue-hot-reload-api/dist/index.js")
+  api.install(__webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.runtime.esm.js"))
+  if (api.compatible) {
+    module.hot.accept()
+    if (!api.isRecorded('2610b444')) {
+      api.createRecord('2610b444', component.options)
+    } else {
+      api.reload('2610b444', component.options)
+    }
+    module.hot.accept(/*! ./ContextWorkflow.vue?vue&type=template&id=2610b444& */ "./src/views/ContextWorkflow.vue?vue&type=template&id=2610b444&", function(__WEBPACK_OUTDATED_DEPENDENCIES__) { /* harmony import */ _ContextWorkflow_vue_vue_type_template_id_2610b444___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./ContextWorkflow.vue?vue&type=template&id=2610b444& */ "./src/views/ContextWorkflow.vue?vue&type=template&id=2610b444&");
+(function () {
+      api.rerender('2610b444', {
+        render: _ContextWorkflow_vue_vue_type_template_id_2610b444___WEBPACK_IMPORTED_MODULE_0__["render"],
+        staticRenderFns: _ContextWorkflow_vue_vue_type_template_id_2610b444___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]
+      })
+    })(__WEBPACK_OUTDATED_DEPENDENCIES__); })
+  }
+}
+component.options.__file = "src/views/ContextWorkflow.vue"
+/* harmony default export */ __webpack_exports__["default"] = (component.exports);
+
+/***/ }),
+
+/***/ "./src/views/ContextWorkflow.vue?vue&type=script&lang=js&":
+/*!****************************************************************!*\
+  !*** ./src/views/ContextWorkflow.vue?vue&type=script&lang=js& ***!
+  \****************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_cache_loader_dist_cjs_js_ref_12_0_node_modules_babel_loader_lib_index_js_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_ContextWorkflow_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../node_modules/cache-loader/dist/cjs.js??ref--12-0!../../node_modules/babel-loader/lib!../../node_modules/cache-loader/dist/cjs.js??ref--0-0!../../node_modules/vue-loader/lib??vue-loader-options!./ContextWorkflow.vue?vue&type=script&lang=js& */ "./node_modules/cache-loader/dist/cjs.js?!./node_modules/babel-loader/lib/index.js!./node_modules/cache-loader/dist/cjs.js?!./node_modules/vue-loader/lib/index.js?!./src/views/ContextWorkflow.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport */ /* harmony default export */ __webpack_exports__["default"] = (_node_modules_cache_loader_dist_cjs_js_ref_12_0_node_modules_babel_loader_lib_index_js_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_ContextWorkflow_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__["default"]); 
+
+/***/ }),
+
+/***/ "./src/views/ContextWorkflow.vue?vue&type=template&id=2610b444&":
+/*!**********************************************************************!*\
+  !*** ./src/views/ContextWorkflow.vue?vue&type=template&id=2610b444& ***!
+  \**********************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _cache_loader_cacheDirectory_node_modules_cache_vue_loader_cacheIdentifier_11f95644_vue_loader_template_node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_ContextWorkflow_vue_vue_type_template_id_2610b444___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!cache-loader?{"cacheDirectory":"node_modules/.cache/vue-loader","cacheIdentifier":"11f95644-vue-loader-template"}!../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../node_modules/cache-loader/dist/cjs.js??ref--0-0!../../node_modules/vue-loader/lib??vue-loader-options!./ContextWorkflow.vue?vue&type=template&id=2610b444& */ "./node_modules/cache-loader/dist/cjs.js?{\"cacheDirectory\":\"node_modules/.cache/vue-loader\",\"cacheIdentifier\":\"11f95644-vue-loader-template\"}!./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/cache-loader/dist/cjs.js?!./node_modules/vue-loader/lib/index.js?!./src/views/ContextWorkflow.vue?vue&type=template&id=2610b444&");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _cache_loader_cacheDirectory_node_modules_cache_vue_loader_cacheIdentifier_11f95644_vue_loader_template_node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_ContextWorkflow_vue_vue_type_template_id_2610b444___WEBPACK_IMPORTED_MODULE_0__["render"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _cache_loader_cacheDirectory_node_modules_cache_vue_loader_cacheIdentifier_11f95644_vue_loader_template_node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_cache_loader_dist_cjs_js_ref_0_0_node_modules_vue_loader_lib_index_js_vue_loader_options_ContextWorkflow_vue_vue_type_template_id_2610b444___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
 
 
 

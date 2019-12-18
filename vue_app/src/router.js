@@ -6,6 +6,8 @@ import Login from './views/Login.vue'
 import AdminDemo from './views/AdminDemo.vue'
 import AdminNodeRed from './views/AdminNodeRed.vue'
 import ContextAdd from './views/ContextAdd.vue'
+import ContextOverview from './views/ContextOverview.vue'
+import ContextWorkflow from './views/ContextWorkflow.vue'
 import WorkflowEditor from './views/WorkflowEditor.vue'
 import FleetManagement from './views/FleetManagement.vue'
 import FleetMonitoring from './views/FleetMonitoring.vue'
@@ -100,6 +102,22 @@ const router = new Router({
         }
       ]
     },
+
+    {
+      path: '/admin/context',
+      name: 'Admin context overview',
+      component: ContextOverview,
+      meta: [
+        {
+          name: 'title',
+          content: 'Linto Admin - Context'
+        },
+        {
+          name: 'robots',
+          content: 'noindex, nofollow'
+        }
+      ]
+    },
     {
       path: '/admin/context/create',
       name: 'Admin create context',
@@ -114,7 +132,22 @@ const router = new Router({
           content: 'noindex, nofollow'
         }
       ]
-    }
+    },
+    {
+      path: '/admin/context/workflow/:id',
+      name: 'worflow editor',
+      component: ContextWorkflow,
+      meta: [
+        {
+          name: 'title',
+          content: 'Linto Admin - Context workflow manger'
+        },
+        {
+          name: 'robots',
+          content: 'noindex, nofollow'
+        }
+      ]
+    },
   ]
 })
 
