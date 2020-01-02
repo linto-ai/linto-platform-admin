@@ -11,6 +11,7 @@ import ContextWorkflow from './views/ContextWorkflow.vue'
 import WorkflowEditor from './views/WorkflowEditor.vue'
 import FleetManagement from './views/FleetManagement.vue'
 import FleetMonitoring from './views/FleetMonitoring.vue'
+import TockView from './views/TockView.vue'
 Vue.use(Router)
 
 const router = new Router({
@@ -102,9 +103,8 @@ const router = new Router({
         }
       ]
     },
-
     {
-      path: '/admin/context',
+      path: '/admin/context/overview',
       name: 'Admin context overview',
       component: ContextOverview,
       meta: [
@@ -148,6 +148,21 @@ const router = new Router({
         }
       ]
     },
+    {
+      path: '/admin/nlu',
+      name: 'tock interface',
+      component: TockView,
+      meta: [
+        {
+          name: 'title',
+          ontent: 'Linto Admin - Tock interface'
+        },
+        {
+          name: 'robots',
+          content: 'noindex, nofollow'
+        }
+      ]
+    }
   ]
 })
 

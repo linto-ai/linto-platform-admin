@@ -57,9 +57,20 @@
     .label {
       color: #666;
     }
-
     &:hover {
       background-color: #666;
+      .label {
+        color: #fff;
+      }
+    }
+  }
+  &.button--bluemid {
+    border-color: $blueMid;
+    .label {
+      color: $blueMid;
+    }
+    &:hover {
+      background-color: $blueMid;
       .label {
         color: #fff;
       }
@@ -172,6 +183,12 @@
     }
     &.button__icon--save {
       background-position: -30px 0;
+    }
+    &.button__icon--monitoring {
+      background-image: url('../img/monitoring@2x.png');
+      background-position: 0 0;
+      background-size: 30px 60px;
+      background-repeat: no-repeat;
     }
   }
 

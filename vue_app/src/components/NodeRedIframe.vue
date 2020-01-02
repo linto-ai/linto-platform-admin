@@ -1,6 +1,6 @@
 <template>
   <div
-    id="nodered-iframe-container"
+    id="iframe-container"
     :class="fullScreen ? 'iframe--fullscreen' : 'iframe--default'"
     class="flex1 flex col"
   >
@@ -55,10 +55,10 @@ export default {
 
     bus.$on('iframe_reload', () => {
       setTimeout(() => {
-        const test = this.iframeUrl
+        const url = this.iframeUrl
         this.iframeUrl = ""
           setTimeout(() => {
-            this.iframeUrl = test
+            this.iframeUrl = url
           },100)
         },100)
     })

@@ -56,7 +56,7 @@ export default {
   data () {
     return {
       sn: '',
-      lintoLoaded: false,
+      lintosLoaded: false,
       loading: true
     }
   },
@@ -73,7 +73,7 @@ export default {
       }
     },
     dataLoaded () {
-      return this.lintoLoaded
+      return this.lintosLoaded
     }
   },
   watch: {
@@ -90,7 +90,7 @@ export default {
           if (!!resp.error) {
             throw resp.error
           } else {
-            this.lintoLoaded = true
+            this.lintosLoaded = true
           }
         })
       } catch (error) {

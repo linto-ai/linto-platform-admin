@@ -113,20 +113,23 @@ export default {
         patternName: this.patternName.value,
         contextType: this.contextType.value
       }
-      console.log(payload)
+
       let saveAsPattern = await axios(`${process.env.VUE_APP_URL}/api/flow/patterns`, {
         method: 'post',
         data: payload
       })
 
+
       if (saveAsPattern.data.status === 'error_name') {
         this.patternName.valid = false
         this.patternName.error = saveAsPattern.data.msg
-      } else if (saveAsPattern.data.status === 'success') {
-        alert('Succes')
-        this.dispatchContextTypes()
       } else {
-        alert('ERROR')
+        this.showModal = false
+        bus.$emit('app_notif', {
+          status: saveAsPattern.data.status,
+          msg: saveAsPattern.data.msg,
+          timeout: 4000
+        })
       }
     },
     dispatchContextTypes () {

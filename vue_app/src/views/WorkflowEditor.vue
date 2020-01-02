@@ -4,15 +4,12 @@
     <div class="block block--transparent block--no-margin block--no-padding flex1 flex">
       <NodeRedIframe :contextFrame="'manager'" v-if="sandBoxFound" :blsurl="sandBoxUrl"></NodeRedIframe>
     </div>
-    <SavePatternModal></SavePatternModal>
-    <LoadPatternModal></LoadPatternModal>
+
   </div>
 </template>
 <script>
 import axios from 'axios'
 import NodeRedIframe from '@/components/NodeRedIframe.vue'
-import LoadPatternModal from '@/components/LoadPatternModal.vue'
-import SavePatternModal from '@/components/SavePatternModal.vue'
 
 export default {
   data () {
@@ -23,9 +20,7 @@ export default {
     }
   },
   components: {
-    NodeRedIframe,
-    LoadPatternModal,
-    SavePatternModal
+    NodeRedIframe
   },
   async created () {
     const getSandBoxId = await axios(`${process.env.VUE_APP_URL}/api/flow/sandbox`, {

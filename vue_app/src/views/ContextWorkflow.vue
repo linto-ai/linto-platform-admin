@@ -4,21 +4,17 @@
       LOADING
     </div>
     <div class="flex col flex1" v-if="dataLoaded">
-      <h1>Context : - Workflow editor</h1>
-      {{ context }}
+      <h1>Context : "{{ context.name }}" - Workflow editor</h1>
+
       <div class="block block--transparent block--no-margin block--no-padding flex1 flex">
         <NodeRedIframe :contextFrame="'contextEdit'" :blsurl="blsUrl"></NodeRedIframe>
       </div>
-      <SavePatternModal></SavePatternModal>
-      <LoadPatternModal></LoadPatternModal>
     </div>
   </div>
 </template>
 <script>
 import axios from 'axios'
 import NodeRedIframe from '@/components/NodeRedIframe.vue'
-import LoadPatternModal from '@/components/LoadPatternModal.vue'
-import SavePatternModal from '@/components/SavePatternModal.vue'
 
 export default {
   data () {
@@ -70,9 +66,7 @@ export default {
     }
   },
   components: {
-    NodeRedIframe,
-    LoadPatternModal,
-    SavePatternModal
+    NodeRedIframe
   }
 }
 </script>

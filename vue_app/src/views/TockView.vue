@@ -1,19 +1,23 @@
 <template>
-  <div class="flex col">
-    <h1>Node Red Editor</h1>
+  <div>
+    <h1>Tock interface</h1>
     <div class="block block--transparent block--no-margin block--no-padding flex1 flex">
-      <NodeRedIframe></NodeRedIframe>
+      <TockIframe></TockIframe>
     </div>
+
   </div>
 </template>
 <script>
-import NodeRedIframe from '@/components/NodeRedIframe.vue'
+import axios from 'axios'
+import TockIframe from '@/components/TockIframe.vue'
+
 export default {
   data () {
-    return {}
+    return {
+    }
   },
   components: {
-    NodeRedIframe
+    TockIframe
   }
 }
 </script>

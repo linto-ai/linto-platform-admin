@@ -24,10 +24,15 @@
                 <td>{{ context.type }}</td>
                 <td>{{ context.name }}</td>
                 <td>{{ context.updated_date }}</td>
-                <td>{{ context._id}} </td>
+                <td><a :href="'/admin/context/workflow/' + context._id" class="button"><span class="label">Workflow</span></a></td>
               </tr>
             </tbody>
           </table>
+        </div>
+        <div class="block block--transparent">
+          <a class="button button--valid" href="/admin/context/create">
+            <span class="label">Create a new context</span>
+          </a>
         </div>
       </div>
       <div v-else>

@@ -1,42 +1,53 @@
 <template>
   <div id="vertical-nav" class="flex col" :class="extraClass">
+    <!-- LinTO fleet -->
     <div class="vertical-nav-item flex col" :class="routePath.indexOf(fleetManagementUrl) >= 0 ? 'active' : ''">
       <a
         class="vertical-nav-item__link vertical-nav-item__link"
         :href="fleetManagementUrl"
       >Fleet management</a>
     </div>
-    <div class="vertical-nav-item flex col">
-      <a
-        class="vertical-nav-item__link vertical-nav-item__link"
-        href="#"
-      >Application management</a>
-    </div>
+    <!-- Context -->
     <div class="vertical-nav-item flex col">
       <a
         class="vertical-nav-item__link vertical-nav-item__link--parent flex1 closed"
         href="#"
+        :class="routePath.indexOf(contextUrl) >= 0 ? 'opened' : 'closed'"
         @click="toggleChildren($event, 'context-links')"
+
       >Context</a>
       <div
-        class="vertical-nav-item--children flex col hidden"
+        class="vertical-nav-item--children flex col"
+        :class="routePath.indexOf(contextUrl) >= 0 ? 'visible' : 'hidden'"
         id="context-links"
       >
-        <a class="vertical-nav-item__link vertical-nav-item__link--children flex1" href="/admin/context">Overview</a>
-        <a class="vertical-nav-item__link vertical-nav-item__link--children flex1
-        " href="/admin/context/create">Create context</a>
+        <a
+          class="vertical-nav-item__link vertical-nav-item__link--children flex1"
+          href="/admin/context/overview"
+          :class="routePath.indexOf('/admin/context/overview') >= 0 ? 'active' : ''"
+        >
+          Overview
+        </a>
+        <a
+          class="vertical-nav-item__link vertical-nav-item__link--children flex1"
+          href="/admin/context/create"
+          :class="routePath.indexOf('/admin/context/create') >= 0 ? 'active' : ''">
+            Create context
+        </a>
       </div>
     </div>
+    <!-- Workflow editor -->
     <div class="vertical-nav-item flex col" :class="routePath.indexOf(workflowEditorUrl) >= 0 ? 'active' : ''">
       <a
         class="vertical-nav-item__link vertical-nav-item__link"
         :href="workflowEditorUrl"
       >Workflow editor</a>
     </div>
-    <div class="vertical-nav-item flex col">
+    <!-- NLU interface -->
+    <div class="vertical-nav-item flex col" :class="routePath.indexOf(nluUrl) >= 0 ? 'active' : ''">
       <a
         class="vertical-nav-item__link vertical-nav-item__link"
-        href="/admin/workflows"
+        :href="nluUrl"
       >NLU</a>
     </div>
   </div>
@@ -48,6 +59,8 @@ export default {
     return {
       fleetManagementUrl: '/admin/fleet',
       workflowEditorUrl: '/admin/workflows',
+      contextUrl: '/admin/context',
+      nluUrl: '/admin/nlu',
       routePath: ''
     }
   },

@@ -5,7 +5,6 @@
     </div>
     <div class="flex col" v-if="dataLoaded">
       <h1>Fleet management</h1>
-
       <!-- IN USE -->
       <div class="block block--transparent">
         <h2>In use</h2>
@@ -21,7 +20,6 @@
                 <th>Last seen down</th>
                 <th>IP</th>
                 <th>Monitoring</th>
-
               </tr>
             </thead>
             <tbody>
@@ -38,7 +36,15 @@
                 <td>{{ linto.last_up }}</td>
                 <td>{{ linto.last_down }}</td>
                 <td>0.0.0.1</td>
-                <td><a :href="'/admin/fleet/monitoring/'+linto.sn" class="button"><span class="label">Monitoring</span></a></td>
+                <td>
+                  <a
+                    class="button button--bluemid"
+                    :href="'/admin/fleet/monitoring/'+linto.sn"
+                  >
+                    <span class="button__icon button__icon--monitoring"></span>
+                    <span class="label">Monitoring</span>
+                  </a>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -65,7 +71,15 @@
               >
                 <td class="important">{{ linto.sn }}</td>
                 <td>{{ linto.config.firmware }}</td>
-                <td><a :href="'/admin/fleet/monitoring/'+linto.sn" class="button"><span class="label">Monitoring</span></a></td>
+                <td>
+                  <a
+                    class="button button--bluemid"
+                    :href="'/admin/fleet/monitoring/'+linto.sn"
+                  >
+                    <span class="button__icon button__icon--monitoring"></span>
+                    <span class="label">Monitoring</span>
+                  </a>
+                  </td>
               </tr>
             </tbody>
           </table>
@@ -75,7 +89,7 @@
         </div>
       </div>
       <div class="block block--transparent">
-        <button class="button button--valid">
+        <button class="button button--valid" @click="addLintoModal()">
           <span class="label">Add a LinTO device</span>
         </button>
       </div>
@@ -84,6 +98,7 @@
 </template>
 <script>
 import { bus } from '../main.js'
+
 export default {
   data () {
     return {
@@ -116,6 +131,9 @@ export default {
     }
   },
   methods: {
+    addLintoModal () {
+      bus.$emit('add_linto_modal', {})
+    },
     dispatchLintos () {
       try {
         this.$store.dispatch('getLintoFleet').then((resp) => {

@@ -293,13 +293,14 @@ export default {
         if (createContext.data.code === 'contextName') {
           this.contextName.error = createContext.data.msg
           this.contextName.valid = false
-        } else {
-          // TODO ERROR
         }
       } else {
-        // TODO SUCCESS
+        bus.$emit('app_notif', {
+          status: createContext.data.status,
+          msg: createContext.data.msg,
+          timeout: 4000
+        })
       }
-      // TODO > NOTIF
     },
     testContextName () {
       this.contextName.valid = false
