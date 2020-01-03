@@ -1,6 +1,6 @@
 const debug = require('debug')('linto-admin:middlewares')
 const uuid = require('uuid/v1')
-
+const axios = require('axios')
 function isProduction() {
   return process.env.NODE_ENV === 'production'
 }
@@ -179,10 +179,30 @@ function generateContextFlow (flow, payload) {
   return formattedFlow
 }
 
+async function getBLSAccessToken() {
+  if (!process.env.BLS_AUTH || process.env.BLS_AUTH === 'false') {
+    return ''
+  }
+  const login = process.env.BLS_LOGIN
+  const pswd = process.env.BLS_PSWD
+  const request = await axios(`${process.env.BUSINESS_LOGIC_SERVER_URI}/auth/token`, {
+    method: 'post',
+    data: {
+      "client_id": "node-red-admin",
+      "grant_type": "password",
+      "scope": "*",
+      "username": login,
+      "password": pswd
+    }
+  })
+  return 'Bearer ' + request.data.access_token
+}
+
 module.exports = {
   checkAuth,
   createFlowPattern,
   formaFlowSplitNodes,
+  getBLSAccessToken,
   generateContextFlow,
   updateGroupedNodesId,
   logger

@@ -15,9 +15,17 @@ module.exports = (webServer) => {
       //requireAuth: true,
       controller: async (req, res, next) => {
         try {
+          const accessToken = await middlewares.getBLSAccessToken()
           const fullFlow = await axios(`${process.env.BUSINESS_LOGIC_SERVER_URI}/flows`, {
-            method: 'get'
+            method: 'get',
+            headers: {
+              'charset': 'utf-8',
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'Authorization': accessToken
+            }
           })
+
           let sandBoxId = null
           fullFlow.data.map(f => {
             if (f.type === 'tab' && f.label === "SandBox") {
@@ -103,10 +111,19 @@ module.exports = (webServer) => {
     //requireAuth: true,
     controller: async (req, res, next) => {
       try {
-        // const accessToken = await this.getAccessToken()
+        const accessToken = await middlewares.getBLSAccessToken()
         const workspaceId = req.body.workspaceId
         const getCurrentWorkspaceFlow = await axios(`${process.env.BUSINESS_LOGIC_SERVER_URI}/flow/${workspaceId}`,
-        {})
+        {
+          method: 'get',
+          headers: {
+            'charset': 'utf-8',
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Node-RED-Deployment-Type': 'flows',
+            'Authorization': accessToken
+          }
+        })
         const currentFlow = getCurrentWorkspaceFlow.data // GroupedNodes
         const workspaceLabel = currentFlow.label
 
@@ -125,7 +142,7 @@ module.exports = (webServer) => {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
             'Node-RED-Deployment-Type': 'flows',
-            //'Authorization': accessToken
+            'Authorization': accessToken
           },
           data: formattedPattern
         })

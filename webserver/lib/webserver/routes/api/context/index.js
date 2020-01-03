@@ -65,13 +65,15 @@ module.exports = (webServer) => {
         const updatedFlow = middlewares.generateContextFlow(flow, payload)
 
         // POST FLOW ON BLS
+        const accessToken = await middlewares.getBLSAccessToken()
         let blsPost = await axios(`${process.env.BUSINESS_LOGIC_SERVER_URI}/flow`, {
           method: 'post',
           headers: {
             'charset': 'utf-8',
             'Accept': 'application/json',
             'Content-Type': 'application/json',
-            'Node-RED-Deployment-Type': 'flows'
+            'Node-RED-Deployment-Type': 'flows',
+            'Authorization': accessToken
           },
           data: updatedFlow
         })
