@@ -63,7 +63,7 @@
 /******/
 /******/ 	var hotApplyOnUpdate = true;
 /******/ 	// eslint-disable-next-line no-unused-vars
-/******/ 	var hotCurrentHash = "0ae937c853095649fa0c";
+/******/ 	var hotCurrentHash = "040efc1ed0c2a40e1c10";
 /******/ 	var hotRequestTimeout = 10000;
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule;
@@ -3091,14 +3091,13 @@ __webpack_require__.r(__webpack_exports__);
 
               case 2:
                 sendForm = _context.sent;
-                console.log(sendForm);
 
                 if (sendForm.data.status === 'success') {
                   this.showModal = false;
                   _main_js__WEBPACK_IMPORTED_MODULE_2__["bus"].$emit('iframe_reload', {});
                 }
 
-              case 5:
+              case 4:
               case "end":
                 return _context.stop();
             }
@@ -4044,6 +4043,14 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+//
+//
+//
+//
+//
+//
+//
+//
 //
 //
 //
@@ -6249,18 +6256,22 @@ var render = function() {
                             _vm._v(_vm._s(context.name))
                           ]),
                           _c("td", [_vm._v(_vm._s(context.type))]),
-                          _c("td", [_vm._v(_vm._s(context.name))]),
+                          _c("td", [_vm._v(_vm._s(context.associated_linto))]),
                           _c("td", [_vm._v(_vm._s(context.updated_date))]),
                           _c("td", [
                             _c(
                               "a",
                               {
-                                staticClass: "button",
+                                staticClass: "button button--bluemid",
                                 attrs: {
                                   href: "/admin/context/workflow/" + context._id
                                 }
                               },
                               [
+                                _c("span", {
+                                  staticClass:
+                                    "button__icon button__icon--workflow"
+                                }),
                                 _c("span", { staticClass: "label" }, [
                                   _vm._v("Workflow")
                                 ])

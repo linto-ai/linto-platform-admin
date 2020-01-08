@@ -104,6 +104,7 @@ function updateGroupedNodesId (workFlow, patternFlow) {
 }
 
 function generateContextFlow (flow, payload) {
+  console.log(payload)
   const flowId = uuid()
   const mqttId = flowId + '-mqtt'
   const nluId = flowId + '-nlu'

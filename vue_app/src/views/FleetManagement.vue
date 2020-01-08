@@ -79,7 +79,7 @@
                     <span class="button__icon button__icon--monitoring"></span>
                     <span class="label">Monitoring</span>
                   </a>
-                  </td>
+                </td>
               </tr>
             </tbody>
           </table>

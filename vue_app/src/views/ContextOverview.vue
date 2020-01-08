@@ -22,9 +22,17 @@
               <tr v-for="context in fleetContexts" :key="context._id">
                 <td class="important">{{ context.name }}</td>
                 <td>{{ context.type }}</td>
-                <td>{{ context.name }}</td>
+                <td>{{ context.associated_linto }}</td>
                 <td>{{ context.updated_date }}</td>
-                <td><a :href="'/admin/context/workflow/' + context._id" class="button"><span class="label">Workflow</span></a></td>
+                <td>
+                  <a
+                    class="button button--bluemid"
+                    :href="'/admin/context/workflow/' + context._id"
+                  >
+                    <span class="button__icon button__icon--workflow"></span>
+                    <span class="label">Workflow</span>
+                  </a>
+                </td>
               </tr>
             </tbody>
           </table>

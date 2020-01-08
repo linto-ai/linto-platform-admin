@@ -46,6 +46,13 @@ module.exports = (webServer) => {
           // UPDATE LINTO
           const getLinto = await model.getLintoBySn(payload.linto)
           let lintoPayload = getLinto[0]
+          if (lintoPayload.associated_context !== null) {
+            throw {
+              msg: 'This LinTO device is already used in an other context',
+              code: 'lintoDevice'
+            }
+          }
+
           lintoPayload.associated_context = payload.context_name
           const updateLinto = await model.updateLinto(lintoPayload)
           if(updateLinto === 'success') {
@@ -92,7 +99,7 @@ module.exports = (webServer) => {
           name: context_name,
           flowId: newFlowId,
           type: payload.type,
-          associtated_linto: payload.linto,
+          associated_linto: payload.linto,
           created_date: now,
           updated_date: now,
         }
@@ -105,6 +112,20 @@ module.exports = (webServer) => {
             code: 'updateContext'
           }
         }
+
+        let generatedSttApi = `${process.env.BUSINESS_LOGIC_SERVER_URL}/red-nodes/${newFlowId}/dataset/linstt`
+        let generatedNluApi = `${process.env.BUSINESS_LOGIC_SERVER_URL}/red-nodes/${newFlowId}/dataset/tock`
+
+        let getSttDictionnaries = await axios(generatedSttApi, {
+          method: 'get'
+        })
+        let getNluDictionnaries = await axios(generatedNluApi, {
+          method: 'get'
+        })
+
+        console.log('STT:', getSttDictionnaries.data)
+        console.log('NLU:', getNluDictionnaries.data)
+
         // VALIDATION
         if (lintoUpdate && flowUpdate && contextUpdate) {
           res.json({
@@ -149,13 +170,13 @@ module.exports = (webServer) => {
       try {
         res.json([
           {
-            "service_name": "Tock",
+            "service_name": "tock",
             "host": process.env.NLU_TOCK_HOST,
             "appname": process.env.NLU_TOCK_APP_NAME,
             "namespace": process.env.NLU_TOCK_NAMESPACE
           },
           {
-            "service_name": "Rasa",
+            "service_name": "rasa",
             "host": process.env.NLU_RASA_HOST,
             "appname": null,
             "namespace": null
