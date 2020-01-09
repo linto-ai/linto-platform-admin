@@ -14,6 +14,7 @@ export default new Vuex.Store({
     lintoFleet: '',
     mqttDefaultSettings: '',
     nluSettings: '',
+    tockapps: '',
     sttSettings: ''
   },
   mutations: {
@@ -40,6 +41,9 @@ export default new Vuex.Store({
     },
     SET_STT_SETTINGS: (state, data) => {
       state.sttSettings = data
+    },
+    SET_TOCK_APPS: (state, data) => {
+      state.tockapps = data
     }
   },
   actions: {
@@ -99,6 +103,22 @@ export default new Vuex.Store({
         const getSettings = await axios.get(`${process.env.VUE_APP_URL}/api/context/nlusettings`)
         commit('SET_NLU_SETTINGS', getSettings.data)
         return state.nluSettings
+      } catch (error) {
+        return { error }
+      }
+    },
+    getTockApplications: async ({ commit, state }) => {
+      try {
+        const getApps = await axios.get(`${process.env.VUE_APP_URL}/api/context/tockapps`)
+        let applications = []
+        getApps.data.map(app => {
+          applications.push({
+            name: app.name,
+            namespace: app.namespace
+          })
+        })
+        commit('SET_TOCK_APPS', applications)
+        return state.tockapps
       } catch (error) {
         return { error }
       }

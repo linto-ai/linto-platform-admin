@@ -1,6 +1,7 @@
 const DBmodel = require(`${process.cwd()}/model/${process.env.BDD_TYPE}`)
 const model = new DBmodel()
 const middlewares = require(`${process.cwd()}/lib/webserver/middlewares`)
+const nodered = require(`${process.cwd()}/lib/webserver/middlewares/nodered.js`)
 const axios = require('axios')
 const moment = require('moment')
 
@@ -29,6 +30,7 @@ module.exports = (webServer) => {
         let lintoUpdate = false
         let contextUpdate = false
         let flowUpdate = false
+        let tockUpdate = false
 
         // Test context name
         const contexts = await model.getContexts()
@@ -42,17 +44,18 @@ module.exports = (webServer) => {
             }
           })
         }
+        // LINTO
         if (payload.type === 'Fleet') {
-          // UPDATE LINTO
           const getLinto = await model.getLintoBySn(payload.linto)
           let lintoPayload = getLinto[0]
+          // Test LinTO serial number
           if (lintoPayload.associated_context !== null) {
             throw {
               msg: 'This LinTO device is already used in an other context',
               code: 'lintoDevice'
             }
           }
-
+          // Update LINTO
           lintoPayload.associated_context = payload.context_name
           const updateLinto = await model.updateLinto(lintoPayload)
           if(updateLinto === 'success') {
@@ -67,12 +70,12 @@ module.exports = (webServer) => {
 
         // FORMAT WORKFLOW
         const workflowName = payload.workflowPattern
-        const getWorkflowPattern = await model.getWorlfowPatterNyName(workflowName)
+        const getWorkflowPattern = await model.getWorkflowPatternByName(workflowName)
         let flow = getWorkflowPattern[0].flow
-        const updatedFlow = middlewares.generateContextFlow(flow, payload)
+        const updatedFlow = nodered.generateContextFlow(flow, payload)
 
         // POST FLOW ON BLS
-        const accessToken = await middlewares.getBLSAccessToken()
+        const accessToken = await nodered.getBLSAccessToken()
         let blsPost = await axios(`${process.env.BUSINESS_LOGIC_SERVER_URI}/flow`, {
           method: 'post',
           headers: {
@@ -94,6 +97,17 @@ module.exports = (webServer) => {
         }
         // POST CONTEXT
         const newFlowId = blsPost.data.id
+        const getFinalFlow = await axios(`${process.env.BUSINESS_LOGIC_SERVER_URI}/flow/${newFlowId}`, {
+          method: 'get',
+          headers: {
+            'charset': 'utf-8',
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Node-RED-Deployment-Type': 'flows',
+            'Authorization': accessToken
+          }
+        })
+
         const now = moment().format()
         const contextPayload = {
           name: context_name,
@@ -102,6 +116,7 @@ module.exports = (webServer) => {
           associated_linto: payload.linto,
           created_date: now,
           updated_date: now,
+          flow: getFinalFlow.data
         }
         const postContext = await model.createContext(contextPayload)
         if (postContext === 'success') {
@@ -113,25 +128,49 @@ module.exports = (webServer) => {
           }
         }
 
-        let generatedSttApi = `${process.env.BUSINESS_LOGIC_SERVER_URL}/red-nodes/${newFlowId}/dataset/linstt`
-        let generatedNluApi = `${process.env.BUSINESS_LOGIC_SERVER_URL}/red-nodes/${newFlowId}/dataset/tock`
-
-        let getSttDictionnaries = await axios(generatedSttApi, {
-          method: 'get'
-        })
-        let getNluDictionnaries = await axios(generatedNluApi, {
-          method: 'get'
-        })
-
-        console.log('STT:', getSttDictionnaries.data)
-        console.log('NLU:', getNluDictionnaries.data)
-
+        // NLU : If "new tock application"
+        if (payload.nlu.configs.new) {
+          const getNluLexicalSeeding = await axios(`${process.env.BUSINESS_LOGIC_SERVER_URL}/red-nodes/${newFlowId}/dataset/tock`, {
+            method: 'get',
+            headers: {
+              'charset': 'utf-8',
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'Node-RED-Deployment-Type': 'flows',
+              'Authorization': accessToken
+            }
+          })
+          // Lexical seeding
+          const createTockApp = await axios(`${process.env.ADMIN_URL}/api/tock`, {
+            method: 'post',
+            data: {
+              nlu: getNluLexicalSeeding.data.application
+            }
+          })
+          if (createTockApp.data.status === 'success') {
+           tockUpdate = true
+          } else {
+            throw {
+              msg: 'Error on creating a new Tock application',
+              code: 'tockApp'
+            }
+          }
+        }
         // VALIDATION
         if (lintoUpdate && flowUpdate && contextUpdate) {
-          res.json({
-            status: 'success',
-            msg: `The context "${context_name}" has been created`
-          })
+          if (payload.nlu.configs.new) {
+            if (tockUpdate) {
+              res.json({
+                status: 'success',
+                msg: `The context "${context_name}" has been created`
+              })
+            }
+          } else {
+            res.json({
+              status: 'success',
+              msg: `The context "${context_name}" has been created`
+            })
+          }
         } else {
           throw {
             msg: 'Error on creating context',
@@ -143,7 +182,8 @@ module.exports = (webServer) => {
         res.json({
           status: 'error',
           msg: error.msg,
-          code: error.code
+          code: error.code,
+          error
         })
       }
     }
@@ -171,17 +211,34 @@ module.exports = (webServer) => {
         res.json([
           {
             "service_name": "tock",
-            "host": process.env.NLU_TOCK_HOST,
-            "appname": process.env.NLU_TOCK_APP_NAME,
-            "namespace": process.env.NLU_TOCK_NAMESPACE
+            "host": process.env.NLU_TOCK_HOST
           },
           {
             "service_name": "rasa",
-            "host": process.env.NLU_RASA_HOST,
-            "appname": null,
-            "namespace": null
+            "host": process.env.NLU_RASA_HOST
           }
         ])
+      } catch (error) {
+        console.error(error)
+        res.json({ error })
+      }
+    }
+  },
+  {
+    path: '/tockapps',
+    method: 'get',
+    // requireAuth: true,
+    controller: async (req, res, next) => {
+      try {
+        const tockToken = middlewares.basicAuthToken(process.env.NLU_TOCK_USER, process.env.NLU_TOCK_PSWD)
+        const getTockApplications = await axios(`${process.env.NLU_TOCK_REST_HOST}/admin/applications`,
+        {
+          method: 'get',
+          headers: {
+            'Authorization': tockToken
+          }
+        })
+        res.json(getTockApplications.data)
       } catch (error) {
         console.error(error)
         res.json({ error })

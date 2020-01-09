@@ -25,6 +25,7 @@ module.exports = (webServer) => {
     "/admin": require('./admin')(webServer),
     "/api": require('./api')(webServer),
     "/api/flow": require('./api/flow')(webServer),
+    "/api/tock": require('./api/tock')(webServer),
     "/api/lintos": require('./api/lintos')(webServer),
     "/api/context": require('./api/context')(webServer)
   }

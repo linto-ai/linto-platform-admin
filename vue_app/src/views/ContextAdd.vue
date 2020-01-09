@@ -9,91 +9,27 @@
         <div class="flex row">
           <div class="flex col flex1">
             <h2>Context informations</h2>
-            <div class="flex col">
-              <span class="form__label">Context name:</span>
-              <input
-                type="text"
-                class="form__input"
-                v-model="contextName.value"
-                :class="[contextName.error !== null ? 'form__input--error' : '', contextName.valid ? 'form__input--valid' : '']"
-                @blur="testContextName()"
-              />
-              <span class="form__error-field">{{ contextName.error }}</span>
-            </div>
+            <!-- Context name -->
+            <AppInput :label="'Context name'" :obj="contextName" :test="'testName'"></AppInput>
             <!-- Context Type -->
-            <div class="flex col">
-              <span class="form__label">Context type:</span>
-              <select
-                class="form__select"
-                v-model="contextType.value"
-                :class="[contextType.error !== null ? 'form__select--error' : '', contextType.valid ? 'form__select--valid' : '']"
-                @change="testSelectField(contextType)"
-              >
-                <option
-                  v-for="type in contextTypes"
-                  :key="type._id"
-                  :value="type.name"
-                  :disabled="type.name === 'Application' ? 'disabled' : false"
-                >{{ type.name }}</option>
-              </select>
-              <span class="form__error-field">{{ contextType.error }}</span>
-            </div>
-            <!-- Lintos (HW) -->
-            <div class="flex col" v-if="contextType.value === 'Fleet'">
-              <span class="form__label">Select a LinTO:</span>
-              <select
-                class="form__select"
-                v-model="linto.value"
-                :class="[linto.error !== null ? 'form__select--error' : '', linto.valid ? 'form__select--valid' : '']"
-                @change="testSelectField(linto)"
-              >
-                <option v-for="lin in availableLintos" :key="lin._id" :value="lin.sn">{{ lin.sn }}</option>
-              </select>
-              <span class="form__error-field">{{ linto.error }}</span>
-            </div>
+            <AppSelect :label="'Context type'" :obj="contextType" :list="contextTypes" :params="{key:'_id', value:'name', optLabel: 'name'}"></AppSelect>
+            <!-- LinTO select -->
+            <AppSelect :label="'Select a LinTO'" :obj="linto" :list="availableLintos" :params="{key:'_id', value:'sn', optLabel: 'sn'}" v-if="contextType.value === 'Fleet'"></AppSelect>
             <!-- Flow pattern -->
-            <div class="flex col">
-              <span class="form__label">Workflow pattern:</span>
-              <select
-                class="form__select"
-                v-model="flowPattern.value"
-                :class="[flowPattern.error !== null ? 'form__select--error' : '', flowPattern.valid ? 'form__select--valid' : '']"
-                :disabled="contextType.value === '' ? true : false"
-                @change="testSelectField(flowPattern)"
-              >
-                <option v-for="pattern in flowPatterns" :key="pattern._id" :value="pattern.name">{{ pattern.name }}</option>
-              </select>
-              <span class="form__info" v-if="contextType.value === ''">Select a context type</span>
-              <span class="form__error-field">{{ flowPattern.error }}</span>
-            </div>
+            <AppSelect :label="'Workflow pattern'" :obj="flowPattern" :list="flowPatterns" :params="{key:'_id', value:'name' , optLabel: 'name'}" v-if="contextType.value !== ''"></AppSelect>
             <!-- NLU SERVICE -->
             <h3>NLU Service</h3>
-            <div class="flex col">
-              <span class="form__label">NLU service:</span>
-              <select
-                class="form__select"
-                v-model="nluService.value"
-                :class="[nluService.error !== null ? 'form__select--error' : '', nluService.valid ? 'form__select--valid' : '']"
-                @change="testSelectField(nluService)"
-              >
-                <option v-for="nlu in nluServices" :key="nlu.service_name" :value="nlu.service_name">{{ nlu.service_name }}</option>
-              </select>
-              <span class="form__error-field">{{ nluService.error }}</span>
+            <div class="flex row">
+              <div class="flex1 flex col">
+                <AppSelect :label="'NLU service'" :obj="nluService" :list="nluServices" :params="{key:'service_name', value:'service_name', optLabel: 'service_name'}" ></AppSelect>
+              </div>
+              <div class="flex1 flex col">
+                <AppSelect :label="'Select Tock application'" :obj="tockApplicationName" :list="tockApplications" :params="{key:'name', value:'name', optLabel: 'name'}" v-if="nluService.value==='tock'" :options="{value:'new', label:'Create a new tock application'}"></AppSelect>
+              </div>
             </div>
             <!-- STT SERVICE -->
             <h3>STT service</h3>
-            <div class="flex col">
-              <span class="form__label">STT service:</span>
-              <select
-                class="form__select"
-                v-model="sttService.value"
-                :class="[sttService.error !== null ? 'form__select--error' : '', sttService.valid ? 'form__select--valid' : '']"
-                @change="testSelectField(sttService)"
-              >
-                <option v-for="stt in sttServices" :key="stt._id" :value="stt.serviceId">{{ stt.serviceId }}</option>
-              </select>
-              <span class="form__error-field">{{ sttService.error }}</span>
-            </div>
+            <AppSelect :label="'STT service'" :obj="sttService" :list="sttServices" :params="{key:'_id', value:'serviceId', optLabel: 'serviceId'}"></AppSelect>
             <div class="flex row">
               <button class="button button--valid" @click="handleForm()">
                 <span class="label">Create a context</span>
@@ -106,10 +42,16 @@
   </div>
 </template>
 <script>
+import AppInput from '@/components/AppInput.vue'
+import AppSelect from '@/components/AppSelect.vue'
 import { bus } from '../main.js'
 import axios from 'axios'
 
 export default {
+  components: {
+    AppInput,
+    AppSelect
+  },
   data () {
     return {
       loading: true,
@@ -119,6 +61,7 @@ export default {
       nluLoaded: false,
       patternLoaded: false,
       contextTypeLoaded: false,
+      tockAppsLoaded: false,
       contextName: {
         value: '',
         error: null,
@@ -155,6 +98,11 @@ export default {
         error: null,
         valid: false,
         configs: {}
+      },
+      tockApplicationName: {
+        value: '',
+        error: null,
+        valid: false
       }
     }
   },
@@ -162,6 +110,7 @@ export default {
     this.dispatchStore('getmqttDefaultSettings')
     this.dispatchStore('getSttSettings')
     this.dispatchStore('getNluSettings')
+    this.dispatchStore('getTockApplications')
     this.dispatchStore('getFlowPatterns')
     this.dispatchStore('getContextTypes')
     this.dispatchStore('getLintoFleet')
@@ -172,9 +121,7 @@ export default {
         this.nluServices.map(n => {
           if (n.service_name === data) {
             this.nluService.configs = {
-              host: n.host,
-              appname: n.appname,
-              namespace: n.namespace
+              host: n.host
             }
           }
         })
@@ -184,7 +131,6 @@ export default {
       this.flowPattern.value = ''
       this.flowPattern.error = null
       this.flowPattern.valid = false
-
       if (data === 'Fleet') {
         this.mqttServer = this.mqttDefaultSettings
       } else {
@@ -248,12 +194,18 @@ export default {
       return this.$store.state.sttSettings
     },
     formValid () {
-      return (this.contextName.valid && this.contextType.valid && this.flowPattern.valid && this.linto.valid && this.sttService.valid && this.nluService.valid)
+      if (this.nluService.value === 'tock') {
+        return (this.contextName.valid && this.contextType.valid && this.flowPattern.valid && this.linto.valid && this.sttService.valid && this.nluService.valid && this.tockApplicationName.valid)
+      } else {
+        return (this.contextName.valid && this.contextType.valid && this.flowPattern.valid && this.linto.valid && this.sttService.valid && this.nluService.valid)
+      }
+    },
+    tockApplications () {
+      return this.$store.state.tockapps
     },
     dataLoaded () {
-      return (this.lintoLoaded && this.contextTypeLoaded && this.sttLoaded && this.nluLoaded && this.mqttLoaded && this.patternLoaded)
-    },
-
+      return (this.lintoLoaded && this.contextTypeLoaded && this.sttLoaded && this.nluLoaded && this.mqttLoaded && this.patternLoaded && this.tockAppsLoaded)
+    }
   },
   methods: {
     handleForm () {
@@ -265,12 +217,15 @@ export default {
       if (this.contextType.value === 'Fleet') {
         this.testSelectField(this.linto)
       }
+      if (this.nluService.value === 'tock') {
+        this.testSelectField(this.tockApplicationName)
+      }
       if (this.formValid) {
         this.sendForm()
       }
     },
     async sendForm () {
-      const payload = {
+      let payload = {
         context_name: this.contextName.value,
         type: this.contextType.value,
         workflowPattern: this.flowPattern.value,
@@ -281,9 +236,21 @@ export default {
         },
         nlu: {
           service_name: this.nluService.value,
-          configs: this.nluService.configs
+          configs: {
+            host: this.nluService.configs.host,
+            namespace: 'app'
+          }
         },
         linto: this.contextType.value === 'Fleet' ? this.linto.value : []
+      }
+      if (this.nluService.value === 'tock') {
+        if (this.tockApplicationName.value === 'new') {
+          payload.nlu.configs.appname = this.contextName.value.toLowerCase().trim().replace(/\s/g, '_')
+          payload.nlu.configs.new = true
+        } else {
+          payload.nlu.configs.appname = this.tockApplicationName.value
+          payload.nlu.configs.new = false
+        }
       }
       const createContext = await axios(`${process.env.VUE_APP_URL}/api/context`, {
         method: 'post',
@@ -293,7 +260,11 @@ export default {
         if (createContext.data.code === 'contextName') {
           this.contextName.error = createContext.data.msg
           this.contextName.valid = false
+        } else if (createContext.data.code === 'lintoDevice') {
+          this.linto.error = createContext.data.msg
+          this.linto.valid = false
         }
+
       } else {
         bus.$emit('app_notif', {
           status: createContext.data.status,
@@ -319,18 +290,7 @@ export default {
       }
     },
     testSelectField (obj) {
-      obj.error = null
-      obj.valid = false
-      if (typeof(obj.value) === 'undefined') {
-        obj.value = ''
-      }
-      if (obj.value === '' || obj.value.length === 0 ) {
-        obj.valid = false
-        obj.error = 'This field is required'
-      } else {
-        obj.valid = true
-        obj.error = null
-      }
+      this.$options.filters.testSelectField(obj)
     },
     dispatchStore (topic) {
       try {
@@ -347,6 +307,9 @@ export default {
                 break;
               case 'getNluSettings':
                 this.nluLoaded = true
+                break;
+              case 'getTockApplications':
+                this.tockAppsLoaded = true
                 break;
               case 'getFlowPatterns':
                 this.patternLoaded = true
@@ -367,5 +330,6 @@ export default {
       }
     }
   }
+
 }
 </script>

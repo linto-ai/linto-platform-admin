@@ -2,10 +2,7 @@ const DBmodel = require(`${process.cwd()}/model/${process.env.BDD_TYPE}`)
 const model = new DBmodel()
 const moment = require('moment')
 const axios = require('axios')
-const uuid = require('uuid/v1')
-const middlewares = require(`${process.cwd()}/lib/webserver/middlewares`)
-
-
+const nodered = require(`${process.cwd()}/lib/webserver/middlewares/nodered.js`)
 
 module.exports = (webServer) => {
   return [{
@@ -15,7 +12,7 @@ module.exports = (webServer) => {
       //requireAuth: true,
       controller: async (req, res, next) => {
         try {
-          const accessToken = await middlewares.getBLSAccessToken()
+          const accessToken = await nodered.getBLSAccessToken()
           const fullFlow = await axios(`${process.env.BUSINESS_LOGIC_SERVER_URI}/flows`, {
             method: 'get',
             headers: {
@@ -25,7 +22,6 @@ module.exports = (webServer) => {
               'Authorization': accessToken
             }
           })
-
           let sandBoxId = null
           fullFlow.data.map(f => {
             if (f.type === 'tab' && f.label === "SandBox") {
@@ -45,7 +41,7 @@ module.exports = (webServer) => {
     //requireAuth: true,
     controller: async (req, res, next) => {
       try {
-        const allPatterns = await model.getAllFlowPatterns()
+        const allPatterns = await model.getAllWorkflowPatterns()
         res.json(allPatterns)
       } catch (e) {
         console.error(e)
@@ -62,7 +58,7 @@ module.exports = (webServer) => {
         const patternName = req.body.patternName
         const contextType = req.body.contextType
         const date = moment().format()
-        let getAllPatterns = await model.getAllFlowPatterns()
+        let getAllPatterns = await model.getAllWorkflowPatterns()
         let patternNameExist = false
         getAllPatterns.map(p => {
           // Test if pattern name already exist
@@ -70,7 +66,6 @@ module.exports = (webServer) => {
             patternNameExist = true
           }
         })
-
         if (patternNameExist) {
           res.json({
             status: 'error_name',
@@ -85,9 +80,8 @@ module.exports = (webServer) => {
             flow: tmpFlow,
             created_date: date,
           }
-
           // Create new flow pattern
-          let addNewPattern = await model.addFlowPattern(payload)
+          let addNewPattern = await model.addWorkflowPattern(payload)
           if (addNewPattern === 'success') {
             res.json({
               status: 'success',
@@ -111,7 +105,7 @@ module.exports = (webServer) => {
     //requireAuth: true,
     controller: async (req, res, next) => {
       try {
-        const accessToken = await middlewares.getBLSAccessToken()
+        const accessToken = await nodered.getBLSAccessToken()
         const workspaceId = req.body.workspaceId
         const getCurrentWorkspaceFlow = await axios(`${process.env.BUSINESS_LOGIC_SERVER_URI}/flow/${workspaceId}`,
         {
@@ -129,11 +123,11 @@ module.exports = (webServer) => {
 
         // Get selected flow pattern data
         const patternId = req.body.patternId
-        let getPattern = await model.getPattternFlowById(patternId)
+        let getPattern = await model.getWorkflowPatternById(patternId)
         let pattern = getPattern.flow
 
         // Format Pattern for "PUT" && update IDs
-        let formattedPattern = middlewares.createFlowPattern(pattern, workspaceId, workspaceLabel)
+        let formattedPattern = nodered.createFlowPattern(pattern, workspaceId, workspaceLabel)
 
         let blsUpdate = await axios(`${process.env.BUSINESS_LOGIC_SERVER_URI}/flow/${workspaceId}`, {
           method: 'put',
@@ -200,6 +194,21 @@ module.exports = (webServer) => {
           status: 'error',
           msg: error
         })
+      }
+    }
+  },
+  {
+    path: '/getauth',
+    method: 'get',
+    //requireAuth: true,
+    controller: async (req, res, next) => {
+      try {
+        const accessToken = await nodered.getBLSAccessToken()
+        res.json({
+          token: accessToken
+        })
+      } catch (error) {
+        res.json({error})
       }
     }
   }]

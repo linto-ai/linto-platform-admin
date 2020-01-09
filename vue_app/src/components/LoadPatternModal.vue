@@ -11,19 +11,7 @@
           Select the workflow pattern you want to use:
         </span>
         <div class="modal-body__form">
-          <div class="flex col">
-            <span class="form__label">Select a workflow pattern :</span>
-            <select
-              class="form__select"
-              v-model="selectedPattern.value"
-              :class="[selectedPattern.error !== null ? 'form__select--error' : '',
-              selectedPattern.valid ? 'form__select--valid' : '']"
-              @change="testPattern()"
-            >
-              <option v-for="pattern in flowPatterns" :value="pattern._id" :key="pattern._id">{{ pattern.name }} ({{ pattern.type }})</option>
-            </select>
-            <span class="form__error-field">{{ selectedPattern.error }}</span>
-          </div>
+          <AppSelect :label="'Select a workflow pattern'" :obj="selectedPattern" :list="flowPatterns" :params="{key:'_id', value:'_id', optLabel: 'name'}"></AppSelect>
         </div>
       </div>
       <div class="modal-footer flex row">
@@ -34,6 +22,7 @@
   </div>
 </template>
 <script>
+import AppSelect from '@/components/AppSelect.vue'
 import { bus } from '../main.js'
 import axios from 'axios'
 export default {
@@ -84,7 +73,7 @@ export default {
       this.showModal = false
     },
     handleForm () {
-      this.testPattern()
+      this.testSelectField(this.selectedPattern)
 
       if (this.formValid) {
         this.sendForm()
@@ -103,15 +92,8 @@ export default {
         bus.$emit('iframe_reload', {})
       }
     },
-    testPattern () {
-      this.selectedPattern.error = null
-      this.selectedPattern.valid = false
-      if(this.selectedPattern.value.length === 0) {
-        this.selectedPattern.error = 'This field is required'
-        this.selectedPattern.valid = false
-      } else {
-        this.selectedPattern.valid = true
-      }
+    testSelectField (obj) {
+      this.$options.filters.testSelectField(obj)
     },
     dispatchPatterns () {
       this.$store.dispatch('getFlowPatterns').then((resp) => {
@@ -127,6 +109,9 @@ export default {
         }
       })
     }
+  },
+  components: {
+    AppSelect
   }
 }
 </script>

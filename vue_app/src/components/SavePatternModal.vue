@@ -6,37 +6,16 @@
         <button @click="closeModal()" class="button button--img button--img__close"></button>
 
       </div>
-      <div class="modal-body flex1 flex col">
+      <div class="modal-body flex1 flex col" v-if="dataLoaded">
         <span class="modal-body__content">
           To save this flow as a new flow pattern, please fill in the following fields:
         </span>
         <div class="modal-body__form">
-          <div class="flex col">
-          <span class="form__label">Enter a workflow pattern name :</span>
-          <input
-            class="form__input"
-            v-model="patternName.value"
-            placeholder="Flow pattern name"
-            :class="[patternName.error !== null ? 'form__input--error' : '', patternName.valid ? 'form__input--valid' : '']"
-            @change="testPatternName()"
-          >
-          <span class="form__error-field">{{ patternName.error }}</span>
-          </div>
-          <div class="flex col">
-            <span class="form__label">Select a workflow pattern type :</span>
-            <select
-              class="form__select"
-              v-model="contextType.value"
-              :class="[contextType.error !== null ? 'form__select--error' : '',
-              contextType.valid ? 'form__select--valid' : '']"
-              @change="testContextType()"
-            >
-              <option v-for="type in contextTypes" :value="type.name" :key="type._id">{{ type.name }}</option>
-            </select>
-            <span class="form__error-field">{{ contextType.error }}</span>
-          </div>
+          <AppInput :label="'Enter a workflow pattern name'" :obj="patternName" :test="'testPatternName'" :patterns="patterns"></AppInput>
+          <AppSelect :label="'Select a workflow pattern type'" :obj="contextType" :list="contextTypes" :params="{key:'_id', value:'name', optLabel: 'name'}"></AppSelect>
         </div>
       </div>
+      <div v-else>Loading</div>
       <div class="modal-footer flex row">
         <button class="button button--cancel" @click="closeModal()"><span class="label">Cancel</span></button>
         <button class="button button--valid" @click="handleForm()"><span class="label">Submit</span></button>
@@ -45,6 +24,9 @@
   </div>
 </template>
 <script>
+import AppSelect from '@/components/AppSelect.vue'
+import AppInput from '@/components/AppInput.vue'
+
 import { bus } from '../main.js'
 import axios from 'axios'
 export default {
@@ -60,7 +42,9 @@ export default {
         error: null,
         valid: false
       },
-      showModal: false
+      showModal: false,
+      contextTypesLoaded: false,
+      patternsLoaded: false
     }
   },
   mounted () {
@@ -69,7 +53,8 @@ export default {
     })
   },
   created () {
-    this.dispatchContextTypes()
+    this.dispatchStore('getContextTypes')
+    this.dispatchStore('getFlowPatterns')
   },
   computed: {
     contextTypes () {
@@ -77,6 +62,12 @@ export default {
     },
     formValid () {
       return (this.patternName.valid && this.contextType.valid)
+    },
+    patterns () {
+      return this.$store.state.flowPatterns
+    },
+    dataLoaded () {
+      return (this.contextTypesLoaded && this.patternsLoaded)
     }
   },
   methods: {
@@ -84,7 +75,8 @@ export default {
       this.showModal = false
     },
     handleForm () {
-      this.testContextType()
+      this.testSelectField(this.contextType)
+
       this.testPatternName()
       if (this.formValid) {
         this.sendForm()
@@ -95,31 +87,34 @@ export default {
       this.patternName.valid = false
       if (this.patternName.value.length === 0) {
         this.patternName.error = 'This field is required'
+        this.patternName.valid = false
       } else {
-        this.patternName.valid = true
+        let patternNameExist = false
+        this.patterns.map(l => {
+          if (l.name === this.patternName.value) {
+            patternNameExist = true
+          }
+        })
+        if (patternNameExist) {
+          this.patternName.error = 'This workflow pattern name is already used'
+          this.patternName.valid = false
+        } else {
+          this.patternName.valid = true
+        }
       }
     },
-    testContextType () {
-      this.contextType.error = null
-      this.contextType.valid = false
-      if (this.contextType.value.length === 0) {
-        this.contextType.error = 'This field is required'
-      } else {
-        this.contextType.valid = true
-      }
+    testSelectField (obj) {
+      this.$options.filters.testSelectField(obj)
     },
     async sendForm () {
       const payload = {
         patternName: this.patternName.value,
         contextType: this.contextType.value
       }
-
       let saveAsPattern = await axios(`${process.env.VUE_APP_URL}/api/flow/patterns`, {
         method: 'post',
         data: payload
       })
-
-
       if (saveAsPattern.data.status === 'error_name') {
         this.patternName.valid = false
         this.patternName.error = saveAsPattern.data.msg
@@ -132,13 +127,32 @@ export default {
         })
       }
     },
-    dispatchContextTypes () {
-      this.$store.dispatch('getContextTypes').then((resp) => {
-        if (!!resp.error) {
-          console.log('Dispatch pattern types : Error')
-        }
-      })
+    dispatchStore (topic) {
+      try {
+        this.$store.dispatch(topic).then((resp) => {
+          if (!!resp.error) {
+            throw resp.error
+          } else {
+            switch(topic) {
+              case 'getContextTypes':
+                this.contextTypesLoaded = true
+                break;
+              case 'getFlowPatterns':
+                this.patternsLoaded = true
+                break;
+              default:
+                return
+            }
+          }
+        })
+      } catch (error) {
+        console.error(error)
+      }
     }
+  },
+  components: {
+    AppInput,
+    AppSelect
   }
 }
 </script>

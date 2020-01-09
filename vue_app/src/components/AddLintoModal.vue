@@ -12,17 +12,7 @@
           Add a LinTO device by entering its serial number:
         </span>
         <div class="modal-body__form">
-          <div class="flex col">
-            <span class="form__label">Serial number :</span>
-            <input
-              type="text"
-              class="form__input"
-              v-model="serialNumber.value"
-              :class="[serialNumber.error !== null ? 'form__input--error' : '', serialNumber.valid ? 'form__input--valid' : '']"
-              @blur="testSerialNumber()"
-            >
-            <span class="form__error-field">{{ serialNumber.error }}</span>
-          </div>
+          <AppInput :label="'Serial number'" :obj="serialNumber" :test="'testSn'" :lintos="lintos"></AppInput>
         </div>
       </div>
       <div class="modal-footer flex row">
@@ -33,6 +23,7 @@
   </div>
 </template>
 <script>
+import AppInput from '@/components/AppInput.vue'
 import { bus } from '../main.js'
 import axios from 'axios'
 export default {
@@ -136,6 +127,9 @@ export default {
         console.log(error)
       }
     }
+  },
+  components: {
+    AppInput
   }
 }
 </script>

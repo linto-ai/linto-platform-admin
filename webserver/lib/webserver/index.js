@@ -26,7 +26,7 @@ class WebServer extends EventEmitter {
     this.app.set('trust proxy', true)
     this.app.use('/assets', express.static(path.resolve(__dirname, '../../dist')))
     this.app.use('/public', express.static(path.resolve(__dirname, '../../public')))
-    this.app.use(bodyParser.json())
+    this.app.use(bodyParser.json({limit: '150mb'}))
     this.app.use(bodyParser.urlencoded({
       extended: false
     }))
