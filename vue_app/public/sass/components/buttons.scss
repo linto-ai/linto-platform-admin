@@ -196,6 +196,12 @@
       background-size: 30px 60px;
       background-repeat: no-repeat;
     }
+    &.button__icon--publish {
+      background-image: url('../img/publish-icon@2x.png');
+      background-position: 0 0;
+      background-size: 30px 60px;
+      background-repeat: no-repeat;
+    }
   }
 
   &:hover {

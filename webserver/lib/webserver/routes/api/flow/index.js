@@ -159,6 +159,56 @@ module.exports = (webServer) => {
     }
   },
   {
+    path: '/publish',
+    method: 'post',
+    //requireAuth: true,
+    controller: async (req, res, next) => {
+      try {
+        const flowId = req.body.flowId
+        const contextId = req.body.contextId
+        let flowUpdated = false
+        let contextUpdated = false
+        const getWorkflow = await model.getFullTmpFlow()
+
+        let workflow = getWorkflow.flow
+        const formattedFlow = nodered.formatFlowGroupedNodes(workflow)
+
+        /* Publish on BLS */
+        const putBls = await nodered.putBLSFlow(flowId, formattedFlow)
+        if (putBls.status === 'success') {
+          flowUpdated = true
+        }
+
+        /* Update context */
+        const getContext = await model.getContextById(contextId)
+        let context = getContext[0]
+        context.flow = formattedFlow
+
+        const updateContext = await model.updateContext(context)
+
+        if(updateContext === 'success') {
+          contextUpdated = true
+        }
+
+        if (updateContext && flowUpdated) {
+          res.json({
+            status: 'success',
+            msg: 'The workflow has been updated'
+          })
+        } else {
+          throw 'Error on updating workflow'
+        }
+
+      } catch (error) {
+        console.error(error)
+        res.json({
+          status: 'error',
+          msg: error
+        })
+      }
+    }
+  },
+  {
     path: '/tmp',
     method: 'get',
     //requireAuth: true,

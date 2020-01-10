@@ -15,17 +15,24 @@
       </div>
       <div class="flex1 flex row iframe__controls-right">
         <button
-          class="button button--valid"
+          class="button button--bluemid"
           @click="OpenSavePatternModal()"
         >
           <span class="button__icon button__icon--save"></span>
           <span class="label">Save as new flow pattern</span></button>
         <button
-          class="button button--valid"
+          class="button button--bluemid"
           @click="OpenLoadFromPatternModal()"
         >
           <span class="button__icon button__icon--load"></span>
           <span class="label">Load from flow pattern</span>
+        </button>
+        <button
+          class="button button--valid"
+          @click="saveAndPublish()"
+        >
+          <span class="button__icon button__icon--publish"></span>
+          <span class="label">Save and publish</span>
         </button>
       </div>
     </div>
@@ -37,9 +44,10 @@
   </div>
 </template>
 <script>
+import axios from 'axios'
 import { bus } from '../main.js'
 export default {
-  props: ['contextFrame', 'blsurl'],
+  props: ['contextFrame', 'blsurl','flowId','contextId'],
   data () {
     return {
       iframeUrl: '',
@@ -63,11 +71,6 @@ export default {
         },100)
     })
   },
-  watch: {
-    contextFrame: function (data) {
-      console.log('context:', data)
-    }
-  },
   methods: {
     toggleFullScreen () {
       this.fullScreen = !this.fullScreen
@@ -82,6 +85,18 @@ export default {
     },
     OpenLoadFromPatternModal () {
       bus.$emit('load_from_pattern', {})
+    },
+    async saveAndPublish () {
+      const save = await axios(`${process.env.VUE_APP_URL}/api/flow/publish`, {
+        method: 'post',
+        data: {
+          flowId: this.flowId,
+          contextId: this.contextId
+        }
+      })
+      if (save.data.status === 'success') {
+        location.reload()
+      }
     }
   }
 }

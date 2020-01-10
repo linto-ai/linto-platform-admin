@@ -7,7 +7,7 @@
       <h1>Context : "{{ context.name }}" - Workflow editor</h1>
 
       <div class="block block--transparent block--no-margin block--no-padding flex1 flex">
-        <NodeRedIframe :contextFrame="'contextEdit'" :blsurl="blsUrl"></NodeRedIframe>
+        <NodeRedIframe :contextFrame="'contextEdit'" :blsurl="blsUrl" :flowId="context.flowId" :contextId="contextId"></NodeRedIframe>
       </div>
     </div>
   </div>

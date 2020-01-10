@@ -203,6 +203,27 @@ module.exports = (webServer) => {
     }
   },
   {
+    path: '/tockapps',
+    method: 'get',
+    // requireAuth: true,
+    controller: async (req, res, next) => {
+      try {
+        const tockToken = middlewares.basicAuthToken(process.env.NLU_TOCK_USER, process.env.NLU_TOCK_PSWD)
+        const getTockApplications = await axios(`${process.env.NLU_TOCK_REST_HOST}/admin/applications`,
+        {
+          method: 'get',
+          headers: {
+            'Authorization': tockToken
+          }
+        })
+        res.json(getTockApplications.data)
+      } catch (error) {
+        console.error(error)
+        res.json({ error })
+      }
+    }
+  },
+  {
     path: '/nlusettings',
     method: 'get',
     //requireAuth: true,
@@ -218,27 +239,6 @@ module.exports = (webServer) => {
             "host": process.env.NLU_RASA_HOST
           }
         ])
-      } catch (error) {
-        console.error(error)
-        res.json({ error })
-      }
-    }
-  },
-  {
-    path: '/tockapps',
-    method: 'get',
-    // requireAuth: true,
-    controller: async (req, res, next) => {
-      try {
-        const tockToken = middlewares.basicAuthToken(process.env.NLU_TOCK_USER, process.env.NLU_TOCK_PSWD)
-        const getTockApplications = await axios(`${process.env.NLU_TOCK_REST_HOST}/admin/applications`,
-        {
-          method: 'get',
-          headers: {
-            'Authorization': tockToken
-          }
-        })
-        res.json(getTockApplications.data)
       } catch (error) {
         console.error(error)
         res.json({ error })

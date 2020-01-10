@@ -38,6 +38,23 @@ function formaFlowSplitNodes (flow, workspaceId) {
   return formattedFlow
 }
 
+function formatFlowGroupedNodes (flow) {
+  let formattedFlow = {}
+  let nodes = []
+  flow.map(f => {
+    if (f.type === 'tab') {
+      formattedFlow.id = f.id
+      formattedFlow.label = f.label
+      formattedFlow.configs = []
+      formattedFlow.nodes = []
+    } else {
+      nodes.push(f)
+    }
+  })
+  formattedFlow.nodes = nodes
+  return formattedFlow
+}
+
 /* update existing workflow with a flow pattern */
 function updateGroupedNodesId (workFlow, patternFlow) {
   const workspaceId = workFlow.id
@@ -149,10 +166,43 @@ async function getBLSAccessToken() {
   return 'Bearer ' + request.data.access_token
 }
 
+async function putBLSFlow (flowId, workflow) {
+  try {
+    const accessToken = await getBLSAccessToken()
+    let blsUpdate = await axios(`${process.env.BUSINESS_LOGIC_SERVER_URI}/flow/${flowId}`, {
+      method: 'put',
+      headers: {
+        'charset': 'utf-8',
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Node-RED-Deployment-Type': 'flows',
+        'Authorization': accessToken
+      },
+      data: workflow
+    })
+    if (blsUpdate.status == 200) {
+      return {
+        status: 'success'
+      }
+    }
+    else {
+      throw 'Error on updating flow on the Business Logic Server'
+    }
+  } catch (err) {
+    console.error(err)
+    return {
+      status: 'error',
+      msg: err
+    }
+  }
+}
+
 module.exports = {
   createFlowPattern,
   formaFlowSplitNodes,
+  formatFlowGroupedNodes,
   getBLSAccessToken,
   generateContextFlow,
+  putBLSFlow,
   updateGroupedNodesId
 }

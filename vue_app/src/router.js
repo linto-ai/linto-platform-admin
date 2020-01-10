@@ -65,18 +65,19 @@ const router = new Router({
 
 /* The following function parse the route.meta attribtue to set page "title" and "meta" before entering a route" */
 router.beforeEach((to, from, next) => {
-  to.meta.map(m => {
-    if (m.name === 'title') {
-      document.title = m.content
-    } else {
-      let meta = document.createElement('meta')
-      meta.setAttribute('name', m.name)
-      meta.setAttribute('content', m.content)
-      document.getElementsByTagName('head')[0].appendChild(meta)
-    }
-  })
+  if (to.meta.length > 0) {
+    to.meta.map(m => {
+      if (m.name === 'title') {
+        document.title = m.content
+      } else {
+        let meta = document.createElement('meta')
+        meta.setAttribute('name', m.name)
+        meta.setAttribute('content', m.content)
+        document.getElementsByTagName('head')[0].appendChild(meta)
+      }
+    })
+  }
   next()
-
   /* EXAMPLE
   meta: [
     {

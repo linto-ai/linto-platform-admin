@@ -6,7 +6,6 @@ const EventEmitter = require('eventemitter3')
 const cookieParser = require('cookie-parser')
 const path = require('path')
 //const IoHandler = require('./iohandler')
-//const RedManager = require(process.cwd() + '/lib/local-node-red')
 const CORS = require('cors')
 
 let redis, redisStore, redisClient
@@ -66,9 +65,6 @@ class WebServer extends EventEmitter {
   async init() {
     // Set ioHandler
     // this.ioHandler = new IoHandler(this)
-
-    //Set RedManager
-    // await new RedManager(this)
 
     // Router
     require('./routes')(this)
