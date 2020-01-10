@@ -46,12 +46,7 @@ import AppInput from '@/components/AppInput.vue'
 import AppSelect from '@/components/AppSelect.vue'
 import { bus } from '../main.js'
 import axios from 'axios'
-
 export default {
-  components: {
-    AppInput,
-    AppSelect
-  },
   data () {
     return {
       loading: true,
@@ -329,7 +324,10 @@ export default {
         console.log(error)
       }
     }
+  },
+  components: {
+    AppInput,
+    AppSelect
   }
-
 }
 </script>

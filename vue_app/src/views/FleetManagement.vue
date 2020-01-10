@@ -53,6 +53,7 @@
           No LinTO in use for now
         </div>
       </div>
+      <!-- Provisionning -->
       <div class="block block--transparent">
         <h2>Provisionning</h2>
         <div class="flex row" v-if="not_associated_lintos.length > 0">
@@ -98,7 +99,6 @@
 </template>
 <script>
 import { bus } from '../main.js'
-
 export default {
   data () {
     return {

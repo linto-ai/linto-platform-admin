@@ -15,7 +15,6 @@
 <script>
 import axios from 'axios'
 import NodeRedIframe from '@/components/NodeRedIframe.vue'
-
 export default {
   data () {
     return {
@@ -24,11 +23,6 @@ export default {
       contextId: '',
       blsUrl: ''
     }
-  },
-  mounted () {
-    setTimeout(() => {
-      console.log(this.$store.state)
-    }, 1000)
   },
   created () {
     this.dispatchContext()

@@ -1,10 +1,8 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-
 // Views
 import Login from './views/Login.vue'
 import AdminDemo from './views/AdminDemo.vue'
-import AdminNodeRed from './views/AdminNodeRed.vue'
 import ContextAdd from './views/ContextAdd.vue'
 import ContextOverview from './views/ContextOverview.vue'
 import ContextWorkflow from './views/ContextWorkflow.vue'
@@ -12,156 +10,55 @@ import WorkflowEditor from './views/WorkflowEditor.vue'
 import FleetManagement from './views/FleetManagement.vue'
 import FleetMonitoring from './views/FleetMonitoring.vue'
 import TockView from './views/TockView.vue'
-Vue.use(Router)
 
+Vue.use(Router)
 const router = new Router({
   mode: 'history',
   routes: [
     {
       path: '/login',
       name: 'login',
-      component: Login,
-      meta: [
-        {
-          name: 'title',
-          content: 'Linto Admin - Login'
-        }
-      ]
+      component: Login
     },
     {
       path: '/admin/demo',
       name: 'admin demo',
-      component: AdminDemo,
-      meta: [
-        {
-          name: 'title',
-          content: 'Linto Admin - Demo'
-        },
-        {
-          name: 'robots',
-          content: 'noindex, nofollow'
-        }
-      ]
-    },
-    {
-      path: '/admin/nodered',
-      name: 'admin nodered example',
-      component: AdminNodeRed,
-      meta: [
-        {
-          name: 'title',
-          content: 'Linto Admin - NodeRed demo'
-        },
-        {
-          name: 'robots',
-          content: 'noindex, nofollow'
-        }
-      ]
+      component: AdminDemo
     },
     {
       path: '/admin/fleet',
       name: 'Fleet overview',
-      component: FleetManagement,
-      meta: [
-        {
-          name: 'title',
-          content: 'Linto Admin - Fleet management'
-        },
-        {
-          name: 'robots',
-          content: 'noindex, nofollow'
-        }
-      ]
+      component: FleetManagement
     },
     {
       path: '/admin/fleet/monitoring/:sn',
       name: 'Fleet monitoring',
-      component: FleetMonitoring,
-      meta: [
-        {
-          name: 'title',
-          content: 'Linto Admin - Fleet monitoring'
-        },
-        {
-          name: 'robots',
-          content: 'noindex, nofollow'
-        }
-      ]
+      component: FleetMonitoring
     },
     {
       path: '/admin/workflows',
       name: 'worflow editor',
-      component: WorkflowEditor,
-      meta: [
-        {
-          name: 'title',
-          content: 'Linto Admin - Flow patterns'
-        },
-        {
-          name: 'robots',
-          content: 'noindex, nofollow'
-        }
-      ]
+      component: WorkflowEditor
     },
     {
       path: '/admin/context/overview',
       name: 'Admin context overview',
-      component: ContextOverview,
-      meta: [
-        {
-          name: 'title',
-          content: 'Linto Admin - Context'
-        },
-        {
-          name: 'robots',
-          content: 'noindex, nofollow'
-        }
-      ]
+      component: ContextOverview
     },
     {
       path: '/admin/context/create',
       name: 'Admin create context',
-      component: ContextAdd,
-      meta: [
-        {
-          name: 'title',
-          content: 'Linto Admin - Create context'
-        },
-        {
-          name: 'robots',
-          content: 'noindex, nofollow'
-        }
-      ]
+      component: ContextAdd
     },
     {
       path: '/admin/context/workflow/:id',
       name: 'worflow editor',
-      component: ContextWorkflow,
-      meta: [
-        {
-          name: 'title',
-          content: 'Linto Admin - Context workflow manger'
-        },
-        {
-          name: 'robots',
-          content: 'noindex, nofollow'
-        }
-      ]
+      component: ContextWorkflow
     },
     {
       path: '/admin/nlu',
       name: 'tock interface',
-      component: TockView,
-      meta: [
-        {
-          name: 'title',
-          ontent: 'Linto Admin - Tock interface'
-        },
-        {
-          name: 'robots',
-          content: 'noindex, nofollow'
-        }
-      ]
+      component: TockView
     }
   ]
 })
@@ -179,6 +76,19 @@ router.beforeEach((to, from, next) => {
     }
   })
   next()
+
+  /* EXAMPLE
+  meta: [
+    {
+      name: 'title',
+      content: 'Linto Admin - Tock interface'
+    },
+    {
+      name: 'robots',
+      content: 'noindex, nofollow'
+    }
+  ]
+*/
 })
 
 export default router

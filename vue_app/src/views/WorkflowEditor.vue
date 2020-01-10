@@ -4,7 +4,6 @@
     <div class="block block--transparent block--no-margin block--no-padding flex1 flex">
       <NodeRedIframe :contextFrame="'manager'" v-if="sandBoxFound" :blsurl="sandBoxUrl"></NodeRedIframe>
     </div>
-
   </div>
 </template>
 <script>

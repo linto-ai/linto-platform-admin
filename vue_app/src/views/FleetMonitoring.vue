@@ -56,7 +56,7 @@ export default {
   data () {
     return {
       sn: '',
-      lintosLoaded: false,
+      lintoLoaded: false,
       loading: true
     }
   },
@@ -66,14 +66,14 @@ export default {
   },
   computed: {
     linto () {
-      if(this.$store.getters.LINTO_FLEET_BY_SN(this.sn) !== null) {
+      if (this.$store.getters.LINTO_FLEET_BY_SN(this.sn) !== null) {
         return this.$store.getters.LINTO_FLEET_BY_SN(this.sn)
       } else {
         return null
       }
     },
     dataLoaded () {
-      return this.lintosLoaded
+      return this.lintoLoaded
     }
   },
   watch: {
@@ -90,7 +90,7 @@ export default {
           if (!!resp.error) {
             throw resp.error
           } else {
-            this.lintosLoaded = true
+            this.lintoLoaded = true
           }
         })
       } catch (error) {
