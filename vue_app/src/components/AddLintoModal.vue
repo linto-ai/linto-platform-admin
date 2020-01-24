@@ -58,8 +58,8 @@ export default {
     }
   },
   mounted () {
-    bus.$on('add_linto_modal', (data) => {
-      this.dispatchLintos()
+    bus.$on('add_linto_modal', async (data) => {
+      await this.dispatchLintos()
       this.showModal = true
     })
   },
@@ -102,7 +102,7 @@ export default {
           data: { sn: this.serialNumber.value }
         })
         if (addLinto.data.status === 'success') {
-          this.dispatchLintos()
+          await this.dispatchLintos()
           this.closeModal()
         }
         bus.$emit('app_notif', {
@@ -114,18 +114,8 @@ export default {
         console.log(error)
       }
     },
-    dispatchLintos () {
-      try {
-        this.$store.dispatch('getLintoFleet').then((resp) => {
-          if (!!resp.error) {
-            throw resp.error
-          } else {
-            this.lintosLoaded = true
-          }
-        })
-      } catch (error) {
-        console.log(error)
-      }
+    async dispatchLintos (topic) {
+      this.lintosLoaded = await this.$options.filters.dispatchStore('getSttLanguageModels')
     }
   },
   components: {

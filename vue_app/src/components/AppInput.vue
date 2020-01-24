@@ -18,21 +18,8 @@ export default {
     return {}
   },
   methods: {
-    testContextName (obj) {
-      obj.valid = false
-      obj.error = null
-      const regex = /^[0-9A-Za-z\s\-\_]+$/
-      if (obj.value.length === 0) {
-        obj.valid = false
-        obj.error = 'This field is required'
-      }
-      else if (obj.value.match(regex)) {
-        obj.valid = true
-        obj.error = null
-      } else {
-        obj.valid = false
-        obj.error = 'Invalid context name'
-      }
+    testName (obj) {
+      this.$options.filters.testName(obj)
     },
     testSerialNumber (obj) {
       if (!!this.lintos) {
@@ -83,7 +70,7 @@ export default {
     exec (functionName) {
       switch(functionName) {
         case 'testName':
-          this.testContextName(this.obj)
+          this.testName(this.obj)
           break
         case 'testSn':
           this.testSerialNumber(this.obj)

@@ -3,9 +3,10 @@ const model = new DBmodel()
 
 module.exports = (webServer) => {
   return [{
+    // Get all LinTO devices (fleet) from database
     path: '/fleet',
     method: 'get',
-    //requireAuth: true,
+    requireAuth: false,
     controller: async (req, res, next) => {
       try {
         const getLintos = await model.getLintoFleet()
@@ -17,9 +18,10 @@ module.exports = (webServer) => {
     }
   },
   {
+    // Add a new LinTO to devices list (fleet)
     path: '/fleet',
     method: 'post',
-    //requireAuth: true,
+    requireAuth: false,
     controller: async (req, res, next) => {
       try {
         const sn = req.body.sn

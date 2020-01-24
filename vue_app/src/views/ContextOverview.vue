@@ -54,7 +54,7 @@ export default {
   data () {
     return {
       loading: true,
-      contextLoaded: false
+      contextLoaded: false,
     }
   },
   created () {
@@ -76,18 +76,8 @@ export default {
     }
   },
   methods: {
-    dispatchFleetContext () {
-      try {
-        this.$store.dispatch('getFleetContexts').then((resp) => {
-          if (!!resp.error) {
-            throw resp.error
-          } else {
-            this.contextLoaded = true
-          }
-        })
-      } catch (error) {
-        console.log(error)
-      }
+    async dispatchFleetContext () {
+      this.contextLoaded = await this.$options.filters.dispatchStore('getFleetContexts')
     }
   }
 }

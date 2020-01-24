@@ -10,7 +10,6 @@
 <script>
 import axios from 'axios'
 import TockIframe from '@/components/TockIframe.vue'
-
 export default {
   data () {
     return {

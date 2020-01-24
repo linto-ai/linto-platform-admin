@@ -9,7 +9,6 @@
 <script>
 import axios from 'axios'
 import NodeRedIframe from '@/components/NodeRedIframe.vue'
-
 export default {
   data () {
     return {

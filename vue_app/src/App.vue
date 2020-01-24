@@ -11,6 +11,11 @@
     <AddLintoModal></AddLintoModal>
     <LoadPatternModal></LoadPatternModal>
     <SavePatternModal></SavePatternModal>
+    <!-- STT MODALS -->
+    <addACModelModal v-if="path === '/admin/stt/overview'"></addACModelModal>
+    <AddLanguageModelModal v-if="path === '/admin/stt/overview'"></AddLanguageModelModal>
+    <AddSTTServiceModal v-if="path === '/admin/stt/overview'"></AddSTTServiceModal>
+
   </div>
 </template>
 <script>
@@ -23,13 +28,19 @@
   import AddLintoModal from '@/components/AddLintoModal.vue'
   import LoadPatternModal from '@/components/LoadPatternModal.vue'
   import SavePatternModal from '@/components/SavePatternModal.vue'
-
+  import AddACModelModal from '@/components/AddACModelModal.vue'
+  import AddLanguageModelModal from '@/components/AddLanguageModelModal.vue'
+  import AddSTTServiceModal from '@/components/AddSTTServiceModal.vue'
   import { bus } from './main.js'
   export default {
     data () {
       return {
-        fullScreenFrame: false
+        fullScreenFrame: false,
+        path: ''
       }
+    },
+    created () {
+      this.path = this.$route.fullPath
     },
     components: {
       AppHeader,
@@ -37,7 +48,10 @@
       AppVerticalNav,
       AddLintoModal,
       LoadPatternModal,
-      SavePatternModal
+      SavePatternModal,
+      AddACModelModal,
+      AddLanguageModelModal,
+      AddSTTServiceModal
     },
     mounted () {
       bus.$on('iframe-set-fullscreen', () => {

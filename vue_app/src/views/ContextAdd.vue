@@ -15,6 +15,8 @@
             <AppSelect :label="'Context type'" :obj="contextType" :list="contextTypes" :params="{key:'_id', value:'name', optLabel: 'name'}"></AppSelect>
             <!-- LinTO select -->
             <AppSelect :label="'Select a LinTO'" :obj="linto" :list="availableLintos" :params="{key:'_id', value:'sn', optLabel: 'sn'}" v-if="contextType.value === 'Fleet'"></AppSelect>
+            <!-- Context Language -->
+            <AppSelect :label="'Select a language'" :obj="sttServiceLanguage" :list="sttServicesLanguages" :params="{key:'value', value:'value', optLabel: 'value'}"></AppSelect>
             <!-- Flow pattern -->
             <AppSelect :label="'Workflow pattern'" :obj="flowPattern" :list="flowPatterns" :params="{key:'_id', value:'name' , optLabel: 'name'}" v-if="contextType.value !== ''"></AppSelect>
             <!-- NLU SERVICE -->
@@ -29,7 +31,8 @@
             </div>
             <!-- STT SERVICE -->
             <h3>STT service</h3>
-            <AppSelect :label="'STT service'" :obj="sttService" :list="sttServices" :params="{key:'_id', value:'serviceId', optLabel: 'serviceId'}"></AppSelect>
+
+              <AppSelect :label="'STT service'" :obj="sttService" :list="availableServices" :params="{key:'_id', value:'serviceId', optLabel: 'serviceId'}" :disabled="!languageSelected" :disabledTxt="'Select a language'"></AppSelect>
             <div class="flex row">
               <button class="button button--valid" @click="handleForm()">
                 <span class="label">Create a context</span>
@@ -52,11 +55,12 @@ export default {
       loading: true,
       lintoLoaded: false,
       mqttLoaded: false,
-      sttLoaded: false,
+      sttServicesLoaded: false,
       nluLoaded: false,
       patternLoaded: false,
       contextTypeLoaded: false,
       tockAppsLoaded: false,
+      languageSelected: false,
       contextName: {
         value: '',
         error: null,
@@ -94,6 +98,11 @@ export default {
         valid: false,
         configs: {}
       },
+      sttServiceLanguage: {
+        value: '',
+        error: null,
+        valid: false
+      },
       tockApplicationName: {
         value: '',
         error: null,
@@ -101,9 +110,11 @@ export default {
       }
     }
   },
+  mounted () {
+  },
   created () {
     this.dispatchStore('getmqttDefaultSettings')
-    this.dispatchStore('getSttSettings')
+    this.dispatchStore('getSttServices')
     this.dispatchStore('getNluSettings')
     this.dispatchStore('getTockApplications')
     this.dispatchStore('getFlowPatterns')
@@ -156,6 +167,13 @@ export default {
       if (data) {
         this.loading = false
       }
+    },
+    'sttServiceLanguage.value': function (data) {
+      if (data.length === 0) {
+        this.languageSelected = false
+      } else {
+        this.languageSelected = true
+      }
     }
   },
   computed: {
@@ -186,7 +204,32 @@ export default {
       return this.$store.state.mqttDefaultSettings
     },
     sttServices () {
-      return this.$store.state.sttSettings
+      return this.$store.state.sttServices
+    },
+    availableServices () {
+      if (this.sttServiceLanguage.value === '') {
+        return this.$store.state.sttServices
+      }
+      else {
+        let allServices = this.sttServices
+        let filteredServices = []
+        for(let i in allServices) {
+          if (allServices[i].lang === this.sttServiceLanguage.value) {
+            filteredServices.push(allServices[i])
+          }
+        }
+        if (filteredServices.filter(f => f.serviceId === this.sttService.value).length === 0) {
+          this.sttService = {
+            value: '',
+            error: null,
+            valid: false
+          }
+        }
+        return filteredServices
+      }
+    },
+    sttServicesLanguages () {
+      return this.$store.getters.STT_SERVICES_LANGUAGES
     },
     formValid () {
       if (this.nluService.value === 'tock') {
@@ -199,7 +242,7 @@ export default {
       return this.$store.state.tockapps
     },
     dataLoaded () {
-      return (this.lintoLoaded && this.contextTypeLoaded && this.sttLoaded && this.nluLoaded && this.mqttLoaded && this.patternLoaded && this.tockAppsLoaded)
+      return (this.lintoLoaded && this.contextTypeLoaded && this.sttServicesLoaded && this.nluLoaded && this.mqttLoaded && this.patternLoaded && this.tockAppsLoaded)
     }
   },
   methods: {
@@ -208,6 +251,7 @@ export default {
       this.testSelectField(this.flowPattern)
       this.testSelectField(this.contextType)
       this.testSelectField(this.nluService)
+      this.testSelectField(this.sttServiceLanguage)
       this.testSelectField(this.sttService)
       if (this.contextType.value === 'Fleet') {
         this.testSelectField(this.linto)
@@ -226,8 +270,7 @@ export default {
         workflowPattern: this.flowPattern.value,
         mqtt: this.mqttDefaultSettings,
         stt: {
-          service_name: this.sttService.value,
-          configs: this.sttService.configs
+          service_name: this.sttService.value
         },
         nlu: {
           service_name: this.nluService.value,
@@ -236,7 +279,8 @@ export default {
             namespace: 'app'
           }
         },
-        linto: this.contextType.value === 'Fleet' ? this.linto.value : []
+        linto: this.contextType.value === 'Fleet' ? this.linto.value : [],
+        language: this.sttServiceLanguage.value
       }
       if (this.nluService.value === 'tock') {
         if (this.tockApplicationName.value === 'new') {
@@ -269,59 +313,37 @@ export default {
       }
     },
     testContextName () {
-      this.contextName.valid = false
-      this.contextName.error = null
-      const regex = /^[0-9A-Za-z\s\-\_]+$/
-      if (this.contextName.value.length === 0) {
-        this.contextName.valid = false
-        this.contextName.error = 'This field is required'
-      }
-      else if (this.contextName.value.match(regex)) {
-        this.contextName.valid = true
-        this.contextName.error = null
-      } else {
-        this.contextName.valid = false
-        this.contextName.error = 'Invalid context name'
-      }
+      this.$options.filters.testName(this.contextName)
     },
     testSelectField (obj) {
       this.$options.filters.testSelectField(obj)
     },
-    dispatchStore (topic) {
-      try {
-        this.$store.dispatch(topic).then((resp) => {
-          if (!!resp.error) {
-            throw resp.error
-          } else {
-            switch(topic) {
-              case 'getmqttDefaultSettings':
-                this.mqttLoaded = true
-                break;
-              case 'getSttSettings':
-                this.sttLoaded = true
-                break;
-              case 'getNluSettings':
-                this.nluLoaded = true
-                break;
-              case 'getTockApplications':
-                this.tockAppsLoaded = true
-                break;
-              case 'getFlowPatterns':
-                this.patternLoaded = true
-                break;
-              case 'getContextTypes':
-                this.contextTypeLoaded = true
-                break;
-              case 'getLintoFleet':
-                this.lintoLoaded = true
-                break;
-              default:
-                return
-            }
-          }
-        })
-      } catch (error) {
-        console.log(error)
+    async dispatchStore (topic) {
+      const resp = await this.$options.filters.dispatchStore(topic)
+      switch(topic) {
+        case 'getmqttDefaultSettings':
+          this.mqttLoaded = resp
+          break
+        case 'getSttServices':
+          this.sttServicesLoaded = resp
+          break
+        case 'getNluSettings':
+          this.nluLoaded = resp
+          break
+        case 'getTockApplications':
+          this.tockAppsLoaded = resp
+          break
+        case 'getFlowPatterns':
+          this.patternLoaded = resp
+          break
+        case 'getContextTypes':
+          this.contextTypeLoaded = resp
+          break
+        case 'getLintoFleet':
+          this.lintoLoaded = resp
+          break
+        default:
+          return
       }
     }
   },

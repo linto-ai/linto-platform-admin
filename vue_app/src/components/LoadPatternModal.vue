@@ -4,9 +4,11 @@
       <div class="modal-header flex row">
         <span class="modal-header__tilte flex1 flex row">Load a flow from existing pattern</span>
         <button @click="closeModal()" class="button button--img button--img__close"></button>
-
       </div>
-      <div class="modal-body flex1 flex col">
+      <div class="modal-body flex1 flex col" v-if="loading">
+        lOADING
+      </div>
+      <div class="modal-body flex1 flex col" v-if="dataLoaded">
         <span class="modal-body__content">
           Select the workflow pattern you want to use:
         </span>
@@ -28,6 +30,9 @@ import axios from 'axios'
 export default {
   data () {
     return {
+      loading: true,
+      patternsLoaded: false,
+      tmpPatternsLoaded: false,
       selectedPattern: {
         value: '',
         error: null,
@@ -39,13 +44,11 @@ export default {
     }
   },
   mounted () {
-    bus.$on('load_from_pattern', (data) => {
-      this.dispatchTmpPattern()
+    bus.$on('load_from_pattern', async (data) => {
+      await this.dispatchStore('getFlowPatterns')
+      await this.dispatchStore('getTmpPattern')
       this.showModal = true
     })
-  },
-  created () {
-    this.dispatchPatterns()
   },
   computed: {
     flowPatterns () {
@@ -56,16 +59,19 @@ export default {
     },
     tmpPattern () {
       return this.$store.state.flowPatternTmp
+    },
+    dataLoaded () {
+      return (this.patternsLoaded && this.tmpPatternsLoaded)
     }
   },
   watch: {
-    showModal: function (data) {
-      if(data) {
-        this.dispatchPatterns()
-      }
-    },
     tmpPattern: function (data) {
       this.workspaceId = data.workspaceId
+    },
+    dataLoaded (data)  {
+      if (data) {
+        this.loading = false
+      }
     }
   },
   methods: {
@@ -80,7 +86,7 @@ export default {
       }
     },
     async sendForm () {
-      const sendForm = await axios(`${process.env.VUE_APP_URL}/api/flow/workflow`, {
+      const sendForm = await axios(`${process.env.VUE_APP_URL}/api/flow/loadpattern`, {
         method: 'put',
         data: {
           workspaceId: this.workspaceId,
@@ -95,19 +101,19 @@ export default {
     testSelectField (obj) {
       this.$options.filters.testSelectField(obj)
     },
-    dispatchPatterns () {
-      this.$store.dispatch('getFlowPatterns').then((resp) => {
-        if (!!resp.error) {
-          console.log('Dispatch pattern types : Error')
-        }
-      })
-    },
-    dispatchTmpPattern () {
-      this.$store.dispatch('getTmpPattern').then((resp) => {
-        if (!!resp.error) {
-          console.log('Dispatch pattern types : Error')
-        }
-      })
+
+    async dispatchStore (topic) {
+      const resp = await this.$options.filters.dispatchStore(topic)
+      switch(topic) {
+        case 'getFlowPatterns':
+          this.patternsLoaded = resp
+          break;
+        case 'getTmpPattern':
+          this.tmpPatternsLoaded = resp
+          break;
+        default:
+          return
+      }
     }
   },
   components: {

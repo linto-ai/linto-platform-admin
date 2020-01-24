@@ -1,7 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 // Views
-import Login from './views/Login.vue'
 import AdminDemo from './views/AdminDemo.vue'
 import ContextAdd from './views/ContextAdd.vue'
 import ContextOverview from './views/ContextOverview.vue'
@@ -9,17 +8,13 @@ import ContextWorkflow from './views/ContextWorkflow.vue'
 import WorkflowEditor from './views/WorkflowEditor.vue'
 import FleetManagement from './views/FleetManagement.vue'
 import FleetMonitoring from './views/FleetMonitoring.vue'
+import SttManagement from './views/SttManagement.vue'
 import TockView from './views/TockView.vue'
 
 Vue.use(Router)
 const router = new Router({
   mode: 'history',
   routes: [
-    {
-      path: '/login',
-      name: 'login',
-      component: Login
-    },
     {
       path: '/admin/demo',
       name: 'admin demo',
@@ -59,6 +54,11 @@ const router = new Router({
       path: '/admin/nlu',
       name: 'tock interface',
       component: TockView
+    },
+    {
+      path: '/admin/stt/overview',
+      name: 'STT management',
+      component: SttManagement
     }
   ]
 })

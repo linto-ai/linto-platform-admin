@@ -15,7 +15,9 @@ export default new Vuex.Store({
     mqttDefaultSettings: '',
     nluSettings: '',
     tockapps: '',
-    sttSettings: ''
+    sttServices: '',
+    sttLanguageModels: '',
+    sttAcousticModels: ''
   },
   mutations: {
     SET_LINTO_FLEET: (state, data) => {
@@ -39,8 +41,14 @@ export default new Vuex.Store({
     SET_NLU_SETTINGS: (state, data) => {
       state.nluSettings = data
     },
-    SET_STT_SETTINGS: (state, data) => {
-      state.sttSettings = data
+    SET_STT_SERVICES: (state, data) => {
+      state.sttServices = data
+    },
+    SET_STT_LANG_MODELS: (state, data) => {
+      state.sttLanguageModels = data
+    },
+    SET_STT_AC_MODELS: (state, data) => {
+      state.sttAcousticModels = data
     },
     SET_TOCK_APPS: (state, data) => {
       state.tockapps = data
@@ -132,16 +140,33 @@ export default new Vuex.Store({
         return { error }
       }
     },
-    getSttSettings: async ({ commit, state }) => {
+    getSttServices: async ({ commit, state }) => {
       try {
-        const getSettings = await axios.get(`${process.env.VUE_APP_URL}/api/context/getsttservices`)
-        commit('SET_STT_SETTINGS', getSettings.data)
-        return state.sttSettings
+        const getServices = await axios.get(`${process.env.VUE_APP_URL}/api/stt/services`)
+        commit('SET_STT_SERVICES', getServices.data.services)
+        return state.sttServices
+      } catch (error) {
+        return { error }
+      }
+    },
+    getSttLanguageModels: async ({ commit, state }) => {
+      try {
+        const getSttLanguageModels = await axios.get(`${process.env.VUE_APP_URL}/api/stt/langmodels`)
+        commit('SET_STT_LANG_MODELS', getSttLanguageModels.data.services)
+        return state.sttLanguageModels
+      } catch (error) {
+        return { error }
+      }
+    },
+    getSttAcousticModels: async ({ commit, state }) => {
+      try {
+        const getSttAcousticModels = await axios.get(`${process.env.VUE_APP_URL}/api/stt/acmodels`)
+        commit('SET_STT_AC_MODELS', getSttAcousticModels.data.services)
+        return state.sttAcousticModels
       } catch (error) {
         return { error }
       }
     }
-
   },
   getters: {
     ASSOCIATED_LINTO_FLEET: (state) => {
@@ -168,6 +193,21 @@ export default new Vuex.Store({
     CONTEXT_BY_ID: (state) => (id) => {
       try {
         return state.contextFleet.filter(context => context._id === id)[0]
+      } catch (error) {
+        return { error }
+      }
+    },
+    STT_SERVICES_LANGUAGES: (state) => {
+      try {
+        let lang = []
+        let resp = []
+        state.sttServices.map(s => {
+          if (lang.indexOf(s.lang) < 0) {
+            lang.push(s.lang)
+            resp.push({ value: s.lang })
+          }
+        })
+        return resp
       } catch (error) {
         return { error }
       }

@@ -5,7 +5,7 @@ module.exports = (webServer) => {
   {
     path: '/*',
     method: 'get',
-    //requireAuth: true,
+    requireAuth: false,
     controller: (req, res, next) => {
       res.setHeader("Content-Type", "text/html")
       res.sendFile(process.cwd() + '/dist/index.html')

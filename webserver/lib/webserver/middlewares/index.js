@@ -27,7 +27,7 @@ function checkAuth(req, res, next) {
           }
         })
         //res.redirect('/admin/linto')
-        res.redirect('/admin')
+        res.redirect('/admin/fleet')
       } else if (req.session.logged == 'on' && req.url != '/login') {
         next()
       } else if (req.session.logged != 'on' && req.url != '/login') {
@@ -50,10 +50,10 @@ function checkAuth(req, res, next) {
     next()
   }*/
 }
+
+// Get a Basic Auth token from user and password
 function basicAuthToken(user, password) {
   var token = user + ":" + password;
-  // Should i be encoding this value????? does it matter???
-  // Base64 Encoding -> btoa
   var hash = btoa(token);
   return "Basic " + hash;
 }

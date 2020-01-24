@@ -7,7 +7,7 @@ module.exports = (webServer) => {
   return [{
     path: '/',
     method: 'get',
-    requireAuth: true,
+    requireAuth: false,
     controller: async (req, res, next) => {
       try {
         res.setHeader("Content-Type", "text/html")
@@ -21,7 +21,6 @@ module.exports = (webServer) => {
     path: '/userAuth',
     method: 'post',
     controller: async (req, res, next) => {
-
       if (req.body.userName != "undefined" && req.body.password != "undefined") { // get post datas
         const userName = req.body.userName
         const password = req.body.password

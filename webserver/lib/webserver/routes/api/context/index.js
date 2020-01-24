@@ -7,9 +7,10 @@ const moment = require('moment')
 
 module.exports = (webServer) => {
   return [{
+    // Get all existing contexts from database
     path: '/fleet',
     method: 'get',
-    //requireAuth: true,
+    requireAuth: false,
     controller: async (req, res, next) => {
       try {
         const fleetContexts = await model.getFleetContexts()
@@ -20,9 +21,10 @@ module.exports = (webServer) => {
     } 
   },
   {
+    // Create a context in database
     path: '/',
     method: 'post',
-    //requireAuth: true,
+    requireAuth: false,
     controller: async (req, res, next) => {
       try {
         const payload = req.body
@@ -74,7 +76,7 @@ module.exports = (webServer) => {
         let flow = getWorkflowPattern[0].flow
         const updatedFlow = nodered.generateContextFlow(flow, payload)
 
-        // POST FLOW ON BLS
+        // POST WORKFLOW ON BLS
         const accessToken = await nodered.getBLSAccessToken()
         let blsPost = await axios(`${process.env.BUSINESS_LOGIC_SERVER_URI}/flow`, {
           method: 'post',
@@ -140,7 +142,7 @@ module.exports = (webServer) => {
               'Authorization': accessToken
             }
           })
-          // Lexical seeding
+          // NLU Lexical seeding
           const createTockApp = await axios(`${process.env.ADMIN_URL}/api/tock`, {
             method: 'post',
             data: {
@@ -156,6 +158,21 @@ module.exports = (webServer) => {
             }
           }
         }
+
+        /* >>> TODO <<<
+
+        // STT Lexical seeding
+        const getSttLexicalSeeding = await axios(`${process.env.BUSINESS_LOGIC_SERVER_URL}/red-nodes/${newFlowId}/dataset/linstt`, {
+          method: 'get',
+          headers: {
+            'charset': 'utf-8',
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Node-RED-Deployment-Type': 'flows',
+            'Authorization': accessToken
+          }
+        })
+        */
         // VALIDATION
         if (lintoUpdate && flowUpdate && contextUpdate) {
           if (payload.nlu.configs.new) {
@@ -189,9 +206,10 @@ module.exports = (webServer) => {
     }
   },
   {
+    // Get all existing context types
     path: '/types',
     method: 'get',
-    //requireAuth: true,
+    requireAuth: false,
     controller: async (req, res, next) => {
       try {
         const contextTypes = await model.getContextTypes()
@@ -203,9 +221,10 @@ module.exports = (webServer) => {
     }
   },
   {
+    // Get all existing Tock applications
     path: '/tockapps',
     method: 'get',
-    // requireAuth: true,
+    requireAuth: false,
     controller: async (req, res, next) => {
       try {
         const tockToken = middlewares.basicAuthToken(process.env.NLU_TOCK_USER, process.env.NLU_TOCK_PSWD)
@@ -226,7 +245,7 @@ module.exports = (webServer) => {
   {
     path: '/nlusettings',
     method: 'get',
-    //requireAuth: true,
+    requireAuth: false,
     controller: async (req, res, next) => {
       try {
         res.json([
@@ -246,35 +265,9 @@ module.exports = (webServer) => {
     }
   },
   {
-    path: '/getsttservices',
-    method: 'get',
-    //requireAuth: true,
-    controller: async (req, res, next) => {
-      try {
-        res.json([
-          {
-            "_id": "5db8173735cd8c0019936605",
-            "serviceId": "linstt_linto",
-            "tag": "offline-cpu",
-            "replicas": 2,
-            "LModelId": "graph_lvcsr",
-            "AModelId": "linstt_fr",
-            "lang": "fr-FR",
-            "isOn": 1,
-            "isDirty": 0,
-            "date": "10/30/2019-10:00:06"
-          }
-        ])
-      } catch (error) {
-        console.error(error)
-        res.json({ error })
-      }
-    }
-  },
-  {
     path: '/getMqttDefaultSettings',
     method: 'get',
-    //requireAuth: true,
+    requireAuth: false,
     controller: async (req, res, next) => {
       try {
         res.json({

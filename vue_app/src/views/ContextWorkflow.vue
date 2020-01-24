@@ -45,18 +45,8 @@ export default {
     }
   },
   methods: {
-    dispatchContext () {
-      try {
-        this.$store.dispatch('getFleetContexts').then((resp) => {
-          if (!!resp.error) {
-            throw resp.error
-          } else {
-            this.contextLoaded = true
-          }
-        })
-      } catch (error) {
-        console.log(error)
-      }
+    async dispatchContext () {
+      this.contextLoaded = await this.$options.filters.dispatchStore('getFleetContexts')
     }
   },
   components: {

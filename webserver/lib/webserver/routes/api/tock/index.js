@@ -5,9 +5,10 @@ const request = require('request')
 
 module.exports = (webServer) => {
   return [{
+    // Create a new tock application
     path: '/',
     method: 'post',
-    //requireAuth: true,
+    requireAuth: false,
     controller: async (req, res, next) => {
       try {
         const jsonContent = JSON.stringify(req.body.nlu)
@@ -53,7 +54,6 @@ module.exports = (webServer) => {
           }
         })
       } catch (error) {
-
         res.json({
           status: 'error',
           error

@@ -4,7 +4,9 @@
       <div class="modal-header flex row">
         <span class="modal-header__tilte flex1 flex row">Save as new flow pattern</span>
         <button @click="closeModal()" class="button button--img button--img__close"></button>
-
+      </div>
+      <div class="modal-body flex1 flex col" v-if="loading">
+        Loading
       </div>
       <div class="modal-body flex1 flex col" v-if="dataLoaded">
         <span class="modal-body__content">
@@ -26,7 +28,6 @@
 <script>
 import AppSelect from '@/components/AppSelect.vue'
 import AppInput from '@/components/AppInput.vue'
-
 import { bus } from '../main.js'
 import axios from 'axios'
 export default {
@@ -44,7 +45,8 @@ export default {
       },
       showModal: false,
       contextTypesLoaded: false,
-      patternsLoaded: false
+      patternsLoaded: false,
+      loading: true
     }
   },
   mounted () {
@@ -70,14 +72,21 @@ export default {
       return (this.contextTypesLoaded && this.patternsLoaded)
     }
   },
+  watch: {
+    dataLoaded (data) {
+      if (data) {
+        this.loading = false
+      }
+    }
+  },
   methods: {
     closeModal () {
       this.showModal = false
     },
     handleForm () {
       this.testSelectField(this.contextType)
-
       this.testPatternName()
+
       if (this.formValid) {
         this.sendForm()
       }
@@ -127,26 +136,17 @@ export default {
         })
       }
     },
-    dispatchStore (topic) {
-      try {
-        this.$store.dispatch(topic).then((resp) => {
-          if (!!resp.error) {
-            throw resp.error
-          } else {
-            switch(topic) {
-              case 'getContextTypes':
-                this.contextTypesLoaded = true
-                break;
-              case 'getFlowPatterns':
-                this.patternsLoaded = true
-                break;
-              default:
-                return
-            }
-          }
-        })
-      } catch (error) {
-        console.error(error)
+    async dispatchStore (topic) {
+      const resp = await this.$options.filters.dispatchStore(topic)
+      switch(topic) {
+        case 'getContextTypes':
+          this.contextTypesLoaded = resp
+          break
+        case 'getFlowPatterns':
+          this.patternsLoaded = resp
+          break
+        default:
+          return
       }
     }
   },

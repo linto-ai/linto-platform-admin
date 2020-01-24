@@ -43,6 +43,13 @@
         :href="workflowEditorUrl"
       >Workflow editor</a>
     </div>
+    <!-- STT interface -->
+    <div class="vertical-nav-item flex col" :class="routePath.indexOf(sttUrl) >= 0 ? 'active' : ''">
+      <a
+        class="vertical-nav-item__link vertical-nav-item__link"
+        :href="sttUrl"
+      >STT</a>
+    </div>
     <!-- NLU interface -->
     <div class="vertical-nav-item flex col" :class="routePath.indexOf(nluUrl) >= 0 ? 'active' : ''">
       <a
@@ -60,6 +67,7 @@ export default {
       fleetManagementUrl: '/admin/fleet',
       workflowEditorUrl: '/admin/workflows',
       contextUrl: '/admin/context',
+      sttUrl: '/admin/stt/overview',
       nluUrl: '/admin/nlu',
       routePath: ''
     }
@@ -70,7 +78,7 @@ export default {
   methods: {
     toggleChildren (e, id) {
       e.preventDefault()
-      const parent = e.srcElement
+      const parent = e.target
       const childContainer = document.getElementById(id)
       const childs = childContainer.childNodes
       const nbItems = childs.length

@@ -1,6 +1,7 @@
 const axios = require('axios')
 const uuid = require('uuid/v1')
 
+/* Format a workflow pattern to be post in database */
 function createFlowPattern (flow, workspaceId, workspaceLabel) {
   let formattedFlow = {
     id: workspaceId,
@@ -19,6 +20,7 @@ function createFlowPattern (flow, workspaceId, workspaceLabel) {
 }
 
 /*
+  Format a nodered flow from grouped nodes to splitted nodes
   {id, label, nodes[]} => [{tab},{node},{node}...]
 */
 function formaFlowSplitNodes (flow, workspaceId) {
@@ -37,7 +39,10 @@ function formaFlowSplitNodes (flow, workspaceId) {
   })
   return formattedFlow
 }
-
+/*
+  Format a nodered flow from splitted nodes to grouped nodes
+  [{tab},{node},{node}...] => {id, label, nodes[]}
+*/
 function formatFlowGroupedNodes (flow) {
   let formattedFlow = {}
   let nodes = []
@@ -55,7 +60,7 @@ function formatFlowGroupedNodes (flow) {
   return formattedFlow
 }
 
-/* update existing workflow with a flow pattern */
+/* Update an existing workflow with a flow pattern */
 function updateGroupedNodesId (workFlow, patternFlow) {
   const workspaceId = workFlow.id
   let formatted = workFlow
@@ -71,6 +76,7 @@ function updateGroupedNodesId (workFlow, patternFlow) {
   formatted.nodes = updatedNodes
   return formatted
 }
+/* Generate a workflow to be posted on BLS */
 function generateContextFlow (flow, payload) {
   const flowId = uuid()
   const mqttId = flowId + '-mqtt'
@@ -87,7 +93,7 @@ function generateContextFlow (flow, payload) {
   flow.filter(node => node.type !== 'tab').map(f => {
     if (f.type === 'linto-config') {
       // Update language
-      f.language = payload.stt.configs.lang
+      f.language = payload.language
 
       // Update linto-config node ID
       idMap[f.id] = configId
@@ -109,7 +115,7 @@ function generateContextFlow (flow, payload) {
     // uppdate STT node
     else if (f.type === 'linto-config-transcribe') {
       f.id = sttId
-      f.host = `${process.env.SERVICE_MANAGER_URL}/${payload.stt.configs.serviceId}/transcribe`
+      f.host = `${process.env.SERVICE_MANAGER_URL}/${payload.stt.service_name}`
       f.api = 'linstt'
     }
     // uppdate NLU node
@@ -147,6 +153,7 @@ function generateContextFlow (flow, payload) {
   return formattedFlow
 }
 
+/* Get a business logic server bearer token */
 async function getBLSAccessToken() {
   if (!process.env.BLS_AUTH || process.env.BLS_AUTH === 'false') {
     return ''

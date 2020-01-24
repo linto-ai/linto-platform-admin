@@ -9,10 +9,11 @@ module.exports = (webServer) => {
       // Get all flows deployed on NodeRed runtime
       path: '/sandbox',
       method: 'get',
-      //requireAuth: true,
+      requireAuth: false,
       controller: async (req, res, next) => {
         try {
           const accessToken = await nodered.getBLSAccessToken()
+          // Get all workflows deployed
           const fullFlow = await axios(`${process.env.BUSINESS_LOGIC_SERVER_URI}/flows`, {
             method: 'get',
             headers: {
@@ -23,11 +24,13 @@ module.exports = (webServer) => {
             }
           })
           let sandBoxId = null
+          // Search for the "SandBox" workflow Id
           fullFlow.data.map(f => {
             if (f.type === 'tab' && f.label === "SandBox") {
               sandBoxId = f.id
             }
           })
+          // return "SandBox" workflow Id
           res.json({ sandBoxId })
         } catch (e) {
           console.error(e)
@@ -36,230 +39,233 @@ module.exports = (webServer) => {
       }
     },
     {
-    path: '/patterns',
-    method: 'get',
-    //requireAuth: true,
-    controller: async (req, res, next) => {
-      try {
-        const allPatterns = await model.getAllWorkflowPatterns()
-        res.json(allPatterns)
-      } catch (e) {
-        console.error(e)
-        res.json({ error: e })
+      // Get all workflow patterns in database
+      path: '/patterns',
+      method: 'get',
+      requireAuth: false,
+      controller: async (req, res, next) => {
+        try {
+          const allPatterns = await model.getAllWorkflowPatterns()
+          res.json(allPatterns)
+        } catch (e) {
+          console.error(e)
+          res.json({ error: e })
+        }
       }
-    }
-  },
-  {
-    path: '/patterns',
-    method: 'post',
-    //requireAuth: true,
-    controller: async (req, res, next) => {
-      try {
-        const patternName = req.body.patternName
-        const contextType = req.body.contextType
-        const date = moment().format()
-        let getAllPatterns = await model.getAllWorkflowPatterns()
-        let patternNameExist = false
-        getAllPatterns.map(p => {
+    },
+    {
+      // Create a new workflow pattern
+      path: '/patterns',
+      method: 'post',
+      requireAuth: false,
+      controller: async (req, res, next) => {
+        try {
+          const patternName = req.body.patternName
+          const contextType = req.body.contextType
+          const date = moment().format()
+          let getAllPatterns = await model.getAllWorkflowPatterns()
+          let patternNameExist = false
           // Test if pattern name already exist
-          if (p.name.indexOf(patternName) >= 0) {
-            patternNameExist = true
-          }
-        })
-        if (patternNameExist) {
-          res.json({
-            status: 'error_name',
-            msg: 'This flow pattern name is already used'
+          getAllPatterns.map(p => {
+            if (p.name.indexOf(patternName) >= 0) {
+              patternNameExist = true
+            }
           })
-        } else {
-          // Get the flow to save
-          let tmpFlow = await model.getTmpFlow()
-          const payload = {
-            name: patternName,
-            type: contextType,
-            flow: tmpFlow,
-            created_date: date,
-          }
-          // Create new flow pattern
-          let addNewPattern = await model.addWorkflowPattern(payload)
-          if (addNewPattern === 'success') {
+          if (patternNameExist) {
             res.json({
-              status: 'success',
-              msg: `The flow pattern "${patternName}" has been added.`
+              status: 'error_name',
+              msg: 'This flow pattern name is already used'
             })
           } else {
-            throw 'Error on creating new flow pattern'
+            // Get workflow object to create
+            let tmpFlow = await model.getTmpFlow()
+            const payload = {
+              name: patternName,
+              type: contextType,
+              flow: tmpFlow,
+              created_date: date,
+            }
+            // Create new workflow pattern
+            let addNewPattern = await model.addWorkflowPattern(payload)
+            if (addNewPattern === 'success') {
+              res.json({
+                status: 'success',
+                msg: `The flow pattern "${patternName}" has been added.`
+              })
+            } else {
+              throw 'Error on creating new flow pattern'
+            }
           }
-        }
-      } catch (e) {
-        res.json({
-          status: 'error',
-          msg: e
-        })
-      }
-    }
-  },
-  {
-    path: '/workflow',
-    method: 'put',
-    //requireAuth: true,
-    controller: async (req, res, next) => {
-      try {
-        const accessToken = await nodered.getBLSAccessToken()
-        const workspaceId = req.body.workspaceId
-        const getCurrentWorkspaceFlow = await axios(`${process.env.BUSINESS_LOGIC_SERVER_URI}/flow/${workspaceId}`,
-        {
-          method: 'get',
-          headers: {
-            'charset': 'utf-8',
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'Node-RED-Deployment-Type': 'flows',
-            'Authorization': accessToken
-          }
-        })
-        const currentFlow = getCurrentWorkspaceFlow.data // GroupedNodes
-        const workspaceLabel = currentFlow.label
-
-        // Get selected flow pattern data
-        const patternId = req.body.patternId
-        let getPattern = await model.getWorkflowPatternById(patternId)
-        let pattern = getPattern.flow
-
-        // Format Pattern for "PUT" && update IDs
-        let formattedPattern = nodered.createFlowPattern(pattern, workspaceId, workspaceLabel)
-
-        let blsUpdate = await axios(`${process.env.BUSINESS_LOGIC_SERVER_URI}/flow/${workspaceId}`, {
-          method: 'put',
-          headers: {
-            'charset': 'utf-8',
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'Node-RED-Deployment-Type': 'flows',
-            'Authorization': accessToken
-          },
-          data: formattedPattern
-        })
-        if (blsUpdate.status === 200) {
+        } catch (e) {
           res.json({
-            status: 'success'
+            status: 'error',
+            msg: e
           })
         }
-        else {
-          throw 'Error on updating flow on the Business Logic Server'
-        }
-
-      } catch (err) {
-        console.error(err)
-        return {
-          status: 'error',
-          msg: err
-        }
       }
-    }
-  },
-  {
-    path: '/publish',
-    method: 'post',
-    //requireAuth: true,
-    controller: async (req, res, next) => {
-      try {
-        const flowId = req.body.flowId
-        const contextId = req.body.contextId
-        let flowUpdated = false
-        let contextUpdated = false
-        const getWorkflow = await model.getFullTmpFlow()
-
-        let workflow = getWorkflow.flow
-        const formattedFlow = nodered.formatFlowGroupedNodes(workflow)
-
-        /* Publish on BLS */
-        const putBls = await nodered.putBLSFlow(flowId, formattedFlow)
-        if (putBls.status === 'success') {
-          flowUpdated = true
-        }
-
-        /* Update context */
-        const getContext = await model.getContextById(contextId)
-        let context = getContext[0]
-        context.flow = formattedFlow
-
-        const updateContext = await model.updateContext(context)
-
-        if(updateContext === 'success') {
-          contextUpdated = true
-        }
-
-        if (updateContext && flowUpdated) {
-          res.json({
-            status: 'success',
-            msg: 'The workflow has been updated'
+    },
+    {
+      // Update a workflow from an existing workflow patterns
+      path: '/loadpattern',
+      method: 'put',
+      requireAuth: false,
+      controller: async (req, res, next) => {
+        try {
+          const accessToken = await nodered.getBLSAccessToken()
+          const workspaceId = req.body.workspaceId
+          const getCurrentWorkspaceFlow = await axios(`${process.env.BUSINESS_LOGIC_SERVER_URI}/flow/${workspaceId}`,
+          {
+            method: 'get',
+            headers: {
+              'charset': 'utf-8',
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'Node-RED-Deployment-Type': 'flows',
+              'Authorization': accessToken
+            }
           })
-        } else {
-          throw 'Error on updating workflow'
-        }
+          const currentFlow = getCurrentWorkspaceFlow.data // GroupedNodes
+          const workspaceLabel = currentFlow.label
 
-      } catch (error) {
-        console.error(error)
-        res.json({
-          status: 'error',
-          msg: error
-        })
+          // Get selected flow pattern data
+          const patternId = req.body.patternId
+          let getPattern = await model.getWorkflowPatternById(patternId)
+          let pattern = getPattern.flow
+
+          // Format Patten: update id, format workflow for request
+          let formattedPattern = nodered.createFlowPattern(pattern, workspaceId, workspaceLabel)
+          const blsUpdate = await axios(`${process.env.BUSINESS_LOGIC_SERVER_URI}/flow/${workspaceId}`, {
+            method: 'put',
+            headers: {
+              'charset': 'utf-8',
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'Node-RED-Deployment-Type': 'flows',
+              'Authorization': accessToken
+            },
+            data: formattedPattern
+          })
+          if (blsUpdate.status === 200) {
+            res.json({
+              status: 'success'
+            })
+          }
+          else {
+            throw 'Error on updating flow on the Business Logic Server'
+          }
+
+        } catch (err) {
+          console.error(err)
+          return {
+            status: 'error',
+            msg: err
+          }
+        }
+      }
+    },
+    {
+      // Save and publish a workflow on BLS
+      path: '/publish',
+      method: 'post',
+      requireAuth: false,
+      controller: async (req, res, next) => {
+        try {
+          const flowId = req.body.flowId
+          const contextId = req.body.contextId
+          let flowUpdated = false
+          let contextUpdated = false
+          const getWorkflow = await model.getFullTmpFlow()
+          let workflow = getWorkflow.flow
+          const formattedFlow = nodered.formatFlowGroupedNodes(workflow)
+
+          // Publish on BLS
+          const putBls = await nodered.putBLSFlow(flowId, formattedFlow)
+          if (putBls.status === 'success') {
+            flowUpdated = true
+          }
+
+          // Update context database
+          const getContext = await model.getContextById(contextId)
+          let context = getContext[0]
+          context.flow = formattedFlow
+          if(updateContext === 'success') {
+            contextUpdated = true
+          }
+
+          // Validation
+          if (updateContext && flowUpdated) {
+            res.json({
+              status: 'success',
+              msg: 'The workflow has been updated'
+            })
+          } else {
+            throw 'Error on updating workflow'
+          }
+        } catch (error) {
+          console.error(error)
+          res.json({
+            status: 'error',
+            msg: error
+          })
+        }
+      }
+    },
+    {
+      // Get the working temporary workflow object
+      path: '/tmp',
+      method: 'get',
+      requireAuth: false,
+      controller: async (req, res, next) => {
+        try {
+          const tmpPattern = await model.getFullTmpFlow()
+          res.json([tmpPattern])
+        } catch (error) {
+          console.error(error)
+          res.json({
+            status: 'error',
+            msg: error
+          })
+        }
+      }
+    },
+    {
+      // Update the working temporary workflow object
+      path: '/tmp',
+      method: 'put',
+      requireAuth: false,
+      controller: async (req, res, next) => {
+        try {
+          let payload = req.body.payload
+          let workspaceId = req.body.workspaceId
+          let updateTmpFlow = await model.updateTmpFlow({
+            flow: payload,
+            workspaceId
+          })
+          res.json({status: updateTmpFlow})
+        } catch (error) {
+          console.error(error)
+          res.json({
+            status: 'error',
+            msg: error
+          })
+        }
+      }
+    },
+    {
+      // Get Business Logic Server credentials for requests
+      path: '/getauth',
+      method: 'get',
+      requireAuth: false,
+      controller: async (req, res, next) => {
+        try {
+          const accessToken = await nodered.getBLSAccessToken()
+          res.json({
+            token: accessToken
+          })
+        } catch (error) {
+          res.json({error})
+        }
       }
     }
-  },
-  {
-    path: '/tmp',
-    method: 'get',
-    //requireAuth: true,
-    controller: async (req, res, next) => {
-      try {
-        const tmpPattern = await model.getFullTmpFlow()
-        res.json([tmpPattern])
-      } catch (error) {
-        console.error(error)
-        res.json({
-          status: 'error',
-          msg: error
-        })
-      }
-    }
-  },
-  {
-    path: '/tmp',
-    method: 'put',
-    //requireAuth: true,
-    controller: async (req, res, next) => {
-      try {
-        let payload = req.body.payload
-        let workspaceId = req.body.workspaceId
-        let updateTmpFlow = await model.updateTmpFlow({
-          flow: payload,
-          workspaceId //curent active workspace
-        })
-        res.json({status: updateTmpFlow})
-      } catch (error) {
-        console.error(error)
-        res.json({
-          status: 'error',
-          msg: error
-        })
-      }
-    }
-  },
-  {
-    path: '/getauth',
-    method: 'get',
-    //requireAuth: true,
-    controller: async (req, res, next) => {
-      try {
-        const accessToken = await nodered.getBLSAccessToken()
-        res.json({
-          token: accessToken
-        })
-      } catch (error) {
-        res.json({error})
-      }
-    }
-  }]
+  ]
 }

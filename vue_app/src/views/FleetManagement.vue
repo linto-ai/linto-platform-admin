@@ -134,18 +134,8 @@ export default {
     addLintoModal () {
       bus.$emit('add_linto_modal', {})
     },
-    dispatchLintos () {
-      try {
-        this.$store.dispatch('getLintoFleet').then((resp) => {
-          if (!!resp.error) {
-            throw resp.error
-          } else {
-            this.lintoLoaded = true
-          }
-        })
-      } catch (error) {
-        console.log(error)
-      }
+    async dispatchLintos () {
+      this.lintoLoaded = await this.$options.filters.dispatchStore('getLintoFleet')
     }
   }
 }

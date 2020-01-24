@@ -10,7 +10,9 @@
     "start-debug": "DEBUG=* NODE_ENV=development node --inspect app.js "
   },
   "nodemonConfig": {
-    "ignore": ["*/tockapp.json"]
+    "ignore": [
+      "*/tockapp.json"
+    ]
   },
   "author": "Romain Lopez <rlopez@lignora.com>",
   "contributors": [
@@ -36,6 +38,7 @@
     "lru-cache": "^4.1.1",
     "moment": "^2.24.0",
     "mongodb": "^3.1.13",
+    "multer": "^1.4.2",
     "node-red": "^0.20.5",
     "node-red-contrib-config": "^1.1.2",
     "node-red-contrib-helloworld-button": "0.0.1",
