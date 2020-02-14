@@ -5,8 +5,22 @@ const bodyParser = require('body-parser')
 const EventEmitter = require('eventemitter3')
 const cookieParser = require('cookie-parser')
 const path = require('path')
-//const IoHandler = require('./iohandler')
+const IoHandler = require('./iohandler')
 const CORS = require('cors')
+let corsOptions = {}
+let whitelistDomains = []
+if (process.env.WHITELIST_DOMAINS.length > 0) {
+  whitelistDomains = process.env.WHITELIST_DOMAINS.split(',')
+  corsOptions = {
+    origin: function (origin, callback) {
+      if (!origin || whitelistDomains.indexOf(origin) !== -1) {
+        callback(null, true)
+       } else {
+        callback(new Error('Not allowed by CORS'))
+      }
+    }
+  }
+}
 
 let redis, redisStore, redisClient
 if(process.env.NODE_ENV == 'production'){
@@ -17,6 +31,7 @@ if(process.env.NODE_ENV == 'production'){
     port: process.env.REDIS_PORT,
   })
 }
+
 class WebServer extends EventEmitter {
   constructor() {
     super()
@@ -30,9 +45,8 @@ class WebServer extends EventEmitter {
       extended: false
     }))
     this.app.use(cookieParser())
-    this.app.use(CORS({origin:true,credentials: true}))
+    this.app.use(CORS(corsOptions))
     let sessionConfig = {
-
       resave: false,
       saveUninitialized: true,
       secret: 'hippopoceros',
@@ -64,7 +78,7 @@ class WebServer extends EventEmitter {
   }
   async init() {
     // Set ioHandler
-    // this.ioHandler = new IoHandler(this)
+    this.ioHandler = new IoHandler(this)
 
     // Router
     require('./routes')(this)

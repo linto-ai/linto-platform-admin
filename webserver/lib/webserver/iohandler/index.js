@@ -15,6 +15,7 @@ class IoHandler extends EventEmitter {
       }
     })
     webServer.io.on('connection', (socket) => {
+      console.log('Connection socketio ???')
       debug(webServer.io)
       //Secures websocket usage with session
       if (process.env.NODE_ENV !== 'production') {
@@ -24,35 +25,8 @@ class IoHandler extends EventEmitter {
       if (!socket.request.session || socket.request.session.logged != 'on') return socket.disconnect()
       debug('new Socket connected')
 
-      socket.on('linto_ping', (data) => {
-        this.emit('linto_ping', data)
-      })
-      socket.on('linto_mute', (data) => {
-        this.emit('linto_mute', data)
-      })
-      socket.on('linto_unmute', (data) => {
-        this.emit('linto_unmute', data)
-      })
-      socket.on('linto_volume', (data) => {
-        this.emit('linto_volume', data)
-      })
-      socket.on('linto_volume_end', (data) => {
-        this.emit('linto_volume_end', data)
-      })
-      socket.on('linto_demo_start', async (data) => {
-        this.emit('linto_demo_start', data)
-      })
-      socket.on('linto_demo_stop', async (data) => {
-        this.emit('linto_demo_stop', data)
-      })
-      socket.on('linto_tts_lang', async (data) => {
-        this.emit('linto_tts_lang', data)
-      })
-      socket.on('linto_say', async (data) => {
-        this.emit('linto_say', data)
-      })
-      socket.on('managemeeting', async (data) => {
-        this.emit('managemeeting', data)
+      socket.on('test_local', (data) => {
+        console.log('socket local:' + data)
       })
     })
   }

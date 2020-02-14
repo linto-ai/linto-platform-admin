@@ -1,5 +1,4 @@
 const debug = require('debug')('linto-admin:routes/api')
-
 module.exports = (webServer) => {
   return [{
     path: '/',

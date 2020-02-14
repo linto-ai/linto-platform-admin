@@ -1,6 +1,8 @@
 const DBmodel = require(`${process.cwd()}/model/${process.env.BDD_TYPE}`)
 const model = new DBmodel()
-
+const request = require('request')
+const fs = require('fs')
+const axios = require('axios')
 module.exports = (webServer) => {
   return [{
     // Get all LinTO devices (fleet) from database
@@ -42,5 +44,51 @@ module.exports = (webServer) => {
         })
       }
     }
-  }]
+  },
+  {
+    // Update linto associated context
+    path: '/fleet/:sn',
+    method: 'put',
+    requireAuth: false,
+    controller: async (req, res, next) => {
+      try {
+        const sn = req.params.sn
+        const payload = req.body.payload
+        if (payload.type === 'Fleet') {
+          const getLinto = await model.getLintoBySn(sn)
+          let lintoPayload = getLinto[0]
+
+          // Test LinTO serial number
+          if (lintoPayload.associated_context !== null) {
+            throw {
+              msg: 'This LinTO device is already used in an other context',
+              code: 'lintoDevice'
+            }
+          }
+
+          // Update LINTO
+          lintoPayload.associated_context = payload.context_name
+          const updateLinto = await model.updateLinto(lintoPayload)
+          if(updateLinto === 'success') {
+            res.json({
+              status: 'success',
+              msg: `Linto "${sn}" has been updated`
+            })
+          } else {
+            throw {
+              msg: 'Error on updating associated LinTO',
+              code: 'updateLinto'
+            }
+          }
+        }
+      } catch (error) {
+        console.error(error)
+        res.json({
+          status: 'error',
+          msg: error
+        })
+      }
+    }
+  }
+]
 }

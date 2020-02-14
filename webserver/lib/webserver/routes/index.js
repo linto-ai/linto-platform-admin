@@ -1,5 +1,6 @@
 const debug = require('debug')(`linto-admin:routes`)
 const middlewares = require(`${process.cwd()}/lib/webserver/middlewares`)
+const cors = require('cors')
 const ifHasElse = (condition, ifHas, otherwise) => {
   return !condition ? otherwise() : ifHas()
 }
@@ -16,6 +17,7 @@ class Route {
             level + route.path,
             middlewares.logger,
             middlewares.checkAuth,
+            //cors(corsOptions), //whitelist
             ifHasElse(
               Array.isArray(route.controller),
               () => Object.values(route.controller),
@@ -26,6 +28,7 @@ class Route {
           webServer.app[method](
             level + route.path,
             middlewares.logger,
+            //cors(corsOptions), //whitelist
             ifHasElse(
               Array.isArray(route.controller),
               () => Object.values(route.controller),

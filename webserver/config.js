@@ -44,6 +44,8 @@ function configureDefaults() {
     process.env.BUSINESS_LOGIC_SERVER_URI = ifHas(process.env.BUSINESS_LOGIC_SERVER_URI, envdefault.BUSINESS_LOGIC_SERVER_URI)
     process.env.BLS_LOGIN = ifHas(process.env.BLS_LOGIN, envdefault.BLS_LOGIN)
     process.env.BLS_PSWD = ifHas(process.env.BLS_PSWD, envdefault.BLS_PSWD)
+    process.env.DEFAULT_LANGUE = ifHas(process.env.DEFAULT_LANGUE, envdefault.DEFAULT_LANGUE)
+    process.env.CITY = ifHas(process.env.DEFAULT_CITY, envdefault.DEFAULT_CITY)
     //Mqtt
     process.env.LOGIC_MQTT_ADDRESS = ifHas(process.env.LOGIC_MQTT_ADDRESS, envdefault.LOGIC_MQTT_ADDRESS)
     process.env.LOGIC_MQTT_PORT = ifHas(process.env.LOGIC_MQTT_PORT, envdefault.LOGIC_MQTT_PORT)
@@ -51,9 +53,7 @@ function configureDefaults() {
     process.env.LOGIC_MQTT_PWD = ifHas(process.env.LOGIC_MQTT_PWD, envdefault.LOGIC_MQTT_PWD)
     process.env.LOGIC_MQTT_USE_LOGIN = ifHas(process.env.LOGIC_MQTT_USE_LOGIN, envdefault.LOGIC_MQTT_USE_LOGIN)
     process.env.LOGIC_MQTT_HW_SCOPE = ifHas(process.env.LOGIC_MQTT_HW_SCOPE, envdefault.LOGIC_MQTT_HW_SCOPE)
-    //Linto properties
-    process.env.DEFAULT_LANGUE = ifHas(process.env.DEFAULT_LANGUE, envdefault.DEFAULT_LANGUE)
-    process.env.CITY = ifHas(process.env.DEFAULT_CITY, envdefault.DEFAULT_CITY)
+    process.env.WHITELIST_DOMAINS = ifHasNotThrow(process.env.WHITELIST_DOMAINS, 'No whitelist found. Please edit ".env" file')
     //Database (json-server, mongodb)
     process.env.BDD_TYPE = ifHas(process.env.BDD_TYPE, envdefault.BDD_TYPE)
     process.env.MONGODB_DBNAME = ifHas(process.env.MONGODB_DBNAME, envdefault.MONGODB_DBNAME)
@@ -76,12 +76,8 @@ function configureDefaults() {
     process.env.NLU_RASA_HOST = ifHas(process.env.NLU_RASA_HOST, envdefault.NLU_RASA_HOST)
     process.env.NLU_RASA_USER = ifHas(process.env.NLU_RASA_USER, envdefault.NLU_RASA_USER)
     process.env.NLU_RASA_PSWD = ifHas(process.env.NLU_RASA_PSWD, envdefault.NLU_RASA_PSWD)
-    // STT
-    process.env.STT_URL_FR = ifHas(process.env.STT_URL_FR, envdefault.STT_URL_FR)
-    process.env.STT_URL_EN = ifHas(process.env.STT_URL_EN, envdefault.STT_URL_EN)
-    // Database backup volume
-    process.env.DB_BACKUP_VOLUME = ifHas(process.env.DB_BACKUP_VOLUME, envdefault.DB_BACKUP_VOLUME)
-
+    // STT service-manager
+    process.env.NLU_RASA_PSWD = ifHas(process.env.SERVICE_MANAGER_URL, envdefault.SERVICE_MANAGER_URL)
 
   } catch (e) {
     console.error(debug.namespace, e)

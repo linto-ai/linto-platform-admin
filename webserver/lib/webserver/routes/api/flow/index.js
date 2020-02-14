@@ -188,10 +188,12 @@ module.exports = (webServer) => {
           const getContext = await model.getContextById(contextId)
           let context = getContext[0]
           context.flow = formattedFlow
+
+          const updateContext = await model.updateContext(context)
+
           if(updateContext === 'success') {
             contextUpdated = true
           }
-
           // Validation
           if (updateContext && flowUpdated) {
             res.json({
@@ -243,7 +245,7 @@ module.exports = (webServer) => {
           })
           res.json({status: updateTmpFlow})
         } catch (error) {
-          console.error(error)
+
           res.json({
             status: 'error',
             msg: error
@@ -264,6 +266,54 @@ module.exports = (webServer) => {
           })
         } catch (error) {
           res.json({error})
+        }
+      }
+    },
+    {
+      // Update the working temporary workflow object
+      path: '/postbls',
+      method: 'post',
+      requireAuth: false,
+      controller: async (req, res, next) => {
+        try {
+          // FORMAT WORKFLOW
+          const payload = req.body.payload
+          const workflowName = payload.workflowPattern
+          const getWorkflowPattern = await model.getWorkflowPatternByName(workflowName)
+          let flow = getWorkflowPattern[0].flow
+          const updatedFlow = nodered.generateContextFlow(flow, payload)
+
+          // POST WORKFLOW ON BLS
+          const accessToken = await nodered.getBLSAccessToken()
+          let blsPost = await axios(`${process.env.BUSINESS_LOGIC_SERVER_URI}/flow`, {
+            method: 'post',
+            headers: {
+              'charset': 'utf-8',
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'Node-RED-Deployment-Type': 'flows',
+              'Authorization': accessToken
+            },
+            data: updatedFlow
+          })
+          if (blsPost.status == 200 && blsPost.data) {
+            res.json({
+              status: 'success',
+              msg: 'The worfklow has been deployed',
+              flowId: blsPost.data.id
+            })
+          } else {
+            throw {
+              msg: 'Error on posting flow on the business logic server',
+              code: 'postBls'
+            }
+          }
+        } catch (error) {
+          console.error(error)
+          res.json({
+            status: 'error',
+            msg: error.toString()
+          })
         }
       }
     }

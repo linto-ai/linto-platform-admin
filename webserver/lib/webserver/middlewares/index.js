@@ -16,7 +16,6 @@ function checkAuth(req, res, next) {
   //if (isProduction()) {
   // If not connected
   debug(req.session)
-
   if (!!req && !!req.session) {
     if (!!req.session.logged) {
       debug(req.session.logged)
@@ -26,7 +25,6 @@ function checkAuth(req, res, next) {
             console.error('Err:', err)
           }
         })
-        //res.redirect('/admin/linto')
         res.redirect('/admin/fleet')
       } else if (req.session.logged == 'on' && req.url != '/login') {
         next()
@@ -44,11 +42,8 @@ function checkAuth(req, res, next) {
       }
     }
   } else {
-    res.redirect('/sessionNotFound')
+    res.redirect('/login')
   }
-  /*} else {
-    next()
-  }*/
 }
 
 // Get a Basic Auth token from user and password
