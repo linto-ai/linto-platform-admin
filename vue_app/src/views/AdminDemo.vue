@@ -1,6 +1,8 @@
 <template>
   <div>
     <h1>Lorem ipsum</h1>
+
+    <button @click="testSocket()">TEST SOCKET</button>
     <div class="block block--transparent flex1">
       <h2>Table</h2>
       <table class="table table--shadow">
@@ -58,9 +60,23 @@
   </div>
 </template>
 <script>
+import io from 'socket.io-client'
 export default {
   data () {
-    return {}
+    return {
+      socket: null
+    }
+  },
+  created () {
+    this.socket = new io('http://127.0.0.1:8081')
+    this.socket.on('stt', (data) => {
+      console.log('Resp form STT: ', data)
+    })
+  },
+  methods: {
+    testSocket() {
+      this.socket.emit('linto_admin', 'TEST FROM LINTO ADMIN')
+    }
   }
 }
 </script>

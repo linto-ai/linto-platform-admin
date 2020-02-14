@@ -7,11 +7,11 @@
 
       </div>
       <div class="modal-body flex1 flex col">
-
+        <!-- Acoustic model name -->
         <AppInput :label="'Acoustic model name'" :obj="acModelName" :test="'testName'"></AppInput>
-
+        <!-- Acoustic model language -->
         <AppSelect :label="'Select a language'" :obj="acModelLanguage" :list="languages" :params="{key:'value', value:'value', optLabel: 'label'}"></AppSelect>
-
+        <!-- Uplaod acoustic model file -->
         <div class="flex col">
           <span class="form__label">upload model (.zip, .tar.gz) :</span>
           <input
@@ -32,7 +32,7 @@
           >
             <span class="label">{{ sendBtnLabel }}</span>
           </button>
-          <div v-if="globalError !== null">{{ globalError }}</div>
+          <div v-if="globalError !== null">{{ globalError }}</div>
         </div>
       </div>
       <div class="modal-footer flex terrow">
@@ -103,7 +103,7 @@ export default {
     closeModal () {
       this.showModal = false
     },
-    setFile(event) {
+    setFile (event) {
       this.modelFile.value = event.target.files[0]
     },
     async createModel () {
@@ -116,8 +116,8 @@ export default {
       let formData = new FormData()
       formData.append('infos', JSON.stringify(payload))
       formData.append('file', this.modelFile.value)
-      const createModel = await axios (`${process.env.VUE_APP_URL}/api/stt/acmodel`, {
-        method:'post',
+      const createModel = await axios(`${process.env.VUE_APP_URL}/api/stt/acmodel`, {
+        method: 'post',
         data: formData
       })
       if (createModel.data.status === 'success') {
@@ -143,7 +143,7 @@ export default {
     testFile () {
       this.modelFile.error = null
       this.modelFile.valid = false
-      if(this.modelFile.value !== '') {
+      if (this.modelFile.value !== '') {
         this.modelFile.valid = true
       } else {
         this.modelFile.error = 'Please select a file'

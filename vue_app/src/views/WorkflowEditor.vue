@@ -8,26 +8,49 @@
 </template>
 <script>
 import axios from 'axios'
+import { bus } from '../main.js'
 import NodeRedIframe from '@/components/NodeRedIframe.vue'
 export default {
   data () {
     return {
       sandBoxId: null,
       sandBoxUrl: null,
-      sandBoxFound: false
+      sandBoxFound: false,
+      blsUp: false
     }
   },
   components: {
     NodeRedIframe
   },
-  async created () {
-    const getSandBoxId = await axios(`${process.env.VUE_APP_URL}/api/flow/sandbox`, {
-      method: 'get'
-    })
-    if (getSandBoxId.data.sandBoxId !== null) {
-      this.sandBoxId = getSandBoxId.data.sandBoxId
-      this.sandBoxUrl = process.env.VUE_APP_NODERED + '/#flow/' + this.sandBoxId
-      this.sandBoxFound = true
+  beforeRouteEnter (to, form, next) {
+    // Check if Business logic server is UP before enter route
+    next(vm => vm.isBlsUp())
+  },
+  methods: {
+    async isBlsUp () {
+      try {
+        const connectBls = await axios.get(process.env.VUE_APP_NODERED)
+        if (connectBls.status === 200) {
+          this.blsUp = true
+          this.getSandBoxId()
+        }
+      } catch (error) {
+        bus.$emit('app_notif', {
+          status: 'error',
+          msg: 'Cannot connect to Business logic server',
+          timeout: false
+        })
+      }
+    },
+    async getSandBoxId () {
+      const getSandBoxId = await axios(`${process.env.VUE_APP_URL}/api/flow/sandbox`, {
+        method: 'get'
+      })
+      if (getSandBoxId.data.sandBoxId !== null) {
+        this.sandBoxId = getSandBoxId.data.sandBoxId
+        this.sandBoxUrl = process.env.VUE_APP_NODERED + '/#flow/' + this.sandBoxId
+        this.sandBoxFound = true
+      }
     }
   }
 }

@@ -30,6 +30,7 @@
         <button
           class="button button--valid"
           @click="saveAndPublish()"
+          v-if="contextFrame !== 'manager'"
         >
           <span class="button__icon button__icon--publish"></span>
           <span class="label">Save and publish</span>
@@ -87,6 +88,10 @@ export default {
       bus.$emit('load_from_pattern', {})
     },
     async saveAndPublish () {
+      console.log({
+          flowId: this.flowId,
+          contextId: this.contextId
+        })
       const save = await axios(`${process.env.VUE_APP_URL}/api/flow/publish`, {
         method: 'post',
         data: {

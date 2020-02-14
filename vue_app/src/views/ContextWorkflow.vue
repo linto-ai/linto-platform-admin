@@ -13,6 +13,7 @@
   </div>
 </template>
 <script>
+import { bus } from '../main.js'
 import axios from 'axios'
 import NodeRedIframe from '@/components/NodeRedIframe.vue'
 export default {
@@ -21,11 +22,15 @@ export default {
       loading: true,
       contextLoaded: false,
       contextId: '',
+      blsUp: false,
       blsUrl: ''
     }
   },
+  beforeRouteEnter (to, form, next) {
+    // Check if Business logic server is UP before enter route
+    next(vm => vm.isBlsUp())
+  },
   created () {
-    this.dispatchContext()
     this.contextId = this.$route.params.id
   },
   computed: {
@@ -33,7 +38,7 @@ export default {
       return this.$store.getters.CONTEXT_BY_ID(this.contextId)
     },
     dataLoaded () {
-      return this.contextLoaded
+      return (this.blsUp && this.contextLoaded)
     }
   },
   watch: {
@@ -45,6 +50,21 @@ export default {
     }
   },
   methods: {
+    async isBlsUp () {
+      try {
+        const connectBls = await axios.get(process.env.VUE_APP_NODERED)
+        if (connectBls.status === 200) {
+          this.blsUp = true
+          this.dispatchContext()
+        }
+      } catch (error) {
+        bus.$emit('app_notif', {
+          status: 'error',
+          msg: 'Cannot connect to Business logic server',
+          timeout: false
+        })
+      }
+    },
     async dispatchContext () {
       this.contextLoaded = await this.$options.filters.dispatchStore('getFleetContexts')
     }

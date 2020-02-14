@@ -17,9 +17,21 @@ export default {
   data () {
     return {}
   },
+  computed: {
+    contexts () {
+      return this.$store.state.contextFleet
+    },
+  },
   methods: {
     testName (obj) {
       this.$options.filters.testName(obj)
+    },
+    testContextName (obj) {
+      this.testName(obj)
+      if (this.contexts.filter(l => l.name === obj.value).length > 0) {
+        obj.error = 'This context name is already used'
+        obj.valid = false
+      }
     },
     testSerialNumber (obj) {
       if (!!this.lintos) {
@@ -77,6 +89,9 @@ export default {
           break
         case 'testPatternName':
           this.testPatternName(this.obj)
+          break
+        case 'testContextName':
+          this.testContextName(this.obj)
           break
         default:
           return

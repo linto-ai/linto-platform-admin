@@ -16,6 +16,8 @@
     <AddLanguageModelModal v-if="path === '/admin/stt/overview'"></AddLanguageModelModal>
     <AddSTTServiceModal v-if="path === '/admin/stt/overview'"></AddSTTServiceModal>
 
+    <!-- Create context -->
+    <AddContextModal v-if="path === '/admin/context/create'"></AddContextModal>
   </div>
 </template>
 <script>
@@ -31,6 +33,7 @@
   import AddACModelModal from '@/components/AddACModelModal.vue'
   import AddLanguageModelModal from '@/components/AddLanguageModelModal.vue'
   import AddSTTServiceModal from '@/components/AddSTTServiceModal.vue'
+  import AddContextModal from '@/components/AddContextModal.vue'
   import { bus } from './main.js'
   export default {
     data () {
@@ -51,7 +54,8 @@
       SavePatternModal,
       AddACModelModal,
       AddLanguageModelModal,
-      AddSTTServiceModal
+      AddSTTServiceModal,
+      AddContextModal
     },
     mounted () {
       bus.$on('iframe-set-fullscreen', () => {

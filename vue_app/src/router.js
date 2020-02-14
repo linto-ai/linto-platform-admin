@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
+import axios from 'axios'
 // Views
 import AdminDemo from './views/AdminDemo.vue'
 import ContextAdd from './views/ContextAdd.vue'
@@ -32,8 +33,14 @@ const router = new Router({
     },
     {
       path: '/admin/workflows',
-      name: 'worflow editor',
-      component: WorkflowEditor
+      name: 'Worflow editor',
+      component: WorkflowEditor,
+      beforeenter: async (to, form, next) => {
+        next(vm => {
+          // access to component instance via `vm`
+          console.log('ROUTER', vm)
+        })
+      }
     },
     {
       path: '/admin/context/overview',
@@ -47,7 +54,7 @@ const router = new Router({
     },
     {
       path: '/admin/context/workflow/:id',
-      name: 'worflow editor',
+      name: 'Context worflow editor',
       component: ContextWorkflow
     },
     {

@@ -10,7 +10,7 @@
           <div class="flex col flex1">
             <h2>Context informations</h2>
             <!-- Context name -->
-            <AppInput :label="'Context name'" :obj="contextName" :test="'testName'"></AppInput>
+            <AppInput :label="'Context name'" :obj="contextName" :test="'testContextName'"></AppInput>
             <!-- Context Type -->
             <AppSelect :label="'Context type'" :obj="contextType" :list="contextTypes" :params="{key:'_id', value:'name', optLabel: 'name'}"></AppSelect>
             <!-- LinTO select -->
@@ -31,8 +31,7 @@
             </div>
             <!-- STT SERVICE -->
             <h3>STT service</h3>
-
-              <AppSelect :label="'STT service'" :obj="sttService" :list="availableServices" :params="{key:'_id', value:'serviceId', optLabel: 'serviceId'}" :disabled="!languageSelected" :disabledTxt="'Select a language'"></AppSelect>
+            <AppSelect :label="'STT service'" :obj="sttService" :list="availableServices" :params="{key:'_id', value:'serviceId', optLabel: 'serviceId'}" :disabled="!languageSelected" :disabledTxt="'Select a language'"></AppSelect>
             <div class="flex row">
               <button class="button button--valid" @click="handleForm()">
                 <span class="label">Create a context</span>
@@ -61,6 +60,7 @@ export default {
       contextTypeLoaded: false,
       tockAppsLoaded: false,
       languageSelected: false,
+      contextsLoaded: false,
       contextName: {
         value: '',
         error: null,
@@ -85,7 +85,11 @@ export default {
         value: '',
         error: null,
         valid: false,
-        configs: {}
+        configs: {
+          host: '',
+          namesapce: '',
+          new: false
+        }
       },
       mqttServer: {
         host: '',
@@ -107,16 +111,25 @@ export default {
         value: '',
         error: null,
         valid: false
-      }
+      },
+      blsUp: false,
+      tockUp: false,
+      sttUp: false
+
     }
   },
-  mounted () {
+  beforeRouteEnter (to, form, next) {
+    // Check that all the needed services are up
+    next((vm) => {
+      vm.isBlsUp()
+      vm.isTockUp()
+      vm.isSttUp()
+    })
   },
   created () {
     this.dispatchStore('getmqttDefaultSettings')
-    this.dispatchStore('getSttServices')
-    this.dispatchStore('getNluSettings')
-    this.dispatchStore('getTockApplications')
+    this.dispatchStore('getSttLanguageModels')
+    this.dispatchStore('getFleetContexts')
     this.dispatchStore('getFlowPatterns')
     this.dispatchStore('getContextTypes')
     this.dispatchStore('getLintoFleet')
@@ -126,6 +139,7 @@ export default {
       if (data.length > 0) {
         this.nluServices.map(n => {
           if (n.service_name === data) {
+            // Update NLU configs when a NLU service is selected
             this.nluService.configs = {
               host: n.host
             }
@@ -134,20 +148,22 @@ export default {
       }
     },
     'contextType.value': function (data) {
+      // Reset selected flow pattern when the context type is updated
       this.flowPattern.value = ''
       this.flowPattern.error = null
       this.flowPattern.valid = false
       if (data === 'Fleet') {
         this.mqttServer = this.mqttDefaultSettings
       } else {
-       this.mqttServer = {
-         host: '',
-         port: '',
-         scope: ''
+        this.mqttServer = {
+          host: '',
+          port: '',
+          scope: ''
         }
       }
     },
     'sttService.value': function (data) {
+      // Update STT configs when a STT service is selected
       if (data !== null || data !== '') {
         this.sttServices.map(s => {
           if (s.serviceId === data) {
@@ -174,14 +190,35 @@ export default {
       } else {
         this.languageSelected = true
       }
-    }
+    },
+    /*availableServices (data) {
+      if (data.filter(f => f.serviceId === this.sttService.value).length === 0) {
+        this.sttService = {
+          value: '',
+          error: null,
+          valid: false
+        }
+      }
+    }*/
   },
   computed: {
     availableLintos () {
       return this.$store.getters.NOT_ASSOCIATED_LINTO_FLEET
     },
+    contexts () {
+      return this.$store.state.contextFleet
+    },
     contextTypes () {
       return this.$store.state.contextTypes
+    },
+    nluServices () {
+      return this.$store.state.nluServices
+    },
+    mqttDefaultSettings () {
+      return this.$store.state.mqttDefaultSettings
+    },
+    sttServices () {
+      return this.$store.getters.STT_SERVICES_AVAILABLE
     },
     flowPatterns () {
       if (this.contextType.value === '') {
@@ -197,39 +234,30 @@ export default {
         return filterPattern
       }
     },
-    nluServices () {
-      return this.$store.state.nluSettings
-    },
-    mqttDefaultSettings () {
-      return this.$store.state.mqttDefaultSettings
-    },
-    sttServices () {
-      return this.$store.state.sttServices
-    },
     availableServices () {
       if (this.sttServiceLanguage.value === '') {
-        return this.$store.state.sttServices
-      }
-      else {
+        return this.$store.getters.STT_SERVICES_AVAILABLE
+      } else {
         let allServices = this.sttServices
         let filteredServices = []
-        for(let i in allServices) {
+        for (let i in allServices) {
           if (allServices[i].lang === this.sttServiceLanguage.value) {
             filteredServices.push(allServices[i])
-          }
-        }
-        if (filteredServices.filter(f => f.serviceId === this.sttService.value).length === 0) {
-          this.sttService = {
-            value: '',
-            error: null,
-            valid: false
           }
         }
         return filteredServices
       }
     },
     sttServicesLanguages () {
-      return this.$store.getters.STT_SERVICES_LANGUAGES
+      let lang = []
+      let resp = []
+      this.availableServices.map(s => {
+        if (lang.indexOf(s.lang) < 0) {
+          lang.push(s.lang)
+          resp.push({ value: s.lang })
+        }
+      })
+      return resp
     },
     formValid () {
       if (this.nluService.value === 'tock') {
@@ -242,10 +270,84 @@ export default {
       return this.$store.state.tockapps
     },
     dataLoaded () {
-      return (this.lintoLoaded && this.contextTypeLoaded && this.sttServicesLoaded && this.nluLoaded && this.mqttLoaded && this.patternLoaded && this.tockAppsLoaded)
+      return (this.lintoLoaded && this.contextTypeLoaded && this.sttServicesLoaded && this.nluLoaded && this.mqttLoaded && this.patternLoaded && this.tockAppsLoaded && this.contextsLoaded && this.blsUp && this.tockUp && this.sttUp)
+    },
+    contextPayload () {
+      return {
+        context_name: this.contextName.value || null,
+        type: this.contextType.value || null,
+        workflowPattern: this.flowPattern.value || null,
+        mqtt: this.mqttDefaultSettings || null,
+        stt: {
+          service_name: this.sttService.value || null
+        },
+        nlu: {
+          service_name: this.nluService.value || null,
+          configs: {
+            host: this.nluService.configs.host || null,
+            namespace: 'app'
+          }
+        },
+        linto: this.contextType.value === 'Fleet' ? this.linto.value : [],
+        language: this.sttServiceLanguage.value || null
+      }
     }
   },
   methods: {
+    // Check if TOCK services are available
+    async isTockUp () {
+      try {
+        const connectTock = await axios(`${process.env.VUE_APP_URL}/api/tock/healthcheck`)
+        if (connectTock.data.status === 'success') {
+          this.tockUp = true
+          this.dispatchStore('getNluServices')
+          this.dispatchStore('getTockApplications')
+        } else {
+          throw 'error'
+        }
+      } catch (error) {
+        bus.$emit('app_notif', {
+          status: 'error',
+          msg: 'Cannot connect to Tock services',
+          timeout: false
+        })
+      }
+    },
+    // Check if the business logic server is available
+    async isBlsUp () {
+      try {
+        const connectBls = await axios.get(process.env.VUE_APP_NODERED)
+        if (connectBls.status === 200) {
+          this.blsUp = true
+        }
+      } catch (error) {
+        bus.$emit('app_notif', {
+          status: 'error',
+          msg: 'Cannot connect to Business logic server',
+          timeout: false
+        })
+      }
+    },
+    // Check if STT services are available
+    async isSttUp () {
+      try {
+        const connectSTT = await axios.get(`${process.env.VUE_APP_URL}/api/stt/healthcheck`)
+        if (connectSTT.data.status === 'success') {
+          this.sttUp = true
+          this.dispatchStore('getSttServices')
+        }
+        else {
+          throw 'error'
+        }
+      } catch (error) {
+        bus.$emit('app_notif', {
+          status: 'error',
+          msg: 'Cannot connect to STT service manager',
+          timeout: false
+        })
+      }
+    },
+    // Test every required field in the form
     handleForm () {
       this.testContextName()
       this.testSelectField(this.flowPattern)
@@ -253,61 +355,42 @@ export default {
       this.testSelectField(this.nluService)
       this.testSelectField(this.sttServiceLanguage)
       this.testSelectField(this.sttService)
+
       if (this.contextType.value === 'Fleet') {
         this.testSelectField(this.linto)
       }
+
       if (this.nluService.value === 'tock') {
         this.testSelectField(this.tockApplicationName)
       }
+
+      if (this.contexts.filter(l => l.name === this.contextName.value).length > 0) {
+        this.contextName.error = 'This context name is already used'
+        this.contextName.valid = false
+      }
+
       if (this.formValid) {
         this.sendForm()
       }
     },
+    // Update Context payload and trigger context creation
     async sendForm () {
-      let payload = {
-        context_name: this.contextName.value,
-        type: this.contextType.value,
-        workflowPattern: this.flowPattern.value,
-        mqtt: this.mqttDefaultSettings,
-        stt: {
-          service_name: this.sttService.value
-        },
-        nlu: {
-          service_name: this.nluService.value,
-          configs: {
-            host: this.nluService.configs.host,
-            namespace: 'app'
+      try {
+        if (this.nluService.value === 'tock') {
+          if (this.tockApplicationName.value === 'new') {
+            this.contextPayload.nlu.configs.appname = this.contextName.value.toLowerCase().trim().replace(/\s/g, '_')
+            this.contextPayload.nlu.configs.new = true
+          } else {
+            this.contextPayload.nlu.configs.appname = this.tockApplicationName.value
+            this.contextPayload.nlu.configs.new = false
           }
-        },
-        linto: this.contextType.value === 'Fleet' ? this.linto.value : [],
-        language: this.sttServiceLanguage.value
-      }
-      if (this.nluService.value === 'tock') {
-        if (this.tockApplicationName.value === 'new') {
-          payload.nlu.configs.appname = this.contextName.value.toLowerCase().trim().replace(/\s/g, '_')
-          payload.nlu.configs.new = true
-        } else {
-          payload.nlu.configs.appname = this.tockApplicationName.value
-          payload.nlu.configs.new = false
         }
-      }
-      const createContext = await axios(`${process.env.VUE_APP_URL}/api/context`, {
-        method: 'post',
-        data: payload
-      })
-      if (createContext.data.status === 'error') {
-        if (createContext.data.code === 'contextName') {
-          this.contextName.error = createContext.data.msg
-          this.contextName.valid = false
-        } else if (createContext.data.code === 'lintoDevice') {
-          this.linto.error = createContext.data.msg
-          this.linto.valid = false
-        }
-
-      } else {
+        // Trigger context creation steps
+        bus.$emit('add_context_modal', { payload: this.contextPayload })
+      } catch (error) {
         bus.$emit('app_notif', {
-          status: createContext.data.status,
-          msg: createContext.data.msg,
+          status: 'error',
+          msg: 'An error has occured',
           timeout: 4000
         })
       }
@@ -319,31 +402,50 @@ export default {
       this.$options.filters.testSelectField(obj)
     },
     async dispatchStore (topic) {
-      const resp = await this.$options.filters.dispatchStore(topic)
-      switch(topic) {
-        case 'getmqttDefaultSettings':
-          this.mqttLoaded = resp
-          break
-        case 'getSttServices':
-          this.sttServicesLoaded = resp
-          break
-        case 'getNluSettings':
-          this.nluLoaded = resp
-          break
-        case 'getTockApplications':
-          this.tockAppsLoaded = resp
-          break
-        case 'getFlowPatterns':
-          this.patternLoaded = resp
-          break
-        case 'getContextTypes':
-          this.contextTypeLoaded = resp
-          break
-        case 'getLintoFleet':
-          this.lintoLoaded = resp
-          break
-        default:
-          return
+      try {
+        const resp = await this.$options.filters.dispatchStore(topic)
+        if (resp.status === 'success') {
+          switch (topic) {
+            case 'getFleetContexts':
+              this.contextsLoaded = resp
+            case 'getmqttDefaultSettings':
+              this.mqttLoaded = resp
+              break
+            case 'getSttServices':
+              this.sttServicesLoaded = resp
+              break
+            case 'getNluServices':
+              this.nluLoaded = resp
+              break
+            case 'getTockApplications':
+              this.tockAppsLoaded = resp
+              break
+            case 'getFlowPatterns':
+              this.patternLoaded = resp
+              break
+            case 'getContextTypes':
+              this.contextTypeLoaded = resp
+              break
+            case 'getLintoFleet':
+              this.lintoLoaded = resp
+              break
+            default:
+              return
+          }
+        } else {
+          bus.$emit('app_notif', {
+            status: 'error',
+            msg: resp.msg,
+            timeout: false
+          })
+        }
+
+      } catch (error) {
+        bus.$emit('app_notif', {
+          status: 'error',
+          msg: 'An error has occured',
+          timeout: false
+        })
       }
     }
   },

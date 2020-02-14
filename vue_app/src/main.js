@@ -9,13 +9,22 @@ Vue.config.productionTip = false
 Vue.filter('dispatchStore', async function (label) {
   try {
     const req = await store.dispatch(label)
+    if (!!req.error) {
+      throw req.error
+    }
     if (typeof req !== 'undefined') {
-      return true
+      return {
+        status: 'success',
+        msg: ''
+      }
     } else {
-      return false
+      throw 'an error has occured'
     }
   } catch (error) {
-    return error
+    return ({
+      status: 'error',
+      msg: error
+    })
   }
 })
 
