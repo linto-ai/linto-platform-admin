@@ -91,6 +91,15 @@ transition: none;
   }
 }
 
+@mixin rotate () {
+  animation-name: rotating;
+  -webkit-animation-name: rotating; /* Safari 4.0 - 8.0 */
+  animation-duration: 1s;
+  -webkit-animation-duration: 1s; /* Safari 4.0 - 8.0 */
+  animation-iteration-count: infinite;
+  -webkit-animation-iteration-count: infinite;
+
+}
 /* Safari and Chrome */
 @-webkit-keyframes rotating  {
   from {
