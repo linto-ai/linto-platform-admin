@@ -1,0 +1,55 @@
+# Server settings
+NODE_ENV=production
+HTTP_PORT=80
+DEFAULT_CITY=Paris
+DEFAULT_LANGUE=fr-FR
+TZ=Europe/Paris
+ADMIN_URL=http://127.0.0.1:80
+
+#Redis settings
+REDIS_PORT=6379
+REDIS_HOST=redis-admin
+
+# Mongodb settings
+BDD_TYPE=mongodb
+MONGODB_HOST=mongo-admin
+MONGODB_PORT=27017
+MONGODB_DBNAME=lintoAdminV2
+MONGODB_REQUIRE_LOGIN=true
+MONGODB_USER=root
+MOGODB_PSWD=example
+
+# Business logic server(nodered)
+BUSINESS_LOGIC_SERVER_URL=http://127.0.0.1/bls/
+BUSINESS_LOGIC_SERVER_URI=http://127.0.0.1/bls/redui
+BLS_AUTH=true
+BLS_LOGIN=admin
+BLS_PSWD=password
+
+# Logic MQTT server
+LOGIC_MQTT_ADDRESS=localhost
+LOGIC_MQTT_PORT=1883
+LOGIC_MQTT_USER=linto
+LOGIC_MQTT_PWD=otnil
+LOGIC_MQTT_USE_LOGIN=true
+LOGIC_MQTT_HW_SCOPE=blk
+
+# NLU
+NLU_TOCK_HOST=https://alpha.linto.ai/tock
+NLU_TOCK_REST_HOST=https://alpha.linto.ai/rest
+NLU_TOCK_USER=admin@app.com
+NLU_TOCK_PSWD=password
+NLU_TOCK_APP_NAME=NLU_TOCK_APP_NAME
+NLU_TOCK_NAMESPACE=NLU_TOCK_NAMESPACE
+
+NLU_RASA_HOST=localhost
+NLU_RASA_USER=NLU_RASA_USER
+NLU_RASA_PSWD=NLU_RASA_PSWD
+
+#SERVICE MANAGER
+SERVICE_MANAGER_URL=http://127.0.0.1/stt-service-manager
+
+WHITELIST_DOMAINS=http://localhost:10000,http://127.0.0.1,http://0.0.0.0
+
+#NGINX
+NGINX_CONF=./localconfig/nginx/nginx.conf

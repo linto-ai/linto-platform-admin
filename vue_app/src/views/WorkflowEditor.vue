@@ -22,9 +22,10 @@ export default {
   components: {
     NodeRedIframe
   },
-  beforeRouteEnter (to, form, next) {
-    // Check if Business logic server is UP before enter route
-    next(vm => vm.isBlsUp())
+  mounted () {
+    setTimeout(async () => {
+      await this.isBlsUp()
+    }, 500)
   },
   methods: {
     async isBlsUp () {

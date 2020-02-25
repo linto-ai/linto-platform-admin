@@ -172,7 +172,7 @@ export default {
     },
     async createContext () {
       // updateLinto
-      const updateLinto = await this.updateLinto()
+      const updateLinto = await execRequest(this.linto, `${process.env.VUE_APP_URL}/api/lintos/fleet/${this.contextPayload.linto}`, 'put', {payload: this.contextPayload})
       console.log('updateLinto:', updateLinto)
 
       if (updateLinto) {
@@ -338,6 +338,26 @@ export default {
         this.sttGenerateGraph.updated = false
         this.sttGenerateGraph.done = false
         this.sttGenerateGraph.error = true
+        return false
+      }
+    },
+    async execRequest (obj, url, method, data) {
+      obj.updating = true
+      const request = await axios(url, {
+        method: method,
+        data: data
+      })
+      obj.msg = request.data.msg
+      if(request.data.status === 'success') {
+        obj.updating = false
+        obj.updated = true
+        obj.done = true
+        return true
+      } else {
+        obj.updating = false
+        obj.updated = false
+        obj.done = false
+        obj.error = true
         return false
       }
     }

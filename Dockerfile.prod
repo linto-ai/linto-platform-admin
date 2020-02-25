@@ -1,0 +1,19 @@
+FROM node:latest
+FROM node:latest
+
+WORKDIR /usr/src/app/linto-admin
+
+RUN apt-get update -y && \
+    apt-get install -y mongodb
+
+COPY ./vue_app /usr/src/app/linto-admin/vue_app
+RUN cd vue_app/ && \
+    npm install && npm run build-app
+
+COPY ./webserver /usr/src/app/linto-admin/webserver
+RUN cd /usr/src/app/linto-admin/webserver && \
+    npm install
+
+WORKDIR /usr/src/app/linto-admin/webserver
+
+CMD ["npm", "run", "start"]
