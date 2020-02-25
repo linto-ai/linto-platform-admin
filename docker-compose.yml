@@ -1,0 +1,46 @@
+version: '3.7'
+
+services:
+  linto-platform-admin:
+    image: linto-admin-v2:latest
+    build: .
+    deploy:
+      mode: replicated
+      replicas: 1
+      endpoint_mode: dnsrr
+    env_file: ${PWD}/.docker_env
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+    networks:
+      - linto-net
+      - internal
+
+  mongo-admin:
+    image: mongo:latest
+    volumes:
+      - ./mongodb/seed:/docker-entrypoint-initdb.d
+      - /home/rlopez/mongo-data/mongo/db:/data/db
+      - /home/rlopez/mongo-data/mongo/backup:/data/backup
+    environment:
+      MONGO_INITDB_DATABASE: lintoAdminV2
+    networks:
+     - internal
+
+  redis-admin:
+    image: redis:latest
+    networks:
+      - internal
+
+  nginx:
+    image: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./localconfig/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - linto-net
+
+networks:
+  linto-net:
+    external: true
+  internal:
