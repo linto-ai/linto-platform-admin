@@ -115,7 +115,7 @@ export default {
       }
     },
     async dispatchLintos (topic) {
-      this.lintosLoaded = await this.$options.filters.dispatchStore('getSttLanguageModels')
+      this.lintosLoaded = await this.$options.filters.dispatchStore('getLintoFleet')
     }
   },
   components: {

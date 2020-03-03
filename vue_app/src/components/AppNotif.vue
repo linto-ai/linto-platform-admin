@@ -38,9 +38,14 @@ export default {
           this.animateErrorIcon()
         }
       }, 100)
+      // Timeout show/hide
       if (!!data.timeout && data.timeout !== null) {
         setTimeout(() => {
           this.showNotif = false
+          // Redirect ?
+          if (!!data.redirect && data.timeout !== null) {
+            window.location.href = data.redirect
+          }
         }, parseInt(data.timeout))
       }
     })

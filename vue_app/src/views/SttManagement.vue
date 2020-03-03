@@ -50,7 +50,7 @@
         No STT service found
       </div>
       <!-- STT Language models -->
-      <div class="block block--transparent" v-if="sttLangModels.length > 0">
+      <div class="block block--transparent" v-if="!!sttLangModels && sttLangModels.length > 0">
         <h2>STT Language models</h2>
         <div class="flex row">
           <table class="table table--full">
@@ -145,6 +145,11 @@ export default {
       sttAcModelsLoaded: false,
       sttLangModelsLoaded: false
     }
+  },
+  mounted () {
+    setTimeout(() => {
+      console.log(this.$store)
+    }, 599)
   },
   created () {
     this.dispatchStore('getSttServices')

@@ -63,7 +63,7 @@
               <span class="icon"></span>
               <span class="label">stt : {{ stt.msg }}</span>
           </li>
-          <!-- GENERATE GRAPH
+          <!-- GENERATE GRAPH 
           <li
               class="deploy-status--item"
               :class="[
@@ -154,53 +154,56 @@ export default {
     }
   },
   computed: {
+    createContextSuccess () {
+      return (this.linto.done && this.workflow.done && this.context.done && this.nlu.done && this.stt.done && this.sttGenerateGraph.done)
+    }
   },
   mounted () {
     bus.$on('add_context_modal', async (data) => {
-      console.log(data)
       this.showModal = true
       this.contextPayload = data.payload
-
       this.dataLoaded = true
       this.createContext()
     })
   },
-
+  watch: {
+    createContextSuccess (data) {
+      if (data) {
+        this.closeModal()
+        bus.$emit('create_context_success', { context: this.context })
+      }
+    }
+  },
   methods: {
     closeModal () {
       this.showModal = false
     },
     async createContext () {
       // updateLinto
-      const updateLinto = await execRequest(this.linto, `${process.env.VUE_APP_URL}/api/lintos/fleet/${this.contextPayload.linto}`, 'put', {payload: this.contextPayload})
-      console.log('updateLinto:', updateLinto)
-
+      const updateLinto = await this.execRequest(this.linto, `${process.env.VUE_APP_URL}/api/lintos/fleet/${this.contextPayload.linto}`, 'put', {payload: this.contextPayload})
       if (updateLinto) {
         // post BLS
         setTimeout(async () => {
           const postbls = await this.postFlowOnBLS()
-          console.log('postbls', postbls)
-
           if (postbls && this.flowId !== null) {
            // post context
            setTimeout(async () => {
             const postContext = await this.postContext()
-
             if (postContext) {
               setTimeout(async () => {
+                // Nlu lexical seeding
                 if (this.contextPayload.nlu.service_name === 'tock') {
                   const nluLexicalSeeding = await this.nluLexicalSeeding()
-                  console.log('nluLexicalSeeding', nluLexicalSeeding)
                 }
+                // Stt lexical seeding
                 const sttLexicalSeeding = await this.sttLexicalSeeding()
                 if(sttLexicalSeeding) {
-                  // TODO GENERATE GRAPH
                   /*setTimeout(async () => {
-                    const generateGraph = await this.sttGeneratingGraph()
-                    console.log('Generate graph: ', generateGraph)
+                    // Stt generate graph
+                    //const generateGraph = await this.sttGeneratingGraph()
+                    console.log('Wait to generate ')
                   }, 1500);*/
                 }
-                console.log('sttLexicalSeeding', sttLexicalSeeding)
               }, 1500)
             }
            }, 1500)
@@ -322,14 +325,13 @@ export default {
       this.sttGenerateGraph.updating = true
       const sttSeeding = await axios(`${process.env.VUE_APP_URL}/api/stt/generateGraph`, {
         method: 'post',
-        timeout: 900000,
         data: {
           service_name: this.contextPayload.stt.service_name
         }
       })
       this.sttGenerateGraph.msg = sttSeeding.data.msg
       if(sttSeeding.data.status === 'success') {
-       this.sttGenerateGraph.updating = false
+        this.sttGenerateGraph.updating = false
         this.sttGenerateGraph.updated = true
         this.sttGenerateGraph.done = true
         return true

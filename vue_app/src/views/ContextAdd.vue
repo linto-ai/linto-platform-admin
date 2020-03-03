@@ -134,6 +134,16 @@ export default {
     this.dispatchStore('getContextTypes')
     this.dispatchStore('getLintoFleet')
   },
+  mounted () {
+    bus.$on('create_context_success', (data) => {
+      bus.$emit('app_notif', {
+          status: 'success',
+          msg: `The context ${data.context.name} has been created. You will be redirected.`,
+          timeout: 4000,
+          redirect: '/admin/context/overview'
+        })
+    })
+  },
   watch: {
     'nluService.value': function (data) {
       if (data.length > 0) {

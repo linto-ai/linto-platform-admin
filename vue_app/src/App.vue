@@ -1,5 +1,6 @@
 <template>
   <div id="app" class="flex col">
+    <AppNotifTop></AppNotifTop>
     <AppHeader :extraClass="fullScreenFrame ? 'fullscreen-child' : ''"></AppHeader>
     <div id="page-view" class="flex1 flex row">
       <AppVerticalNav :extraClass="fullScreenFrame ? 'fullscreen-child' : ''"></AppVerticalNav>
@@ -34,6 +35,7 @@
   import AddLanguageModelModal from '@/components/AddLanguageModelModal.vue'
   import AddSTTServiceModal from '@/components/AddSTTServiceModal.vue'
   import AddContextModal from '@/components/AddContextModal.vue'
+  import AppNotifTop from '@/components/AppNotifTop.vue'
   import { bus } from './main.js'
   export default {
     data () {
@@ -48,6 +50,7 @@
     components: {
       AppHeader,
       AppNotif,
+      AppNotifTop,
       AppVerticalNav,
       AddLintoModal,
       LoadPatternModal,

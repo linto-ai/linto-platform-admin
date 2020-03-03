@@ -1,251 +1,187 @@
 @import url('https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800&display=swap');
-
 body {
-  font-family: 'Open Sans', Arial, Helvetica, sans-serif;
-  font-size: 16px;
-  color: $textColor;
-  font-weight: 400;
-  padding: 0;
-  margin: 0;
+    font-family: 'Open Sans', Arial, Helvetica, sans-serif;
+    font-size: 16px;
+    color: $textColor;
+    font-weight: 400;
+    padding: 0;
+    margin: 0;
 }
 
-h1, h2, h3, h4 {
-  display: inline-block;
-  width: 100%;
-  margin: 0;
+h1,
+h2,
+h3,
+h4 {
+    display: inline-block;
+    width: 100%;
+    margin: 0;
 }
-h1{
-  font-size: 30px;
-  font-weight: 700;
-  padding: 0 0 20px 0;
-  color: $blueDark;
+
+h1 {
+    font-size: 30px;
+    font-weight: 700;
+    padding: 0 0 20px 0;
+    color: $blueDark;
 }
-h2{
-  font-size: 26px;
-  font-weight: 600;
-  padding: 0 0 20px 0;
-  color: $blueMid;
+
+h2 {
+    font-size: 26px;
+    font-weight: 600;
+    padding: 0 0 20px 0;
+    color: $blueMid;
 }
-h3{
-  font-size: 22px;
-  font-weight: 500;
-  padding: 0 0 20px 0;
+
+h3 {
+    font-size: 22px;
+    font-weight: 500;
+    padding: 0 0 20px 0;
 }
+
 .flex {
-  display: flex;
-  &.col{
-    flex-direction: column;
-  }
-  &.row {
-    flex-direction: row;
-  }
+    display: flex;
+    &.col {
+        flex-direction: column;
+    }
+    &.row {
+        flex-direction: row;
+    }
 }
 
 .flex1 {
-  flex: 1;
+    flex: 1;
 }
+
 .flex2 {
-  flex: 2;
+    flex: 2;
 }
+
 .flex3 {
-  flex: 3;
+    flex: 3;
 }
+
 .flex4 {
-  flex: 4;
+    flex: 4;
 }
 
 img {
-  display: inline-block;
+    display: inline-block;
 }
 
 .hidden {
-  display: none;
+    display: none;
 }
 
 .block {
-  padding: 20px;
-  background-color: #fff;
-  @include blockShadow();
-  @include borderRadius(3px);
-  margin: 0 0 20px 0;
-
-  &.block--transparent{
-    @include cancelBoxShadow();
-    background-color: transparent;
-    padding: 20px 0;
-  }
-  &.block--no-padding{
-    padding: 0 !important;
-  }
-  &.block--no-margin{
-    margin: 0 !important;
-  }
-}
-
-.table{
-  border-collapse: separate;
-  border-spacing: 0;
-  &.table--full{
-    width: 100%;
-  }
-  thead {
-    tr{
-      th{
-        font-size: 16px;
-        font-weight: 600;
-        padding: 5px 10px;
-        text-align: left;
-        color: $greenChart;
-        &.status{
-          width: 100px;
-        }
-      }
-    }
-  }
-  tbody {
+    padding: 20px;
+    background-color: #fff;
     @include blockShadow();
     @include borderRadius(3px);
-    tr{
-      &:first-child{
-        td:first-child {
-          -webkit-border-top-left-radius: 3px;
-          -moz-border-radius-topleft: 3px;
-          border-top-left-radius: 3px;
-        }
-        td:last-child {
-          -webkit-border-top-right-radius: 3px;
-          -moz-border-radius-topright: 3px;
-          border-top-right-radius: 3px;
-        }
-      }
-      &:last-child {
-        td:first-child {
-          -webkit-border-bottom-left-radius: 3px;
-          -moz-border-radius-bottomleft: 3px;
-          border-bottom-left-radius: 3px;
-        }
-        td:last-child {
-          -webkit-border-bottom-right-radius: 3px;
-          -moz-border-radius-bottomright: 3px;
-          border-bottom-right-radius: 3px;
-        }
-        td{
-          border: none;
-        }
-
-      }
-      td{
-        border-bottom: 1px solid #ececec;
-        font-size: 16px;
-        padding: 15px 10px;
-        background-color: #fefefe;
-        font-size: 14px;
-        color: #777;
-        &.important {
-          font-weight: 600;
-          color: #545454;
-        }
-        &.center{
-          text-align: center;
-        }
-        &.status{
-          width: 100px;
-        }
-      }
-      &:hover {
-        td {
-          background-color: #f8f8f8;
-        }
-      }
-      &.active{
-        td{
-          background-color: $greenLight;
-        }
-      }
+    margin: 0 0 20px 0;
+    &.block--transparent {
+        @include cancelBoxShadow();
+        background-color: transparent;
+        padding: 20px 0;
     }
-  }
+    &.block--no-padding {
+        padding: 0 !important;
+    }
+    &.block--no-margin {
+        margin: 0 !important;
+    }
 }
 
-.icon.icon--status{
-  display: inline-block;
-  width: 12px;
-  height: 12px;
-  @include borderRadius(6px);
-  &.online{
-    background-color: $valid;
-  }
-  &.offline{
-    background-color: $error;
-  }
+.table {
+    border-collapse: separate;
+    border-spacing: 0;
+    &.table--full {
+        width: 100%;
+    }
+    thead {
+        tr {
+            th {
+                font-size: 16px;
+                font-weight: 600;
+                padding: 5px 10px;
+                text-align: left;
+                color: $greenChart;
+                &.status {
+                    width: 100px;
+                }
+            }
+        }
+    }
+    tbody {
+        @include blockShadow();
+        @include borderRadius(3px);
+        tr {
+            &:first-child {
+                td:first-child {
+                    -webkit-border-top-left-radius: 3px;
+                    -moz-border-radius-topleft: 3px;
+                    border-top-left-radius: 3px;
+                }
+                td:last-child {
+                    -webkit-border-top-right-radius: 3px;
+                    -moz-border-radius-topright: 3px;
+                    border-top-right-radius: 3px;
+                }
+            }
+            &:last-child {
+                td:first-child {
+                    -webkit-border-bottom-left-radius: 3px;
+                    -moz-border-radius-bottomleft: 3px;
+                    border-bottom-left-radius: 3px;
+                }
+                td:last-child {
+                    -webkit-border-bottom-right-radius: 3px;
+                    -moz-border-radius-bottomright: 3px;
+                    border-bottom-right-radius: 3px;
+                }
+                td {
+                    border: none;
+                }
+            }
+            td {
+                border-bottom: 1px solid #ececec;
+                font-size: 16px;
+                padding: 15px 10px;
+                background-color: #fefefe;
+                font-size: 14px;
+                color: #777;
+                &.important {
+                    font-weight: 600;
+                    color: #545454;
+                }
+                &.center {
+                    text-align: center;
+                }
+                &.status {
+                    width: 100px;
+                }
+            }
+            &:hover {
+                td {
+                    background-color: #f8f8f8;
+                }
+            }
+            &.active {
+                td {
+                    background-color: $greenLight;
+                }
+            }
+        }
+    }
 }
 
-.notif-wrapper {
-  z-index: 10;
-  @include boxShadow(0, -2px, 2px, 0, rgba(0,0,0,0.2));
-  padding: 0;
-  overflow: hidden;
-  border: none;
-  position: relative;
-  @include transition(height 0.3s ease);
-  &.closed {
-    height: 0;
-  }
-
-  &.success,
-  &.error{
-    height: 40px;
-    padding: 10px 0;
-  }
-
-  &.success {
-    &::after {
-      content:'';
-      display: inline-block;
-      position: absolute;
-      height: 3px;
-      width: 100%;
-      top: 0;
-      left: 0;
-      background-color: $valid;
-      @include traceBorderTop();
-    }
-  }
-  &.error {
-    &::after {
-      content:'';
-      display: inline-block;
-      position: absolute;
-      height: 3px;
-      width: 100%;
-      top: 0;
-      left: 0;
-      background-color: $error;
-      @include traceBorderTop();
-    }
-  }
-}
-.notif-container{
-
-  align-items: center;
-  justify-content: center;
-  position: relative;
-
-  & > span {
+.icon.icon--status {
     display: inline-block;
-  }
-  .icon {
-    width: 40px;
-    height: 40px;
-    margin: 0 10px;
-  }
-  .notif-msg {
-    font-size: 16px;
-
-    &.success {
-      color: $valid;
+    width: 12px;
+    height: 12px;
+    @include borderRadius(6px);
+    &.online {
+        background-color: $valid;
     }
-    &.error {
-      color: $error;
+    &.offline {
+        background-color: $error;
     }
-  }
 }
