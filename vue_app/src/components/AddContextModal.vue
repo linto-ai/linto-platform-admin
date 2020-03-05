@@ -63,19 +63,6 @@
               <span class="icon"></span>
               <span class="label">stt : {{ stt.msg }}</span>
           </li>
-          <!-- GENERATE GRAPH 
-          <li
-              class="deploy-status--item"
-              :class="[
-                sttGenerateGraph.updating ? 'deploy-status--item__updating' : '',
-                sttGenerateGraph.updated ? 'deploy-status--item__valid' : '',
-                sttGenerateGraph.error ? 'deploy-status--item__error' : '',
-              ]"
-            >
-              <span class="icon"></span>
-              <span class="label">sttGenerateGraph : {{ sttGenerateGraph.msg }}</span>
-          </li>
-          -->
         </ul>
       </div>
     </div>
@@ -142,20 +129,13 @@ export default {
         error: false,
         msg: 'Sending informations to STT service...'
       },
-      sttGenerateGraph: {
-        updating: false,
-        updated: false,
-        done: false,
-        error: false,
-        msg: 'Generating graph. This operation could take several minutes...'
-      },
       flowId: null,
       dataLoaded: false
     }
   },
   computed: {
     createContextSuccess () {
-      return (this.linto.done && this.workflow.done && this.context.done && this.nlu.done && this.stt.done && this.sttGenerateGraph.done)
+      return (this.linto.done && this.workflow.done && this.context.done && this.nlu.done && this.stt.done)
     }
   },
   mounted () {
@@ -197,13 +177,6 @@ export default {
                 }
                 // Stt lexical seeding
                 const sttLexicalSeeding = await this.sttLexicalSeeding()
-                if(sttLexicalSeeding) {
-                  /*setTimeout(async () => {
-                    // Stt generate graph
-                    //const generateGraph = await this.sttGeneratingGraph()
-                    console.log('Wait to generate ')
-                  }, 1500);*/
-                }
               }, 1500)
             }
            }, 1500)

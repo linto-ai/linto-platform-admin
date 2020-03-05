@@ -54,9 +54,6 @@ export default {
           }, 2500)
 
         }
-        else {
-          console.log('pas eu generation')
-        }
       }
     }
   },

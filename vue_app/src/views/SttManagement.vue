@@ -146,11 +146,6 @@ export default {
       sttLangModelsLoaded: false
     }
   },
-  mounted () {
-    setTimeout(() => {
-      console.log(this.$store)
-    }, 599)
-  },
   created () {
     this.dispatchStore('getSttServices')
     this.dispatchStore('getSttAcousticModels')

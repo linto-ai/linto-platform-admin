@@ -8,7 +8,7 @@ module.exports = (webServer) => {
             // Get all LinTO devices (fleet) from database
             path: '/fleet',
             method: 'get',
-            requireAuth: false,
+            requireAuth: true,
             controller: async(req, res, next) => {
                 try {
                     const getLintos = await model.getLintoFleet()
@@ -23,7 +23,7 @@ module.exports = (webServer) => {
             // Add a new LinTO to devices list (fleet)
             path: '/fleet',
             method: 'post',
-            requireAuth: false,
+            requireAuth: true,
             controller: async(req, res, next) => {
                 try {
                     const sn = req.body.sn
@@ -51,7 +51,7 @@ module.exports = (webServer) => {
             // Update linto associated context
             path: '/fleet/:sn',
             method: 'put',
-            requireAuth: false,
+            requireAuth: true,
             controller: async(req, res, next) => {
                 try {
                     const sn = req.params.sn

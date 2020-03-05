@@ -80,8 +80,6 @@ function configureDefaults() {
         process.env.NLU_TOCK_HOST = ifHas(process.env.NLU_TOCK_HOST, envdefault.NLU_TOCK_HOST)
         process.env.NLU_TOCK_USER = ifHas(process.env.NLU_TOCK_USER, envdefault.NLU_TOCK_USER)
         process.env.NLU_TOCK_PSWD = ifHas(process.env.NLU_TOCK_PSWD, envdefault.NLU_TOCK_PSWD)
-        process.env.NLU_TOCK_APP_NAME = ifHas(process.env.NLU_TOCK_APP_NAME, envdefault.NLU_TOCK_APP_NAME)
-        process.env.NLU_TOCK_NAMESPACE = ifHas(process.env.NLU_TOCK_NAMESPACE, envdefault.NLU_TOCK_NAMESPACE)
 
         // STT service-manager
         process.env.SERVICE_MANAGER_URL = ifHas(process.env.SERVICE_MANAGER_URL, envdefault.SERVICE_MANAGER_URL)

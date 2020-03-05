@@ -9,7 +9,7 @@ module.exports = (webServer) => {
             // Get all existing Tock applications
             path: '/applications',
             method: 'get',
-            requireAuth: false,
+            requireAuth: true,
             controller: async(req, res, next) => {
                 try {
                     const tockToken = middlewares.basicAuthToken(process.env.NLU_TOCK_USER, process.env.NLU_TOCK_PSWD)
@@ -31,10 +31,10 @@ module.exports = (webServer) => {
         {
             path: '/healthcheck',
             method: 'get',
-            requireAuth: false,
+            requireAuth: true,
             controller: async(req, res, next) => {
                 try {
-                    const getTock = await axios(process.env.NLU_TOCK_HOST)
+                    const getTock = await axios.get(process.env.NLU_TOCK_HOST)
                     if (getTock.status === 200) {
                         res.json({
                             status: 'success',

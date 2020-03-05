@@ -326,7 +326,7 @@ export default {
     // Check if the business logic server is available
     async isBlsUp () {
       try {
-        const connectBls = await axios.get(process.env.VUE_APP_NODERED)
+        const connectBls = await axios.get(`${process.env.VUE_APP_URL}/api/flow/healthcheck`)
         if (connectBls.status === 200) {
           this.blsUp = true
         }

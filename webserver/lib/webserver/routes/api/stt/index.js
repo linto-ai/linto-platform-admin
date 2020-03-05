@@ -99,7 +99,7 @@ module.exports = (webServer) => {
             // Get all services in stt-service-manager
             path: '/services',
             method: 'get',
-            requireAuth: false,
+            requireAuth: true,
             controller: async(req, res, next) => {
                 try {
                     const getServices = await axios(`${process.env.SERVICE_MANAGER_URL}/services`, {
@@ -116,7 +116,7 @@ module.exports = (webServer) => {
             // Create a service in stt-service-manager
             path: '/service',
             method: 'post',
-            requireAuth: false,
+            requireAuth: true,
             controller: async(req, res, next) => {
                 try {
                     const payload = req.body
@@ -149,22 +149,22 @@ module.exports = (webServer) => {
         {
             path: '/langmodels',
             method: 'get',
-            requireAuth: false,
+            requireAuth: true,
             controller: async(req, res, next) => {
                 try {
                     const getLanguageModels = await axios(`${process.env.SERVICE_MANAGER_URL}/langmodels`, {
                         method: 'get'
                     })
                     res.json({ services: getLanguageModels.data })
-                } catch (e) {
-                    res.json({ error: e })
+                } catch (error) {
+                    res.json({ error: error.toString() })
                 }
             }
         },
         {
             path: '/langmodel',
             method: 'post',
-            requireAuth: false,
+            requireAuth: true,
             controller: async(req, res, next) => {
                 try {
                     const acmodel = req.body.acmodelname
@@ -200,7 +200,7 @@ module.exports = (webServer) => {
         {
             path: '/langmodel',
             method: 'delete',
-            requireAuth: false,
+            requireAuth: true,
             controller: async(req, res, next) => {
                 try {
                     const modelId = req.body.modelId
@@ -232,7 +232,7 @@ module.exports = (webServer) => {
         {
             path: '/acmodels',
             method: 'get',
-            requireAuth: false,
+            requireAuth: true,
             controller: async(req, res, next) => {
                 try {
                     const getACModels = await axios(`${process.env.SERVICE_MANAGER_URL}/acmodels`, {
@@ -247,7 +247,7 @@ module.exports = (webServer) => {
         {
             path: '/acmodel',
             method: 'post',
-            requireAuth: false,
+            requireAuth: true,
             controller: async(req, res, next) => {
                 try {
                     AMupload(req, res, async(error) => {
@@ -300,7 +300,7 @@ module.exports = (webServer) => {
         {
             path: '/acmodel',
             method: 'delete',
-            requireAuth: false,
+            requireAuth: true,
             controller: async(req, res, next) => {
                 try {
                     const modelId = req.body.modelId
@@ -332,7 +332,7 @@ module.exports = (webServer) => {
         {
             path: '/lexicalseeding',
             method: 'post',
-            requireAuth: false,
+            requireAuth: true,
             controller: async(req, res, next) => {
                 try {
                     const flowId = req.body.flowId
@@ -453,7 +453,7 @@ module.exports = (webServer) => {
         }, {
             path: '/generategraph',
             method: 'post',
-            requireAuth: false,
+            requireAuth: true,
             controller: async(req, res, next) => {
                 try {
                     const service_name = req.body.service_name
@@ -479,7 +479,7 @@ module.exports = (webServer) => {
         }, {
             path: '/healthcheck',
             method: 'get',
-            requireAuth: false,
+            requireAuth: true,
             controller: async(req, res, next) => {
                 try {
                     const getSttManager = await axios(process.env.SERVICE_MANAGER_URL)

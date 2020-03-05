@@ -111,7 +111,7 @@ export default {
           timeout: 4000
         })
       } catch (error) {
-        console.log(error)
+        console.error(error)
       }
     },
     async dispatchLintos (topic) {

@@ -10,7 +10,7 @@ module.exports = (webServer) => {
             // Get all existing contexts from database
             path: '/fleet',
             method: 'get',
-            requireAuth: false,
+            requireAuth: true,
             controller: async(req, res, next) => {
                 try {
                     const fleetContexts = await model.getFleetContexts()
@@ -24,7 +24,7 @@ module.exports = (webServer) => {
             // Create a context in database
             path: '/',
             method: 'post',
-            requireAuth: false,
+            requireAuth: true,
             controller: async(req, res, next) => {
                 try {
                     const payload = req.body.payload
@@ -89,7 +89,7 @@ module.exports = (webServer) => {
             // Get all existing context types
             path: '/types',
             method: 'get',
-            requireAuth: false,
+            requireAuth: true,
             controller: async(req, res, next) => {
                 try {
                     const contextTypes = await model.getContextTypes()
@@ -104,7 +104,7 @@ module.exports = (webServer) => {
             // Get existing NLU services (by default = "tock")
             path: '/nluservices',
             method: 'get',
-            requireAuth: false,
+            requireAuth: true,
             controller: async(req, res, next) => {
                 try {
                     res.json([{
@@ -121,7 +121,7 @@ module.exports = (webServer) => {
             // Get MQTT default settings
             path: '/getMqttDefaultSettings',
             method: 'get',
-            requireAuth: false,
+            requireAuth: true,
             controller: async(req, res, next) => {
                 try {
                     res.json({

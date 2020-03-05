@@ -66,7 +66,9 @@ export default {
   },
   watch: {
     tmpPattern: function (data) {
-      this.workspaceId = data.workspaceId
+      const obj = data.filter(d => d.type === 'tab')
+      this.workspaceId = obj[0].id
+      
     },
     dataLoaded (data)  {
       if (data) {
@@ -86,6 +88,10 @@ export default {
       }
     },
     async sendForm () {
+      console.log('payload', {
+          workspaceId: this.workspaceId,
+          patternId: this.selectedPattern.value
+        })
       const sendForm = await axios(`${process.env.VUE_APP_URL}/api/flow/loadpattern`, {
         method: 'put',
         data: {

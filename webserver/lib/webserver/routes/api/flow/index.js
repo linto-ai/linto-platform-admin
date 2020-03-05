@@ -6,10 +6,32 @@ const nodered = require(`${process.cwd()}/lib/webserver/middlewares/nodered.js`)
 
 module.exports = (webServer) => {
     return [{
+            path: '/healthcheck',
+            method: 'get',
+            requireAuth: false,
+            controller: async(req, res, next) => {
+                try {
+                    const getBls = await axios(process.env.BUSINESS_LOGIC_SERVER_URI)
+                    if (getBls.status === 200) {
+                        res.json({
+                            status: 'success',
+                            msg: ''
+                        })
+                    } else {
+                        throw 'error on connecting'
+                    }
+                } catch (error) {
+                    res.json({
+                        status: 'error',
+                        msg: 'unable to connect Business logic server'
+                    })
+                }
+            }
+        }, {
             // Get sandbox workflow ID
             path: '/sandbox',
             method: 'get',
-            requireAuth: false,
+            requireAuth: true,
             controller: async(req, res, next) => {
                 try {
                     const accessToken = await nodered.getBLSAccessToken()
@@ -45,7 +67,7 @@ module.exports = (webServer) => {
             // Get all workflow patterns in database
             path: '/patterns',
             method: 'get',
-            requireAuth: false,
+            requireAuth: true,
             controller: async(req, res, next) => {
                 try {
                     const allPatterns = await model.getAllWorkflowPatterns()
@@ -60,7 +82,7 @@ module.exports = (webServer) => {
             // Create a new workflow pattern
             path: '/patterns',
             method: 'post',
-            requireAuth: false,
+            requireAuth: true,
             controller: async(req, res, next) => {
                 try {
                     const patternName = req.body.patternName
@@ -114,7 +136,7 @@ module.exports = (webServer) => {
             // Update a workflow from an existing workflow patterns
             path: '/loadpattern',
             method: 'put',
-            requireAuth: false,
+            requireAuth: true,
             controller: async(req, res, next) => {
                 try {
                     const accessToken = await nodered.getBLSAccessToken()
@@ -162,12 +184,12 @@ module.exports = (webServer) => {
                         throw 'Error on updating flow on the Business Logic Server'
                     }
 
-                } catch (err) {
+                } catch (error) {
                     console.error(error.toString())
-                    return {
+                    res.json({
                         status: 'error',
                         msg: error.toString()
-                    }
+                    })
                 }
             }
         },
@@ -175,7 +197,7 @@ module.exports = (webServer) => {
             // Save and publish a workflow on BLS
             path: '/publish',
             method: 'post',
-            requireAuth: false,
+            requireAuth: true,
             controller: async(req, res, next) => {
                 try {
                     const flowId = req.body.flowId
@@ -250,7 +272,7 @@ module.exports = (webServer) => {
             // Get the working temporary workflow object
             path: '/tmp',
             method: 'get',
-            requireAuth: false,
+            requireAuth: true,
             controller: async(req, res, next) => {
                 try {
                     const tmpPattern = await model.getFullTmpFlow()
@@ -291,7 +313,7 @@ module.exports = (webServer) => {
             // Get Business Logic Server credentials for requests
             path: '/getauth',
             method: 'get',
-            requireAuth: false,
+            requireAuth: true,
             controller: async(req, res, next) => {
                 try {
                     const accessToken = await nodered.getBLSAccessToken()
@@ -307,7 +329,7 @@ module.exports = (webServer) => {
             // Post flow on BLS on context creation
             path: '/postbls',
             method: 'post',
-            requireAuth: false,
+            requireAuth: true,
             controller: async(req, res, next) => {
                 try {
                     // FORMAT WORKFLOW

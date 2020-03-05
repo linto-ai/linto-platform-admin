@@ -158,7 +158,7 @@ export default {
           this.globalError = createService.data.msg
         }
       } catch (error) {
-        console.log(error)
+        console.error(error)
       }
     },
     testName (obj) {
