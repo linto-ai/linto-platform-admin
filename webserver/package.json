@@ -22,7 +22,7 @@
   ],
   "license": "GNU AFFERO GPLV3",
   "dependencies": {
-    "axios": "^0.17.0",
+    "axios": "^0.19.2",
     "btoa": "^1.2.1",
     "child_process": "^1.0.2",
     "connect-redis": "^3.4.0",
