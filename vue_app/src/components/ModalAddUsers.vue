@@ -32,7 +32,7 @@
                   :class="userApps.value.indexOf(app._id) >= 0 ? 'active' : ''"
                 >
                   <td><input type="checkbox" name="app-wf" :value="app._id" @change="selectApp($event, app._id)"></td>
-                  <td><strong>{{app.name }} - {{app}}</strong></td>
+                  <td><strong>{{app.name}}</strong></td>
                   <td><span>{{!!app.description && app.description.length > 0 ? app.description : 'No descritpion' }}</span></td>
                 </tr>
               </tbody>
