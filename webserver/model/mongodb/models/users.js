@@ -61,7 +61,7 @@ class UsersModel extends MongoModel {
             } else {
                 throw 'Invalid document format'
             }
-        } catch (error) {
+        } catch (err) {
             console.error(err)
             return err
         }
@@ -108,9 +108,9 @@ class UsersModel extends MongoModel {
             } else {
                 throw 'Invalid document format'
             }
-        } catch (error) {
-            console.error(error)
-            return error
+        } catch (err) {
+            console.error(err)
+            return err
         }
     }
 }
