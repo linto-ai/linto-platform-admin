@@ -44,25 +44,25 @@
         </button>
       </div>
     </div>
-    <iframe
-      :src="iframeUrl"
-      id="nodered-iframe"
-      class="iframe flex1"
-      sandbox="allow-same-origin allow-forms allow-scripts"
-    ></iframe>
+    <AppIframe
+      :iframeUrl="iframeUrl"
+      :key="refresh"
+    ></AppIframe>
   </div>
 </template>
 <script>
 import axios from 'axios'
 import randomstring from 'randomstring'
 import { bus } from '../main.js'
+import AppIframe from '@/components/AppIframe.vue'
 export default {
   props: ['contextFrame','blsurl','noderedFlowId','workflowId', 'workflowName'],
   data () {
     return {
       iframeUrl: '',
       fullScreen: false,
-      payload: {}
+      payload: {},
+      refresh: 1
     }
   },
   mounted () {
@@ -91,12 +91,16 @@ export default {
     }
 
     bus.$on('iframe_reload', () => {
-      const url = this.blsurl
+      /*const url = this.blsurl
       this.iframeUrl = ""
+      console.log('Ferme')
         setTimeout(() => {
           this.iframeUrl = url
-        }, 500)
+          console.log('ouvre')
+        }, 500)*/
+        this.refresh++
     })
+    
   },
   methods: {
     toggleFullScreen () {
@@ -145,6 +149,9 @@ export default {
         })
       }
     }
+  },
+  components: {
+    AppIframe
   }
 }
 </script>
