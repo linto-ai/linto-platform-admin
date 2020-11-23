@@ -157,14 +157,16 @@ export default new Vuex.Store({
                     throw getApps.data.msg
                 }
                 let applications = []
-                getApps.data.map(app => {
-                    applications.push({
-                        name: app.name,
-                        namespace: app.namespace
+                if (getApps.data.length > 0) {
+                    getApps.data.map(app => {
+                        applications.push({
+                            name: app.name,
+                            namespace: app.namespace
+                        })
                     })
-                })
-                commit('SET_TOCK_APPS', applications)
-                return state.tockApplications
+                    commit('SET_TOCK_APPS', applications)
+                    return state.tockApplications
+                }
             } catch (error) {
                 return { error: 'Error on getting tock applications' }
             }
@@ -180,19 +182,23 @@ export default new Vuex.Store({
                 let serviceLVOffline =   []
                 if (services.length > 0) {
                     services.map(s => {
-                        let lm = languageModels.filter(l => l.modelId === s.LModelId)
-                        if (lm.length > 0) {
-                            if (lm[0].isGenerated === 1 || lm[0].isDirty === 1 && lm[0].isGenerated === 0 && lm[0].updateState >= 0) {
-                                if (lm[0].type === 'cmd') {
-                                    servicesCMD.push(s)
-                                } else if (lm[0].type === 'lvcsr') {
-                                    if (s.tag === 'online') {
-                                        serviceLVOnline.push(s)
-                                    } else if (s.tag === 'offline') {
-                                        serviceLVOffline.push(s)
+                        if (languageModels.length > 0) {
+                            let lm = languageModels.filter(l => l.modelId === s.LModelId)
+                            if (lm.length > 0) {
+                                if (lm[0].isGenerated === 1 || lm[0].isDirty === 1 && lm[0].isGenerated === 0 && lm[0].updateState >= 0) {
+                                    if (lm[0].type === 'cmd') {
+                                        servicesCMD.push(s)
+                                    } else if (lm[0].type === 'lvcsr') {
+                                        if (s.tag === 'online') {
+                                            serviceLVOnline.push(s)
+                                        } else if (s.tag === 'offline') {
+                                            serviceLVOffline.push(s)
+                                        }
                                     }
                                 }
                             }
+                        } else  {
+                            throw 'No language model was found.'
                         }
                     })
                     const availableServices = {
@@ -202,7 +208,7 @@ export default new Vuex.Store({
                     }
                     return availableServices
                 } else {
-                    throw 'No service found.'
+                    throw 'No STT service was found.'
                 }
             } catch (error) {
                 return { error }
@@ -210,7 +216,7 @@ export default new Vuex.Store({
         },
         WORKFLOW_TEMPLATES_BY_TYPE: (state) => (type) => {
             try {
-                if (state.workflowsTemplates.length > 0) {
+                if (!!state.workflowsTemplates && state.workflowsTemplates.length > 0) {
                     return state.workflowsTemplates.filter(wf => wf.type === type)
                 } else {
                     throw 'No workflow template found'
@@ -221,15 +227,19 @@ export default new Vuex.Store({
         },
         STATIC_CLIENTS_AVAILABLE: (state) => {
             try {
-                return state.staticClients.filter(sc => sc.associated_workflow === null)
+                if (!!state.staticClients && state.staticClients.length > 0) {
+                    return state.staticClients.filter(sc => sc.associated_workflow === null)
+                } else {
+                    throw 'No device was found.'
+                }
             } catch (error) {
                 return { error }
             }
         },
         STATIC_CLIENT_BY_SN: (state) => (sn) => {
             try {
-                const client = state.staticClients.filter(sc => sc.sn === sn)
-                if (client.length > 0) {
+                if (!!state.staticClients && state.staticClients.length > 0) {
+                    const client = state.staticClients.filter(sc => sc.sn === sn)
                     return client[0]
                 } else  {
                     throw 'Static client not found'
@@ -240,7 +250,7 @@ export default new Vuex.Store({
         },
         STATIC_WORKFLOW_BY_ID: (state) => (id) => {
             try {
-                if (state.staticWorkflows.length > 0) {
+                if (!!state.staticWorkflows && state.staticWorkflows.length > 0) {
                     const staticWorkflow = state.staticWorkflows.filter(sw => sw._id === id)
                     if (staticWorkflow.length > 0) {
                         return staticWorkflow[0]
@@ -255,17 +265,20 @@ export default new Vuex.Store({
         },
         STATIC_WORKFLOWS_BY_CLIENTS: (state) => {
             try {
-                const associatedClients = state.staticClients.filter(sc => sc.associated_workflow !== null)
-                let wfByClients = []
-
-                if (associatedClients.length > 0 && state.staticWorkflows.length > 0) {
-                    associatedClients.map(ac => {
-                        if (!wfByClients[ac._id]) {
-                            wfByClients[ac._id] = state.staticWorkflows.filter(sw => sw._id === ac.associated_workflow._id)[0]
-                        }
-                    })
+                if (!!state.staticClients && state.staticClients.length > 0) {
+                    const associatedClients = state.staticClients.filter(sc => sc.associated_workflow !== null)
+                    let wfByClients = []
+                    if (associatedClients.length > 0 && state.staticWorkflows.length > 0) {
+                        associatedClients.map(ac => {
+                            if (!wfByClients[ac._id]) {
+                                wfByClients[ac._id] = state.staticWorkflows.filter(sw => sw._id === ac.associated_workflow._id)[0]
+                            }
+                        })
+                    }
+                    return wfByClients
+                } else {
+                    throw 'No device was found.'
                 }
-                return wfByClients
             } catch (error) {
                 return { error }
             }
@@ -293,88 +306,117 @@ export default new Vuex.Store({
         },
         ANDROID_USERS_BY_APP_ID: (state) => (workflowId) => {
             try {
-                const users = state.androidUsers
-                return users.filter(user => user.applications.indexOf(workflowId) >= 0)
+                if (!!state.androidUsers && state.androidUsers.length > 0) {
+                    const users = state.androidUsers
+                    return users.filter(user => user.applications.indexOf(workflowId) >= 0)
+                } else {
+                    throw 'No user was found.'
+                }
             } catch (error) {
                 return { error }
             }
         },
         ANDROID_USER_BY_ID: (state) => (userId) => {
             try {
-                const users = state.androidUsers
-                const user = users.filter(user => user._id.indexOf(userId) >= 0)
-                return user[0]
+                if (!!state.androidUsers && state.androidUsers.length > 0) {
+                    const users = state.androidUsers
+                    const user = users.filter(user => user._id.indexOf(userId) >= 0)
+                    return user[0]
+                } else {
+                    throw 'No user was found.'
+                }
             } catch (error) {
                 return { error }
             }
         },
         APP_WORKFLOW_BY_ID: (state) => (workflowId) => {
             try {
-                const workflows = state.applicationWorkflows
-                const workflow = workflows.filter(wf => wf._id === workflowId)
-                return workflow[0]
+                if (!!state.applicationWorkflows && state.applicationWorkflows.length > 0) {
+                    const workflows = state.applicationWorkflows
+                    const workflow = workflows.filter(wf => wf._id === workflowId)
+                    return workflow[0]
+                } else {
+                    throw 'No application workflow was found.'
+                }
             } catch (error) {
                 return { error }
             }
         },
         WEB_APP_HOST_BY_ID: (state) => (id) => {
             try {
-                const webappHosts = state.webappHosts
-                const webappHost = webappHosts.filter(wh => wh._id === id)
-                return webappHost[0]
+                if (!!state.webappHosts && state.webappHosts.length > 0) {
+                    const webappHosts = state.webappHosts
+                    const webappHost = webappHosts.filter(wh => wh._id === id)
+                    return webappHost[0]
+                } else {
+                    throw 'Domain not found.'
+                }
             } catch (error) {
                 return { error }
             }
         },
         WEB_APP_HOST_BY_APP_ID: (state) => (workflowId) => {
             try {
-                let hosts = state.webappHosts
-                let webappHostsById = []
-                hosts.map(host => {
-                    host.applications.map(app => {
-                        if (app.applicationId.indexOf(workflowId) >= 0) {
-                            webappHostsById.push(host)
-                        }
+                if (!!state.webappHosts && state.webappHosts.length > 0) {
+                    let hosts = state.webappHosts
+                    let webappHostsById = []
+                    hosts.map(host => {
+                        host.applications.map(app => {
+                            if (app.applicationId.indexOf(workflowId) >= 0) {
+                                webappHostsById.push(host)
+                            }
+                        })
                     })
-                })
-                return webappHostsById
+                    return webappHostsById
+                } else {
+                    throw 'Domain not found.'
+                }
             } catch (error) {
                 return { error }
             }
         },
         WEB_APP_HOST_BY_APPS: (state) => {
             try {
-                const webappHosts = state.webappHosts
-                let hostByApp = []
-                if (webappHosts.length > 0) {
-                    webappHosts.map(host => {
-                        host.applications.map(app => {
-                            if (!hostByApp[app.applicationId]) {
-                                hostByApp[app.applicationId] = [host.originUrl]
-                            } else {
-                                hostByApp[app.applicationId].push(host.originUrl)
-                            }
+                if (!!state.webappHosts && state.webappHosts.length > 0) {
+                    const webappHosts = state.webappHosts
+                    let hostByApp = []
+                    if (webappHosts.length > 0) {
+                        webappHosts.map(host => {
+                            host.applications.map(app => {
+                                if (!hostByApp[app.applicationId]) {
+                                    hostByApp[app.applicationId] = [host.originUrl]
+                                } else {
+                                    hostByApp[app.applicationId].push(host.originUrl)
+                                }
+                            })
                         })
-                    })
+                    }
+                    return hostByApp
+                } else {
+                    throw 'Domain not foun. '
                 }
-                return hostByApp
+                s
             } catch (error) {
                 return { error }
             }
         },
         APP_WORKFLOWS_NAME_BY_ID: (state) => {
             try {
-                const workflows = state.applicationWorkflows
-                let workflowNames = []
-                if (workflows.length > 0) {
-                    workflows.map(wf => {
-                        workflowNames[wf._id] = {
-                            name: wf.name,
-                            description: wf.description
-                        }
-                    })
+                if (!!state.applicationWorkflows && state.applicationWorkflows.length > 0) {
+                    const workflows = state.applicationWorkflows
+                    let workflowNames = []
+                    if (workflows.length > 0) {
+                        workflows.map(wf => {
+                            workflowNames[wf._id] = {
+                                name: wf.name,
+                                description: wf.description
+                            }
+                        })
+                    }
+                    return workflowNames
+                } else {
+                    throw 'Application workflow not found.'
                 }
-                return workflowNames
             } catch (error) {
                 return { error }
             }

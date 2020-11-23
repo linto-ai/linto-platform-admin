@@ -95,7 +95,7 @@ export default {
       this.iframeUrl = ""
         setTimeout(() => {
           this.iframeUrl = url
-        }, 200)
+        }, 500)
     })
   },
   methods: {

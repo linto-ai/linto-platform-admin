@@ -180,7 +180,9 @@ export default {
 
       await this.refreshStore()
       this.showModal()
+      
     })
+
   },
   computed: {
     dataLoaded () {
@@ -248,6 +250,7 @@ export default {
     dataLoaded (data) {
       if (data) {
         if (!this.workflowInit && this.currentWorkflow !== null) {
+          
             // get worlflow name
             this.workflowName.value = this.currentWorkflow.name
             this.workflowName.valid = true 
@@ -258,22 +261,25 @@ export default {
               this.sttServiceLanguage.value = nodeConfig[0].language
               this.sttServiceLanguage.valid = true
             }
-            
-            // get STT service 
-            const nodeSttConfig = this.currentWorkflow.flow.configs.filter(node => node.type === 'linto-config-transcribe')
-            
-            if (nodeSttConfig.length > 0 && !!nodeSttConfig[0].commandOffline) {
-              this.sttCommandService.value = nodeSttConfig[0].commandOffline
-              this.largeVocabStreaming.value = nodeSttConfig[0].largeVocabStreaming
-              this.largeVocabOffline.value = nodeSttConfig[0].largeVocabOffline
-              this.sttCommandService.valid = true
-            }
-            
-            // get Tock application
-            const nodeNluConfig = this.currentWorkflow.flow.configs.filter(node => node.type === 'linto-config-evaluate')
-            if (nodeNluConfig.length > 0) {
-              this.tockApplicationName.value = nodeNluConfig[0].appname
-              this.tockApplicationName.valid = true
+            let nodeSttConfig = ''
+            let nodeNluConfig = ''
+
+            if(!!this.currentWorkflow.flow.configs && this.currentWorkflow.flow.configs.length > 0) {
+              // get STT service 
+              nodeSttConfig = this.currentWorkflow.flow.configs.filter(node => node.type === 'linto-config-transcribe')
+              if (nodeSttConfig.length > 0 && !!nodeSttConfig[0].commandOffline) {
+                this.sttCommandService.value = nodeSttConfig[0].commandOffline
+                this.largeVocabStreaming.value = nodeSttConfig[0].largeVocabStreaming
+                this.largeVocabOffline.value = nodeSttConfig[0].largeVocabOffline
+                this.sttCommandService.valid = true
+              } 
+
+              // get Tock application
+              nodeNluConfig = this.currentWorkflow.flow.configs.filter(node => node.type === 'linto-config-evaluate')
+              if (nodeNluConfig.length > 0) {
+                this.tockApplicationName.value = nodeNluConfig[0].appname
+                this.tockApplicationName.valid = true
+              }
             }
           this.workflowInit = true
         }
