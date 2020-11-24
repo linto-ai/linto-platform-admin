@@ -91,13 +91,6 @@ export default {
     }
 
     bus.$on('iframe_reload', () => {
-      /*const url = this.blsurl
-      this.iframeUrl = ""
-      console.log('Ferme')
-        setTimeout(() => {
-          this.iframeUrl = url
-          console.log('ouvre')
-        }, 500)*/
         this.refresh++
     })
     

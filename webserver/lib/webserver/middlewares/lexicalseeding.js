@@ -139,30 +139,33 @@ async function filterLMData(type, modelId, newData) {
     })
     const currentData = getData.data.data
     let dataToSend = []
-
-    newData.map(d => {
-        let toAdd = []
-        let toSendMethod = ''
-        let toCompare = currentData.filter(c => c.name === d.name)
-        if (toCompare.length === 0) {
-            toAdd.push(...d.items)
-            toSendMethod = 'post'
-        } else {
-            toSendMethod = 'patch'
-            d.items.map(val => {
-                if (toCompare[0]['items'].indexOf(val) < 0) {
-                    toAdd.push(val)
+    if (newData.length > 0) {
+        newData.map(d => {
+            let toAdd = []
+            let toSendMethod = ''
+            if (!!currentData && currentData.length > 0) {
+                let toCompare = currentData.filter(c => c.name === d.name)
+                if (toCompare.length === 0) {
+                    toAdd.push(...d.items)
+                    toSendMethod = 'post'
+                } else {
+                    toSendMethod = 'patch'
+                    d.items.map(val => {
+                        if (toCompare[0]['items'].indexOf(val) < 0) {
+                            toAdd.push(val)
+                        }
+                    })
                 }
-            })
-        }
-        if (toAdd.length > 0) {
-            dataToSend.push({
-                name: d.name,
-                items: toAdd,
-                method: toSendMethod
-            })
-        }
-    })
+                if (toAdd.length > 0) {
+                    dataToSend.push({
+                        name: d.name,
+                        items: toAdd,
+                        method: toSendMethod
+                    })
+                }
+            }
+        })
+    }
     return {
         type,
         data: dataToSend

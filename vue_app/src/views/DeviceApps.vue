@@ -93,7 +93,7 @@ export default {
       return this.$store.state.staticClients
     },
     associatedStaticClients () {
-      return this.staticClients.filter(sc => sc.associated_workflow !== null)
+      return this.store.getters.STATIC_CLIENTS_ENROLLED
     },
     workflowByClients () {
       return this.$store.getters.STATIC_WORKFLOWS_BY_CLIENTS

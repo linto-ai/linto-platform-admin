@@ -149,7 +149,6 @@ export default {
         })
       }
     },
-    
     async updateUserPassword (user) {
       try {
         this.$options.filters.testPassword(this.userPswd)

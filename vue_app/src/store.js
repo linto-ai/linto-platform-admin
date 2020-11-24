@@ -230,7 +230,18 @@ export default new Vuex.Store({
                 if (!!state.staticClients && state.staticClients.length > 0) {
                     return state.staticClients.filter(sc => sc.associated_workflow === null)
                 } else {
-                    throw 'No device was found.'
+                    return []
+                }
+            } catch (error) {
+                return { error }
+            }
+        },
+        STATIC_CLIENTS_ENROLLED: (state) => {
+            try {
+                if (!!state.staticClients && state.staticClients.length > 0) {
+                    return state.staticClients.filter(sc => sc.associated_workflow !== null)
+                } else {
+                    return []
                 }
             } catch (error) {
                 return { error }

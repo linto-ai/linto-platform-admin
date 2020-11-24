@@ -323,10 +323,12 @@ export default {
     },
     generateRequestToken () {
       const token = randomstring.generate(16)
-      const tokenExist = this.webappHosts.filter(wh => wh.requestToken === token)  
-      if(tokenExist.length > 0) {
-        this.generateRequestToken()
-      } 
+      if(this.webappHosts.length > 0){
+        const tokenExist = this.webappHosts.filter(wh => wh.requestToken === token)  
+        if(tokenExist.length > 0) {
+          this.generateRequestToken()
+        } 
+      }
       return token
     },
     async addAppToWebappHost () {
