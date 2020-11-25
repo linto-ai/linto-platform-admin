@@ -33,6 +33,7 @@ async function sttLexicalSeeding(flowId, service_name) {
                 'Authorization': accessToken
             }
         })
+
         const sttLexicalSeedingData = getSttLexicalSeeding.data.data
         const intents = sttLexicalSeedingData.intents
         const entities = sttLexicalSeedingData.entities
@@ -54,6 +55,7 @@ async function sttLexicalSeeding(flowId, service_name) {
 
         // Update model entities
         const entitiesToSend = await filterLMData('entity', sttService.LModelId, entities)
+
         if (entitiesToSend.data.length > 0) {
             updateEnt = await updateLangModel(entitiesToSend, sttService.LModelId)
             if (!!updateEnt.success && !!updateEnt.errors) {
@@ -137,32 +139,33 @@ async function filterLMData(type, modelId, newData) {
             'Authorization': sttAuthToken
         }
     })
-    const currentData = getData.data.data
+    let currentData = []
+    if (!!getData.data.data) {
+        currentData = getData.data.data
+    }
     let dataToSend = []
     if (newData.length > 0) {
         newData.map(d => {
             let toAdd = []
             let toSendMethod = ''
-            if (!!currentData && currentData.length > 0) {
-                let toCompare = currentData.filter(c => c.name === d.name)
-                if (toCompare.length === 0) {
-                    toAdd.push(...d.items)
-                    toSendMethod = 'post'
-                } else {
-                    toSendMethod = 'patch'
-                    d.items.map(val => {
-                        if (toCompare[0]['items'].indexOf(val) < 0) {
-                            toAdd.push(val)
-                        }
-                    })
-                }
-                if (toAdd.length > 0) {
-                    dataToSend.push({
-                        name: d.name,
-                        items: toAdd,
-                        method: toSendMethod
-                    })
-                }
+            let toCompare = currentData.filter(c => c.name === d.name)
+            if (toCompare.length === 0) {
+                toAdd.push(...d.items)
+                toSendMethod = 'post'
+            } else {
+                toSendMethod = 'patch'
+                d.items.map(val => {
+                    if (toCompare[0]['items'].indexOf(val) < 0) {
+                        toAdd.push(val)
+                    }
+                })
+            }
+            if (toAdd.length > 0) {
+                dataToSend.push({
+                    name: d.name,
+                    items: toAdd,
+                    method: toSendMethod
+                })
             }
         })
     }
@@ -230,6 +233,7 @@ async function updateLangModel(payload, modelId) {
                 },
                 data: items
             })
+
             if (req.status === 200 || req.status === '200') {
                 success.push(payload.data[i])
             } else {
@@ -424,6 +428,7 @@ async function nluLexicalSeeding(flowId) {
 
 async function doLexicalSeeding(sttServiceName, flowId) {
     try {
+
         // NLU lexical seeding 
         const nluLexSeed = await nluLexicalSeeding(flowId)
         if (nluLexSeed.status !== 'success') {
