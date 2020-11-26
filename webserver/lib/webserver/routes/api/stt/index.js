@@ -36,11 +36,12 @@ module.exports = (webServer) => {
                     })
                     res.json(getServices.data.data)
                 } catch (error) {
-                    if (!!error.response.status && error.response.status === 404) {
-                        res.json({ error: 'STT service unvavailable' })
-                    } else {
-                        res.json({ error: error.toString() })
-                    }
+                    console.error(error)
+                    res.json({
+                        status: 'error',
+                        msg: 'Error on joining STT service',
+                        error
+                    })
                 }
             }
         },
@@ -63,11 +64,12 @@ module.exports = (webServer) => {
                     })
                     res.json(getLanguageModels.data.data)
                 } catch (error) {
-                    if (!!error.response.status && error.response.status === 404) {
-                        res.json({ error: 'STT service unvavailable' })
-                    } else {
-                        res.json({ error: error.toString() })
-                    }
+                    console.error(error)
+                    res.json({
+                        status: 'error',
+                        msg: 'Error on getting STT language models',
+                        error
+                    })
                 }
             }
         },
@@ -91,11 +93,12 @@ module.exports = (webServer) => {
                     })
                     res.json(getACModels.data.data)
                 } catch (error) {
-                    if (!!error.response.status && error.response.status === 404) {
-                        res.json({ error: 'STT service unvavailable' })
-                    } else {
-                        res.json({ error: error.toString() })
-                    }
+                    console.error(error)
+                    res.json({
+                        status: 'error',
+                        msg: 'Error on getting STT acoustic models',
+                        error
+                    })
                 }
             }
         },

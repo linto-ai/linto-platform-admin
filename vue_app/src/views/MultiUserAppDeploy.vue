@@ -444,6 +444,9 @@ export default {
         if (dispatch.status === 'error') {
           throw dispatch.msg
         }
+        if(process.env.VUE_APP_DEBUG) {
+          console.log(topic, dispatchSuccess)
+        }
         switch(topic) {
           case 'getWorkflowsTemplates':
             this.workflowTemplatesLoaded = dispatchSuccess
@@ -462,6 +465,9 @@ export default {
             return
         }  
       } catch (error) {
+        if(process.env.VUE_APP_DEBUG) {
+          console.error(error)
+        }
         bus.$emit('app_notif', {
           status: 'error',
           msg: error,

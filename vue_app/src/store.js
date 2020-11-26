@@ -123,6 +123,9 @@ export default new Vuex.Store({
         getSttServices: async({ commit, state }) => {
             try {
                 const getServices = await axios.get(`${process.env.VUE_APP_URL}/api/stt/services`)
+                if (!!getServices.data.status && getServices.data.status === 'error') {
+                    throw getServices.data.msg
+                }
                 commit('SET_STT_SERVICES', getServices.data)
                 return state.sttServices
             } catch (error) {
@@ -133,6 +136,9 @@ export default new Vuex.Store({
         getSttLanguageModels: async({ commit, state }) => {
             try {
                 const getSttLanguageModels = await axios.get(`${process.env.VUE_APP_URL}/api/stt/langmodels`)
+                if (!!getSttLanguageModels.data.status && getSttLanguageModels.data.status === 'error') {
+                    throw getSttLanguageModels.data.msg
+                }
                 commit('SET_STT_LANG_MODELS', getSttLanguageModels.data)
                 return state.sttLanguageModels
             } catch (error) {
@@ -143,6 +149,9 @@ export default new Vuex.Store({
         getSttAcousticModels: async({ commit, state }) => {
             try {
                 const getSttAcousticModels = await axios.get(`${process.env.VUE_APP_URL}/api/stt/acmodels`)
+                if (!!getSttAcousticModels.data.status && getSttAcousticModels.data.status === 'error') {
+                    throw getSttAcousticModels.data.msg
+                }
                 commit('SET_STT_AC_MODELS', getSttAcousticModels.data)
                 return state.sttAcousticModels
             } catch (error) {
