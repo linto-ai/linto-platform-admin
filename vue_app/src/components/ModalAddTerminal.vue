@@ -77,14 +77,14 @@ export default {
         const payload = {
           sn: this.sn.value
         }
-        const addStaticDevice = await axios(`${process.env.VUE_APP_URL}/api/clients/static`, {
+        const addDevice = await axios(`${process.env.VUE_APP_URL}/api/clients/static`, {
           method: 'post',
           data: {payload}
         })
-        if (addStaticDevice.data.status === 'success') {
+        if (addDevice.data.status === 'success') {
           bus.$emit('app_notif', {
             status: 'success',
-            msg: addStaticDevice.data.msg,
+            msg: addDevice.data.msg,
             timeout: 3000,
             redirect: false
           })

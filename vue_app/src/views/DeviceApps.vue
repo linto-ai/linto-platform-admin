@@ -49,7 +49,7 @@
       </div>
       <div class="divider"></div>
       <div class="flex row">
-        <a href="/admin/applications/device/deploy" class="button button-icon-txt button--green" @click="addStaticDevice()">
+        <a href="/admin/applications/device/deploy" class="button button-icon-txt button--green">
           <span class="button__icon button__icon--add"></span>
           <span class="button__label">Create a device application</span>
         </a>
