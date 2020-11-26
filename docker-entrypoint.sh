@@ -26,7 +26,8 @@ while [ "$1" != "" ]; do
             VUE_APP_TOCK_PASSWORD=$LINTO_STACK_TOCK_PASSWORD
             VUE_APP_NODERED=https://$LINTO_STACK_DOMAIN/redui
             VUE_APP_NODERED_USER=$LINTO_STACK_BLS_USER
-            VUE_APP_NODERED_PASSWORD=$LINTO_STACK_BLS_PASSWORD" >.env.production
+            VUE_APP_NODERED_PASSWORD=$LINTO_STACK_BLS_PASSWORD
+            VUE_APP_DEBUG=$VUE_APP_DEBUG" >.env.production
         else
             echo "VUE_APP_URL=
             VUE_APP_TOCK_URL=http://$LINTO_STACK_DOMAIN/tock/
@@ -34,7 +35,8 @@ while [ "$1" != "" ]; do
             VUE_APP_TOCK_PASSWORD=$LINTO_STACK_TOCK_PASSWORD
             VUE_APP_NODERED=http://$LINTO_STACK_DOMAIN/redui
             VUE_APP_NODERED_USER=$LINTO_STACK_BLS_USER
-            VUE_APP_NODERED_PASSWORD=$LINTO_STACK_BLS_PASSWORD" >.env.production
+            VUE_APP_NODERED_PASSWORD=$LINTO_STACK_BLS_PASSWORD
+            VUE_APP_DEBUG=$VUE_APP_DEBUG" >.env.production
         fi
             npm run build-app
         ;;
@@ -48,7 +50,8 @@ while [ "$1" != "" ]; do
             VUE_APP_TOCK_PASSWORD=$LINTO_STACK_TOCK_PASSWORD
             VUE_APP_NODERED=https://$LINTO_STACK_DOMAIN/redui
             VUE_APP_NODERED_USER=$LINTO_STACK_BLS_USER
-            VUE_APP_NODERED_PASSWORD=$LINTO_STACK_BLS_PASSWORD" >.env.development
+            VUE_APP_NODERED_PASSWORD=$LINTO_STACK_BLS_PASSWORD
+            VUE_APP_DEBUG=$VUE_APP_DEBUG" >.env.production
         else
             echo "VUE_APP_URL=
             VUE_APP_TOCK_URL=http://$LINTO_STACK_DOMAIN/tock/
@@ -56,7 +59,8 @@ while [ "$1" != "" ]; do
             VUE_APP_TOCK_PASSWORD=$LINTO_STACK_TOCK_PASSWORD
             VUE_APP_NODERED=http://$LINTO_STACK_DOMAIN/redui
             VUE_APP_NODERED_USER=$LINTO_STACK_BLS_USER
-            VUE_APP_NODERED_PASSWORD=$LINTO_STACK_BLS_PASSWORD" >.env.development
+            VUE_APP_NODERED_PASSWORD=$LINTO_STACK_BLS_PASSWORD
+            VUE_APP_DEBUG=$VUE_APP_DEBUG" >.env.production
         fi
             npm run build-dev
         ;;
