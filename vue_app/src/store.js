@@ -124,7 +124,7 @@ export default new Vuex.Store({
             try {
                 const getServices = await axios.get(`${process.env.VUE_APP_URL}/api/stt/services`)
                 if (!!getServices.data.status && getServices.data.status === 'error') {
-                    throw getServices.data.msg
+                    throw getServices.datagetTockApplications.data.msg
                 }
                 commit('SET_STT_SERVICES', getServices.data)
                 return state.sttServices
@@ -175,6 +175,10 @@ export default new Vuex.Store({
                     })
                     commit('SET_TOCK_APPS', applications)
                     return state.tockApplications
+                } else {
+                    // If no service is created
+                    commit('SET_TOCK_APPS', [])
+                    return state.tockApplications
                 }
             } catch (error) {
                 return { error: 'Error on getting tock applications' }
@@ -207,7 +211,7 @@ export default new Vuex.Store({
                                 }
                             }
                         } else  {
-                            throw 'No language model was found.'
+                            return []
                         }
                     })
                     const availableServices = {
@@ -217,7 +221,7 @@ export default new Vuex.Store({
                     }
                     return availableServices
                 } else {
-                    throw 'No STT service was found.'
+                    return []
                 }
             } catch (error) {
                 return { error }
@@ -228,7 +232,7 @@ export default new Vuex.Store({
                 if (!!state.workflowsTemplates && state.workflowsTemplates.length > 0) {
                     return state.workflowsTemplates.filter(wf => wf.type === type)
                 } else {
-                    throw 'No workflow template found'
+                    return []
                 }
             } catch (error) {
                 return { error }
@@ -262,7 +266,7 @@ export default new Vuex.Store({
                     const client = state.staticClients.filter(sc => sc.sn === sn)
                     return client[0]
                 } else  {
-                    throw 'Static client not found'
+                    return []
                 }
             } catch (error) {
                 return { error }
@@ -274,20 +278,19 @@ export default new Vuex.Store({
                     const staticWorkflow = state.staticWorkflows.filter(sw => sw._id === id)
                     if (staticWorkflow.length > 0) {
                         return staticWorkflow[0]
-                    } else {
-                        throw 'Static workflow not found'
                     }
                 }
-                throw 'Static workflow not found'
+                return []
             } catch (error) {
                 return { error }
             }
         },
         STATIC_WORKFLOWS_BY_CLIENTS: (state) => {
             try {
+                let wfByClients = []
                 if (!!state.staticClients && state.staticClients.length > 0) {
                     const associatedClients = state.staticClients.filter(sc => sc.associated_workflow !== null)
-                    let wfByClients = []
+
                     if (associatedClients.length > 0 && state.staticWorkflows.length > 0) {
                         associatedClients.map(ac => {
                             if (!wfByClients[ac._id]) {
@@ -295,10 +298,8 @@ export default new Vuex.Store({
                             }
                         })
                     }
-                    return wfByClients
-                } else {
-                    throw 'No device was found.'
                 }
+                return wfByClients
             } catch (error) {
                 return { error }
             }
@@ -329,9 +330,8 @@ export default new Vuex.Store({
                 if (!!state.androidUsers && state.androidUsers.length > 0) {
                     const users = state.androidUsers
                     return users.filter(user => user.applications.indexOf(workflowId) >= 0)
-                } else {
-                    throw 'No user was found.'
                 }
+                return []
             } catch (error) {
                 return { error }
             }
@@ -342,9 +342,8 @@ export default new Vuex.Store({
                     const users = state.androidUsers
                     const user = users.filter(user => user._id.indexOf(userId) >= 0)
                     return user[0]
-                } else {
-                    throw 'No user was found.'
                 }
+                return []
             } catch (error) {
                 return { error }
             }
@@ -355,9 +354,8 @@ export default new Vuex.Store({
                     const workflows = state.applicationWorkflows
                     const workflow = workflows.filter(wf => wf._id === workflowId)
                     return workflow[0]
-                } else {
-                    throw 'No application workflow was found.'
                 }
+                return []
             } catch (error) {
                 return { error }
             }
@@ -368,9 +366,8 @@ export default new Vuex.Store({
                     const webappHosts = state.webappHosts
                     const webappHost = webappHosts.filter(wh => wh._id === id)
                     return webappHost[0]
-                } else {
-                    throw 'Domain not found.'
                 }
+                return []
             } catch (error) {
                 return { error }
             }
@@ -388,18 +385,17 @@ export default new Vuex.Store({
                         })
                     })
                     return webappHostsById
-                } else {
-                    throw 'Domain not found.'
                 }
+                return []
             } catch (error) {
                 return { error }
             }
         },
         WEB_APP_HOST_BY_APPS: (state) => {
             try {
+                let hostByApp = []
                 if (!!state.webappHosts && state.webappHosts.length > 0) {
                     const webappHosts = state.webappHosts
-                    let hostByApp = []
                     if (webappHosts.length > 0) {
                         webappHosts.map(host => {
                             host.applications.map(app => {
@@ -411,11 +407,8 @@ export default new Vuex.Store({
                             })
                         })
                     }
-                    return hostByApp
-                } else {
-                    throw 'Domain not foun. '
                 }
-                s
+                return hostByApp
             } catch (error) {
                 return { error }
             }
@@ -434,9 +427,8 @@ export default new Vuex.Store({
                         })
                     }
                     return workflowNames
-                } else {
-                    throw 'Application workflow not found.'
                 }
+                return []
             } catch (error) {
                 return { error }
             }

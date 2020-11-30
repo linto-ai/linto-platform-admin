@@ -247,7 +247,7 @@ async function updateLangModel(payload, modelId) {
             }
         }
     } catch (error) {
-        console.error('ERR:', error.toString())
+        console.error(error)
         return ('an error has occured')
     }
 }

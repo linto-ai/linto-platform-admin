@@ -1,5 +1,5 @@
 <template>
-  <div v-if="dataLoaded">
+  <div v-if="dataLoaded && allRequiredAvailable">
     <h1>Deploy a multi-user application</h1>
     <div class="flex col">
       <!-- Workflow name -->
@@ -102,8 +102,7 @@
     </div>
   </div>
   <div v-else>
-    <span v-if="sttError.length > 0" v-html="sttError"></span>
-    <span v-else>Loading...</span>
+    <span v-html="requiredErrorMsg"></span>
   </div>
 </template>
 <script>
@@ -173,10 +172,11 @@ export default {
       nluLexSeedStatus: 'Updating natural language understanding dictionnaries',
       sttLexSeedUpdate: false,
       sttLexSeedStatus: 'Updating LinSTT service dictionnaries',
-      sttError: ''
+      requiredErrorMsg: ''
     }
   },
   computed: {
+    
     dataLoaded () {
       return (this.sttLanguageModelsLoaded && this.sttServicesLoaded && this.tockApplicationsLoaded && this.workflowTemplatesLoaded)
     },
@@ -237,6 +237,20 @@ export default {
       } else {
         return 'Create application'
       }
+    },
+    allRequiredAvailable () {
+      let valid = true
+      // Worfklow template
+      if (this.workflowTemplates.length === 0) {
+        valid = false
+        this.requiredErrorMsg = 'No workflow template found. You firstly need to <a href="/admin/workflow-editor">create a workflow template</a>'
+      }
+      // STT
+      if(!!this.sttServices.cmd && this.sttServices.cmd.length === 0) {
+        valid = false
+        this.requiredErrorMsg = 'No STT service found. Please create one before creating an application. <a href="https://doc.linto.ai/#/services/linstt_howtouse" target="_blank">Documentation</a>'
+      }
+      return valid
     }
   },
   async created () {
@@ -444,29 +458,30 @@ export default {
         if (dispatch.status === 'error') {
           throw dispatch.msg
         }
+        //Debug
         if(process.env.VUE_APP_DEBUG) {
           console.log(topic, dispatchSuccess)
         }
+
         switch(topic) {
           case 'getWorkflowsTemplates':
             this.workflowTemplatesLoaded = dispatchSuccess
             break
           case 'getSttServices':
-              this.sttServicesLoaded = dispatchSuccess
-              break
+            this.sttServicesLoaded = dispatchSuccess
+            break
           case 'getTockApplications': 
             this.tockApplicationsLoaded = dispatchSuccess
             break
           case 'getSttLanguageModels':
-              this.sttLanguageModelsLoaded = dispatchSuccess
-              break
-          
+            this.sttLanguageModelsLoaded = dispatchSuccess
+            break
           default:
             return
         }  
       } catch (error) {
         if(process.env.VUE_APP_DEBUG) {
-          console.error(error)
+          console.error(topic, error)
         }
         bus.$emit('app_notif', {
           status: 'error',

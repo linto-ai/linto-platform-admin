@@ -6,7 +6,6 @@ const moment = require('moment')
 module.exports = (webServer) => {
     return [{
             // Get all static workflows from database
-            // Link : /api-docs/#/workflows_static/GetAllStaticWorkflows
             path: '/',
             method: 'get',
             requireAuth: true,
@@ -19,13 +18,16 @@ module.exports = (webServer) => {
                     res.json(getStaticWorkflows)
                 } catch (error) {
                     console.error(error)
-                    res.json({ error: error.toString() })
+                    res.json({
+                        status: 'error',
+                        msg: 'Error on getting device workflows',
+                        error
+                    })
                 }
             }
         },
         {
-            // Get a static workflow by its name
-            // Link : /api-docs/#/workflows_static/DeleteStaticWorkflowById
+            // Get a static workflow by its id
             path: '/:id',
             method: 'get',
             requireAuth: true,
@@ -44,13 +46,16 @@ module.exports = (webServer) => {
                     }
                 } catch (error) {
                     console.error(error)
-                    res.json({ error: error.toString() })
+                    res.json({
+                        status: 'error',
+                        msg: 'Error on getting device workflow',
+                        error
+                    })
                 }
             }
         },
         {
             // Get a static workflow by its name
-            // Link : /api-docs/#/workflows_static/GetStaticWorkflowByName
             path: '/name/:name',
             method: 'get',
             requireAuth: true,
@@ -69,7 +74,11 @@ module.exports = (webServer) => {
                     }
                 } catch (error) {
                     console.error(error)
-                    res.json({ error: error.toString() })
+                    res.json({
+                        status: 'error',
+                        msg: 'Error on getting device workflow',
+                        error
+                    })
                 }
             }
         },
@@ -85,7 +94,7 @@ module.exports = (webServer) => {
             tockApplicationName: String
             }
             */
-            // Link : /api-docs/#/workflows_static/CreateStaticWorkflows
+
             path: '/',
             method: 'post',
             requireAuth: true,
@@ -122,13 +131,17 @@ module.exports = (webServer) => {
                     }
                 } catch (error) {
                     console.error(error)
-                    res.json({ error })
+                    res.json({
+                        status: 'error',
+                        msg: 'Error on creating device application',
+                        error
+                    })
                 }
             }
         },
         {
             // Remove a static workflow and dissociate Static device and workflow template
-            // Link : /api-docs/#/workflows_static/DeleteStaticWorkflowById
+
             path: '/:id',
             method: 'delete',
             requireAuth: true,
@@ -166,7 +179,7 @@ module.exports = (webServer) => {
                     console.error(error)
                     res.json({
                         status: 'error',
-                        msg: error.toString(),
+                        msg: 'Error on removing device application',
                         error
                     })
                 }

@@ -1,5 +1,5 @@
 <template>
-  <div v-if="dataLoaded">
+  <div v-if="dataLoaded && allRequiredAvailable">
     <h1>Deploy a device application</h1>
     <div class="flex col">
       <!-- Workflow name -->
@@ -21,9 +21,9 @@
       <AppSelect 
         :label="'Choose a device'" 
         :obj="associated_device" 
-        :list="availableStatiDevices" 
+        :list="availableStaticDevices" 
         :params="{key:'_id', value:'sn' , optLabel: 'sn'}"
-        :disabled="availableStatiDevices.length === 0"
+        :disabled="availableStaticDevices.length === 0"
         :disabledTxt="'No device available'"
         :required="true"
       ></AppSelect>
@@ -35,6 +35,8 @@
         :obj="workflowTemplate" 
         :list="workflowTemplates" 
         :params="{key:'_id', value:'name' , optLabel: 'name'}"
+        :disabled="workflowTemplates.length === 0"
+        :disabledTxt="'No worflow template found'"
         :required="true"
       ></AppSelect>
 
@@ -111,8 +113,7 @@
     </div>
   </div>
   <div v-else>
-    <span v-if="sttError.length > 0" v-html="sttError"></span>
-    <span v-else>Loading...</span>
+    <span v-html="requiredErrorMsg"></span>
   </div>
 </template>
 <script>
@@ -188,7 +189,8 @@ export default {
       nluLexSeedStatus: 'Updating natural language understanding dictionnaries',
       sttLexSeedUpdate: false,
       sttLexSeedStatus: 'Updating STT service dictionnaries',
-      sttError: ''
+      requiredErrorMsg: ''
+      
     }
   },
   computed: {
@@ -253,16 +255,28 @@ export default {
         return 'Deploy'
       }
     },
-    availableStatiDevices () {
+    availableStaticDevices () {
       return this.$store.getters.STATIC_CLIENTS_AVAILABLE
-    }
-  },
-  watch : {
-    sttServices (data) {
-      if(!!data.cmd && data.cmd.length === 0) {
-        this.sttServicesLoaded = false
-        this.sttError = 'No STT service found. Please create one before creating an application. <a href="https://doc.linto.ai/#/services/linstt_howtouse" target="_blank">Documentation</a>'
+    },
+    allRequiredAvailable () {
+      let valid = true
+      // terminals
+      if (this.availableStaticDevices.length === 0) {
+        valid = false
+        this.requiredErrorMsg = 'No device found. You firstly need to <a href="/admin/devices">create a device</a>'
       }
+      // Worfklow template
+      if (this.workflowTemplates.length === 0) {
+        valid = false
+        this.requiredErrorMsg = 'No workflow template found. You firstly need to <a href="/admin/workflow-editor">create a workflow template</a>'
+      }
+      // STT
+      if(!!this.sttServices.cmd && this.sttServices.cmd.length === 0) {
+        valid = false
+        this.requiredErrorMsg = 'No STT service found. Please create one before creating an application. <a href="https://doc.linto.ai/#/services/linstt_howtouse" target="_blank">Documentation</a>'
+      }
+
+      return valid
     }
   },
   async mounted () {
@@ -553,7 +567,7 @@ export default {
         }  
       } catch (error) {
         if(process.env.VUE_APP_DEBUG) {
-          console.error(error)
+          console.error(topic, error)
         }
         bus.$emit('app_notif', {
           status: 'error',

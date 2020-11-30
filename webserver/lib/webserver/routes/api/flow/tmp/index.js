@@ -18,7 +18,8 @@ module.exports = (webServer) => {
                     console.error(error)
                     res.json({
                         status: 'error',
-                        msg: error.toString()
+                        msg: 'Error on getting temporary flow',
+                        error
                     })
                 }
             }
@@ -47,7 +48,8 @@ module.exports = (webServer) => {
                     console.error(error)
                     res.json({
                         status: 'error',
-                        msg: error.toString()
+                        msg: 'Error on updating temporary flow',
+                        error
                     })
                 }
             }

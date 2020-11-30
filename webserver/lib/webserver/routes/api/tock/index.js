@@ -17,20 +17,24 @@ module.exports = (webServer) => {
                             'Authorization': tockToken
                         }
                     })
-                    res.json(getTockApplications.data)
+                    if (!!getTockApplications.data && getTockApplications.data.length > 0) {
+                        res.json(getTockApplications.data)
+                    } else {
+                        // If no application is created
+                        res.json([])
+                    }
                 } catch (error) {
-                    if (error.response === undefined || (!!error.code && error.code === 'ECONNREFUSED')) {
+                    console.error(error)
+                    if ((!!error.response && !!error.response === undefined) || (!!error.code && error.code === 'ECONNREFUSED')) {
                         res.json({
                             status: 'error',
                             msg: 'Tock service unvavailable'
                         })
-                    } else {
-                        res.json({
-                            status: 'error',
-                            msg: 'Error on getting tock applications'
-                        })
                     }
-
+                    res.json({
+                        status: 'error',
+                        msg: 'Error on getting tock applications'
+                    })
                 }
             }
         },
