@@ -4,6 +4,7 @@
     <div id="page-view" class="flex1 flex row">
       <AppVerticalNav :extraClass="fullScreenFrame ? 'fullscreen-child' : ''"></AppVerticalNav>
       <div id="view" class="flex1" :class="fullScreenFrame ? 'fullscreen-child' : ''">
+        <AppNotifTop v-if="path.indexOf('/admin/applications') >= 0"></AppNotifTop>
         <router-view id="view-render" class="flex col"></router-view>
       </div>
     </div>
@@ -46,6 +47,7 @@
   import AppVerticalNav from '@/components/AppVerticalNav.vue'
   // App notify
   import AppNotif from '@/components/AppNotif.vue'
+  import AppNotifTop from '@/components/AppNotifTop.vue'
   // Modals
   import ModalDeleteTerminal from '@/components/ModalDeleteTerminal.vue'
   import ModalReplaceTerminal from '@/components/ModalReplaceTerminal.vue'
@@ -104,6 +106,7 @@
     components: {
       AppHeader,
       AppNotif,
+      AppNotifTop,
       AppVerticalNav,
       // Static clients
       ModalAddTerminal,

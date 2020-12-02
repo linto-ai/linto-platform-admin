@@ -193,12 +193,29 @@ export default new Vuex.Store({
                 let servicesCMD = []
                 let serviceLVOnline = []
                 let serviceLVOffline =   []
+                let generating = []
+                generating['cmd'] = []
+                generating['lvOffline'] = []
+                generating['lvOnline'] = []
                 if (services.length > 0) {
                     services.map(s => {
                         if (languageModels.length > 0) {
                             let lm = languageModels.filter(l => l.modelId === s.LModelId)
                             if (lm.length > 0) {
-                                if (lm[0].isGenerated === 1 || lm[0].isDirty === 1 && lm[0].isGenerated === 0 && lm[0].updateState >= 0) {
+                                // in generation progress
+                                if (lm[0].updateState > 0) {
+                                    if (lm[0].type === 'cmd') {
+                                        generating['cmd'].push(s)
+                                    } else if (lm[0].type === 'lvcsr') {
+                                        if (s.tag === 'online') {
+                                            generating['lvOnline'].push(s)
+                                        } else if (s.tag === 'offline') {
+                                            generating['lvOffline'].push(s)
+                                        }
+                                    }
+                                }
+                                // Available services
+                                else if (lm[0].isGenerated === 1 || lm[0].isDirty === 1 && lm[0].isGenerated === 0 && lm[0].updateState >= 0) {
                                     if (lm[0].type === 'cmd') {
                                         servicesCMD.push(s)
                                     } else if (lm[0].type === 'lvcsr') {
@@ -218,6 +235,7 @@ export default new Vuex.Store({
                         cmd: servicesCMD,
                         lvOnline: serviceLVOnline,
                         lvOffline: serviceLVOffline,
+                        generating
                     }
                     return availableServices
                 } else {

@@ -18,6 +18,13 @@
         :key="l[params.key]"
         :value="l[params.value]"
       >{{ l[params.optLabel] }}</option>
+        <option 
+        v-for="l2 in list2"
+        :key="l2[params.key]"
+        :value="l2[params.value]"
+        :disabled="'disabled'"
+      >{{ l2[params.optLabel] }} (Generating...)</option>
+
       <option v-if="!!options" :value="options.value">{{ options.label }}</option>
     </select>
 
@@ -42,7 +49,7 @@
 </template>
 <script>
 export default {
-  props: ['label','obj','list','options','params', 'disabled', 'disabledTxt', 'disabled2', 'disabled2Txt', 'type', 'min','max', 'extraClass', 'noLabel', 'required', 'resetValue'],
+  props: ['label','obj','list', 'list2','options','params', 'disabled', 'disabledTxt', 'disabled2', 'disabled2Txt', 'type', 'min','max', 'extraClass', 'noLabel', 'required', 'resetValue'],
   data () {
     return {
       numberArray: []

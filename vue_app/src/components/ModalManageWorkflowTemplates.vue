@@ -105,7 +105,6 @@ export default {
         const getSandBoxId = await axios(`${process.env.VUE_APP_URL}/api/flow/sandbox`, {
           method: 'get'
         })
-
         const sandBoxId = getSandBoxId.data.sandBoxId 
         const payload = {
           flowId: sandBoxId,

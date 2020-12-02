@@ -43,40 +43,43 @@
       <AppSelect 
         :label="'Select a STT command service'" 
         :obj="sttCommandService" 
-        :list="sttServiceCmdByLanguage" 
+        :list="!!sttServiceCmdByLanguage['cmd'] ? sttServiceCmdByLanguage['cmd'] : []" 
+        :list2="!!sttServiceCmdByLanguage['generating'] ? sttServiceCmdByLanguage['generating'] : []"
         :params="{key:'_id', value:'serviceId', optLabel: 'serviceId'}" 
         :disabled="sttServiceLanguage.value === ''" 
         :disabledTxt="'Please select a language'"
         :required="true"
       ></AppSelect>
       
-    <!-- LinSTT Large vocabulary online (streaming) -->
-    <AppSelect 
-      :label="'Select a LinSTT Large vocabulary streaming service'" 
-      :obj="sttLVOnlineService" 
-      :list="sttServiceLVOnlineByLanguage" 
-      :params="{key:'_id', value:'serviceId', optLabel: 'serviceId'}" 
-      :disabled="sttServiceLanguage.value === ''" 
-      :disabledTxt="'Please select a language'"
-      :disabled2="sttServiceLVOnlineByLanguage.length === 0" 
-      :disabled2Txt="'No service available'"
-      :required="false"
-      :resetValue="true"
-    ></AppSelect>
+      <!-- LinSTT Large vocabulary online (streaming) -->
+      <AppSelect 
+        :label="'Select a LinSTT Large vocabulary streaming service'" 
+        :obj="sttLVOnlineService" 
+        :list="!!sttServiceLVOnlineByLanguage['lvOnline'] ? sttServiceLVOnlineByLanguage['lvOnline'] : []" 
+        :list2="!!sttServiceLVOnlineByLanguage['generating'] ? sttServiceLVOnlineByLanguage['generating'] : []"
+        :params="{key:'_id', value:'serviceId', optLabel: 'serviceId'}" 
+        :disabled="sttServiceLanguage.value === ''" 
+        :disabledTxt="'Please select a language'"
+        :disabled2="sttServiceLVOnlineByLanguage.length === 0" 
+        :disabled2Txt="'No service available'"
+        :required="false"
+        :resetValue="true"
+      ></AppSelect>
 
-    <!-- LinSTT Large vocabulary offline (file) -->
-    <AppSelect 
-      :label="'Select a LinSTT Large vocabulary file service'" 
-      :obj="sttLVOfflineService" 
-      :list="sttServiceLVOfflineByLanguage" 
-      :params="{key:'_id', value:'serviceId', optLabel: 'serviceId'}" 
-      :disabled="sttServiceLanguage.value === ''" 
-      :disabledTxt="'Please select a language'"
-      :disabled2="sttServiceLVOfflineByLanguage.length === 0" 
-      :disabled2Txt="'No service available'"
-      :required="false"
-      :resetValue="true"
-    ></AppSelect>
+      <!-- LinSTT Large vocabulary offline (file) -->
+      <AppSelect 
+        :label="'Select a LinSTT Large vocabulary file service'" 
+        :obj="sttLVOfflineService" 
+        :list="!!sttServiceLVOfflineByLanguage['lvOffline'] ? sttServiceLVOfflineByLanguage['lvOffline'] : []" 
+        :list2="!!sttServiceLVOfflineByLanguage['generating'] ? sttServiceLVOfflineByLanguage['generating'] : []"
+        :params="{key:'_id', value:'serviceId', optLabel: 'serviceId'}" 
+        :disabled="sttServiceLanguage.value === ''" 
+        :disabledTxt="'Please select a language'"
+        :disabled2="sttServiceLVOfflineByLanguage.length === 0" 
+        :disabled2Txt="'No service available'"
+        :required="false"
+        :resetValue="true"
+      ></AppSelect>
 
       <!-- TOCK application -->
       <AppSelect 
@@ -200,21 +203,42 @@ export default {
     },
     sttServiceCmdByLanguage () {
       if (this.sttServiceLanguage.value !== '') {
-        return this.sttServices.cmd.filter(service => service.lang === this.sttServiceLanguage.value)
+        let resp = []
+        resp['generating'] = []
+        
+        resp['cmd'] = this.sttServices.cmd.filter(service => service.lang === this.sttServiceLanguage.value).length > 0 ? this.sttServices.cmd.filter(service => service.lang === this.sttServiceLanguage.value) : []
+        
+        if(!!this.sttServices.generating.cmd) {
+          resp['generating'] = this.sttServices.generating.cmd.filter(service => service.lang === this.sttServiceLanguage.value).length > 0 ? this.sttServices.generating.cmd.filter(service => service.lang === this.sttServiceLanguage.value) : []  
+        }
+        return resp 
       } else {
         return []
       }
     },
     sttServiceLVOnlineByLanguage () {
       if (this.sttServiceLanguage.value !== '') {
-        return this.sttServices.lvOnline.filter(service => service.lang === this.sttServiceLanguage.value)
+         let resp = []
+        resp['generating'] = []
+        resp['lvOnline'] = this.sttServices.lvOnline.filter(service => service.lang === this.sttServiceLanguage.value).length > 0 ? this.sttServices.lvOnline.filter(service => service.lang === this.sttServiceLanguage.value) : []
+        
+        if(!!this.sttServices.generating.lvOnline) {
+          resp['generating'] = this.sttServices.generating.lvOnline.filter(service => service.lang === this.sttServiceLanguage.value).length > 0 ? this.sttServices.generating.lvOnline.filter(service => service.lang === this.sttServiceLanguage.value) : []
+        }
+        return resp
       } else {
         return []
       }
     },
     sttServiceLVOfflineByLanguage () {
       if (this.sttServiceLanguage.value !== '') {
-        return this.sttServices.lvOffline.filter(service => service.lang === this.sttServiceLanguage.value)
+        let resp = []
+        resp['generating'] = []
+        resp['lvOffline'] = this.sttServices.lvOffline.filter(service => service.lang === this.sttServiceLanguage.value).length > 0 ? this.sttServices.lvOffline.filter(service => service.lang === this.sttServiceLanguage.value) : []
+        if(!!this.sttServices.generating.lvOffline) {
+          resp['generating'] = this.sttServices.generating.lvOffline.filter(service => service.lang === this.sttServiceLanguage.value).length > 0 ? this.sttServices.generating.lvOffline.filter(service => service.lang === this.sttServiceLanguage.value) : []
+        }
+        return resp
       } else {
         return []
       }
