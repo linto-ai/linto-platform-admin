@@ -41,7 +41,7 @@
             :label="'Select a STT command service'" 
             :obj="sttCommandService" 
             :list="!!sttServiceCmdByLanguage['cmd'] ? sttServiceCmdByLanguage['cmd'] : []" 
-        :list2="!!sttServiceCmdByLanguage['generating'] ? sttServiceCmdByLanguage['generating'] : []"
+            :list2="!!sttServiceCmdByLanguage['generating'] ? sttServiceCmdByLanguage['generating'] : []"
             :params="{key:'_id', value:'serviceId', optLabel: 'serviceId'}" 
             :disabled="sttServiceLanguage.value === ''" 
             :disabledTxt="'Please select a language'"
@@ -160,9 +160,7 @@ export default {
       applicationWorkflowsLoaded: false
           }
   },
-  
   async mounted () {
-    
     bus.$on('update_workflow_services', async (data) => {
       if (!!data.sn && data.type === 'static') {
         this.sn = data.sn
@@ -179,12 +177,9 @@ export default {
         error: null,
         valid: true
       }
-
       await this.refreshStore()
       this.showModal()
-      
     })
-
   },
   computed: {
     dataLoaded () {
@@ -206,9 +201,9 @@ export default {
       if (this.sttServicesLoaded && !!this.sttServices.cmd) {
         let sttLang = []
         if (this.sttServices.cmd.length > 0) {
-          this.sttServices.cmd.map(service => {
-            if(sttLang.filter(lang => lang.value === service.lang).length === 0) {
-              sttLang.push({ value: service.lang })
+          this.sttServices.cmd.map(s => {
+            if(sttLang.filter(lang => lang.value === s.lang).length === 0) {
+              sttLang.push({ value: s.lang })
             }
           })
         }
@@ -221,11 +216,11 @@ export default {
       if (this.sttServiceLanguage.value !== '') {
         let resp = []
         resp['generating'] = []
+
+        resp['cmd'] = this.sttServices.cmd.filter(s => s.lang === this.sttServiceLanguage.value).length > 0 ? this.sttServices.cmd.filter(s => s.lang === this.sttServiceLanguage.value) : []
         
-        resp['cmd'] = this.sttServices.cmd.filter(service => service.lang === this.sttServiceLanguage.value).length > 0 ? this.sttServices.cmd.filter(service => service.lang === this.sttServiceLanguage.value) : []
-        
-        if(!!this.sttServices.generating.cmd) {
-          resp['generating'] = this.sttServices.generating.cmd.filter(service => service.lang === this.sttServiceLanguage.value).length > 0 ? this.sttServices.generating.cmd.filter(service => service.lang === this.sttServiceLanguage.value) : []
+        if(!!this.sttServices.generating.cmd && this.sttServices.generating.cmd.length > 0) {
+          resp['generating'] = this.sttServices.generating.cmd.filter(s => s.lang === this.sttServiceLanguage.value).length > 0 ? this.sttServices.generating.cmd.filter(s => s.lang === this.sttServiceLanguage.value) : []
         }
         return resp
       } else {

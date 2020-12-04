@@ -17,7 +17,7 @@
         v-for="l in list"
         :key="l[params.key]"
         :value="l[params.value]"
-      >{{ l[params.optLabel] }}</option>
+      >{{ l[params.optLabel] }} </option>
         <option 
         v-for="l2 in list2"
         :key="l2[params.key]"

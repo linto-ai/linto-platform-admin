@@ -65,7 +65,23 @@ export default new Vuex.Store({
         getStaticWorkflows: async({ commit, state }) => {
             try {
                 const getStaticWorkflows = await axios.get(`${process.env.VUE_APP_URL}/api/workflows/static`)
-                commit('SET_STATIC_WORKFLOWS', getStaticWorkflows.data)
+                let allStaticWorkflows = getStaticWorkflows.data
+                if (allStaticWorkflows.length > 0) {
+                    allStaticWorkflows.map(sw => {
+                        if (!!sw.flow && !!sw.flow.configs && sw.flow.configs.length > 0) {
+                            // get STT service 
+                            let nodeSttConfig = sw.flow.configs.filter(node => node.type === 'linto-config-transcribe')
+                            if (nodeSttConfig.length > 0 && !!nodeSttConfig[0].commandOffline) {
+                                sw.sttServices = {
+                                    cmd: nodeSttConfig[0].commandOffline,
+                                    lvOnline: nodeSttConfig[0].largeVocabStreaming,
+                                    lvOffline: nodeSttConfig[0].largeVocabOffline
+                                }
+                            }
+                        }
+                    })
+                }
+                commit('SET_STATIC_WORKFLOWS', allStaticWorkflows)
                 return state.staticWorkflows
             } catch (error) {
                 return { error: 'Error on getting static workflows' }
@@ -75,7 +91,23 @@ export default new Vuex.Store({
         getApplicationWorkflows: async({ commit, state }) => {
             try {
                 const getApplicationWorkflows = await axios.get(`${process.env.VUE_APP_URL}/api/workflows/application`)
-                commit('SET_APPLICATION_WORKFLOWS', getApplicationWorkflows.data)
+                let allApplicationWorkflows = getApplicationWorkflows.data
+                if (allApplicationWorkflows.length > 0) {
+                    allApplicationWorkflows.map(sw => {
+                        if (!!sw.flow && !!sw.flow.configs && sw.flow.configs.length > 0) {
+                            // get STT service 
+                            let nodeSttConfig = sw.flow.configs.filter(node => node.type === 'linto-config-transcribe')
+                            if (nodeSttConfig.length > 0 && !!nodeSttConfig[0].commandOffline) {
+                                sw.sttServices = {
+                                    sttCommandService: nodeSttConfig[0].commandOffline,
+                                    largeVocabStreaming: nodeSttConfig[0].largeVocabStreaming,
+                                    largeVocabOffline: nodeSttConfig[0].largeVocabOffline
+                                }
+                            }
+                        }
+                    })
+                }
+                commit('SET_APPLICATION_WORKFLOWS', allApplicationWorkflows)
                 return state.applicationWorkflows
             } catch (error) {
                 return { error: 'Error on getting Linto(s) static devices' }
@@ -205,24 +237,42 @@ export default new Vuex.Store({
                                 // in generation progress
                                 if (lm[0].updateState > 0) {
                                     if (lm[0].type === 'cmd') {
-                                        generating['cmd'].push(s)
+                                        generating['cmd'].push({
+                                            ...s,
+                                            langModel: lm[0]
+                                        })
                                     } else if (lm[0].type === 'lvcsr') {
                                         if (s.tag === 'online') {
-                                            generating['lvOnline'].push(s)
+                                            generating['lvOnline'].push({
+                                                ...s,
+                                                langModel: lm[0]
+                                            })
                                         } else if (s.tag === 'offline') {
-                                            generating['lvOffline'].push(s)
+                                            generating['lvOffline'].push({
+                                                ...s,
+                                                langModel: lm[0]
+                                            })
                                         }
                                     }
                                 }
                                 // Available services
                                 else if (lm[0].isGenerated === 1 || lm[0].isDirty === 1 && lm[0].isGenerated === 0 && lm[0].updateState >= 0) {
                                     if (lm[0].type === 'cmd') {
-                                        servicesCMD.push(s)
+                                        servicesCMD.push({
+                                            ...s,
+                                            langModel: lm[0]
+                                        })
                                     } else if (lm[0].type === 'lvcsr') {
                                         if (s.tag === 'online') {
-                                            serviceLVOnline.push(s)
+                                            serviceLVOnline.push({
+                                                ...s,
+                                                langModel: lm[0]
+                                            })
                                         } else if (s.tag === 'offline') {
-                                            serviceLVOffline.push(s)
+                                            serviceLVOffline.push({
+                                                ...s,
+                                                langModel: lm[0]
+                                            })
                                         }
                                     }
                                 }
@@ -245,6 +295,7 @@ export default new Vuex.Store({
                 return { error }
             }
         },
+
         WORKFLOW_TEMPLATES_BY_TYPE: (state) => (type) => {
             try {
                 if (!!state.workflowsTemplates && state.workflowsTemplates.length > 0) {

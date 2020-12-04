@@ -26,10 +26,16 @@
               </td>
               <td class="table--desc">{{ !!wf.description && wf.description.length > 0 ? wf.description : 'No description'}}</td>
               <td>
-                <a :href="`/admin/applications/device/workflow/${wf._id}`" class="button button-icon-txt button--bluemid button--with-desc bottom" data-desc="Edit on Node-red interface">
+                <a v-if="generating.indexOf(wf.sttServices.cmd) >= 0" href="javascript:;" class="button button-icon-txt button--grey button--with-desc bottom" data-desc="Can't acces application while language model is in generation process...">
+                  <span class="button__icon button__icon--loading"></span>
+                  <span class="button__label">{{wf.name}}</span>
+                </a>
+
+                <a v-else :href="`/admin/applications/device/workflow/${wf._id}`" class="button button-icon-txt button--bluemid button--with-desc bottom" data-desc="Edit on Node-red interface">
                   <span class="button__icon button__icon--workflow"></span>
                   <span class="button__label">{{wf.name}}</span>
                 </a>
+                
               </td>
               <td class="center">
                 <button class="button button-icon-txt button--blue button--with-desc bottom" data-desc="Edit services parameters" @click="updateWorkflowServicesSettings(wf.associated_device, {name: wf.name, _id: wf._id, description: wf.description})">
@@ -66,7 +72,11 @@ export default {
     return {
       staticClientsLoaded: false,
       staticWorkflowsLoaded: false,
-      socket: null
+      sttServicesLoaded: false,
+      sttLanguageModelsLoaded: false,
+      socket: null,
+      generating: []
+
     }
   },
   async created () {
@@ -99,10 +109,43 @@ export default {
       return this.$store.getters.STATIC_WORKFLOWS_BY_CLIENTS
     },
     dataLoaded () {
-      return this.staticClientsLoaded && this.staticWorkflowsLoaded
+      return this.staticClientsLoaded && this.staticWorkflowsLoaded && this.sttServicesLoaded && this.sttLanguageModelsLoaded
     },
     staticWorkflows () {
       return this.$store.state.staticWorkflows
+    },
+    sttAvailableServices () {
+      return this.$store.getters.STT_SERVICES_AVAILABLE
+    }
+  },
+  watch: {
+    'sttServices.generating' (data) {
+      let generating = []
+      if(data.cmd.length > 0) {
+        data.cmd.map(cmd => {
+          generating.push({
+            sttServiceName: cmd.serviceId,
+            prct: cmd.langModel.updateState
+          })
+        })
+      }
+      if(data.lvOnline.length > 0) {
+        data.lvOnline.map(lvOnline => {
+          generating.push({
+            sttServiceName: lvOnline.serviceId,
+            prct: lvOnline.langModel.updateState
+          })
+        })
+      }
+      if(data.lvOffline.length > 0) {
+        data.lvOffline.map(lvOffline => {
+          generating.push({
+            sttServiceName: lvOffline.serviceId,
+            prct: lvOffline.langModel.updateState
+          })
+        })
+      }
+      this.generating = generating
     }
   },
   methods: {
@@ -123,6 +166,8 @@ export default {
       try {
         await this.dispatchStore('getStaticClients')
         await this.dispatchStore('getStaticWorkflows')
+        await this.dispatchStore('getSttServices')
+        await this.dispatchStore('getSttLanguageModels')
       } catch (error) {
         bus.$emit('app_notif', {
           status: 'error',
@@ -146,6 +191,12 @@ export default {
             break
           case 'getStaticWorkflows':
             this.staticWorkflowsLoaded = dispatchSuccess
+            break
+          case 'getSttServices':
+            this.sttServicesLoaded = dispatchSuccess
+            break
+          case 'getSttLanguageModels':
+            this.sttLanguageModelsLoaded = dispatchSuccess
             break
           default:
             return

@@ -16,9 +16,9 @@
         </details>
         <div class="block block--transparent block--no-margin block--no-padding flex1 flex">
           <NodeRedIframe :contextFrame="'staticWorkflow'" :blsurl="blsUrl" :noderedFlowId="currentWorkflow.flowId" :workflowId="staticWorkflowId" :workflowName="currentWorkflow.name" v-if="dataLoaded"></NodeRedIframe>
-        </div>
       </div>
     </div>
+  </div>
     
   </div>
   <div v-else>
@@ -27,6 +27,7 @@
     </div>
     <div v-if="!dataLoaded && !sttServicesAvailable">Loading...</div>
   </div>
+  
 </template>
 <script>
 import { bus } from '../main.js'
@@ -64,7 +65,7 @@ export default {
     dataLoaded () {
       return this.staticWorkflowsLoaded && this.blsUp && !this.currentWorkflow.error && this.sttServicesLoaded && this.sttLanguageModelsLoaded
     },
-     currentWorkflow () {
+    currentWorkflow () {
       return this.$store.getters.STATIC_WORKFLOW_BY_ID(this.staticWorkflowId)
     },
     sttServices () {
@@ -73,52 +74,14 @@ export default {
     sttLanguageModels () {
       return this.$store.state.sttLanguageModels
     },
-    modelsGenerating () {
-      let generating = []
-      if(!!this.sttServices.generating) {
-        if(!!this.sttServices.generating.cmd && this.sttServices.generating.cmd.length > 0) {
-          this.sttServices.generating.cmd.map(cmd => {
-            let langmodel = this.sttLanguageModels.filter(lm => lm.modelId === cmd.LModelId)
-            if(langmodel.length > 0) {
-              generating.push({
-                sttServiceName: cmd.serviceId,
-                prct: langmodel[0].updateState
-              })
-            }
-          })
-        }
-        if(!!this.sttServices.generating.lvOnline && this.sttServices.generating.lvOnline.length > 0) {
-          this.sttServices.generating.lvOnline.map(lvOnline => {
-            let langmodel = this.sttLanguageModels.filter(lm => lm.modelId === lvOnline.LModelId)
-            if(langmodel.length > 0) {
-              generating.push({
-                sttServiceName: lvOnline.serviceId,
-                prct: langmodel[0].updateState
-              })
-            }
-          })
-        }
-        if(!!this.sttServices.generating.lvOffline && this.sttServices.generating.lvOffline.length > 0) {
-          this.sttServices.generating.lvOffline.map(lvOffline => {
-            let langmodel = this.sttLanguageModels.filter(lm => lm.modelId === lvOffline.LModelId)
-            if(langmodel.length > 0) {
-              generating.push({
-                sttServiceName: lvOffline.serviceId,
-                prct: langmodel[0].updateState
-              })
-            }
-          })
-        }
-      }
-      return generating
-    },
+    // check if STT services are available for this workflow
     sttServicesAvailable () {
-      if (this.sttCommandService !== '') {
-        let sttServiceCmdGenerating = this.modelsGenerating.filter(mg => mg.sttServiceName === this.sttCommandService) 
+      if (this.dataLoaded && !!this.currentWorkflow.sttServices && !!this.sttServices) {
+        let sttServiceCmdGenerating = this.sttServices.generating.cmd.filter(mg => mg.serviceId === this.currentWorkflow.sttServices.cmd) 
         
-        let sttServiceLVOnlineGenerating = this.modelsGenerating.filter(mg => mg.sttServiceName === this.largeVocabStreaming)
+        let sttServiceLVOnlineGenerating = this.sttServices.generating.lvOnline.filter(mg => mg.serviceId === this.currentWorkflow.sttServices.lvOnline) 
         
-        let sttServiceLVOfflineGenerating = this.modelsGenerating.filter(mg => mg.sttServiceName === this.largeVocabOffline)
+        let sttServiceLVOfflineGenerating = this.sttServices.generating.lvOffline.filter(mg => mg.serviceId === this.currentWorkflow.sttServices.lvOffline) 
 
         if (sttServiceCmdGenerating.length > 0 || sttServiceLVOnlineGenerating.length > 0 || sttServiceLVOfflineGenerating.length > 0) {
           return false
@@ -132,15 +95,6 @@ export default {
     currentWorkflow (data) {
       if(!data.error) {
         this.blsUrl = `${process.env.VUE_APP_NODERED}/#flow/${this.currentWorkflow.flowId}`
-         if(!!data.flow && !!data.flow.configs && data.flow.configs.length > 0) {
-              // get STT service 
-              let nodeSttConfig = data.flow.configs.filter(node => node.type === 'linto-config-transcribe')
-              if (nodeSttConfig.length > 0 && !!nodeSttConfig[0].commandOffline) {
-                this.sttCommandService = nodeSttConfig[0].commandOffline
-                this.largeVocabStreaming = nodeSttConfig[0].largeVocabStreaming
-                this.largeVocabOffline = nodeSttConfig[0].largeVocabOffline
-              }
-          }
       } 
     }
   },
