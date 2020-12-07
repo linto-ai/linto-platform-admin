@@ -64,24 +64,26 @@ async function sttLexicalSeeding(flowId, service_name) {
         } else {
             entitiesUpdated = true
         }
-        const getUpdatedSttLangModel = await axios(`${middlewares.useSSL() + process.env.LINTO_STACK_STT_SERVICE_MANAGER_SERVICE}/langmodel/${sttService.LModelId}`, {
-            method: 'get',
-            headers: {
-                'charset': 'utf-8',
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'Authorization': sttAuthToken
-            }
-        })
-
-        // Generate Graph if model updated
-        if (getUpdatedSttLangModel.data.data.isDirty === 1) {
-            try {
-                await generateGraph(service_name)
-            } catch (error) {
-                console.error(error)
+        if (intentsToSend.data.length > 0 || entitiesToSend.data.length > 0) {
+            const getUpdatedSttLangModel = await axios(`${middlewares.useSSL() + process.env.LINTO_STACK_STT_SERVICE_MANAGER_SERVICE}/langmodel/${sttService.LModelId}`, {
+                    method: 'get',
+                    headers: {
+                        'charset': 'utf-8',
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'Authorization': sttAuthToken
+                    }
+                })
+                // Generate Graph if model updated
+            if (getUpdatedSttLangModel.data.data.isDirty === 1) {
+                try {
+                    await generateGraph(service_name)
+                } catch (error) {
+                    console.error(error)
+                }
             }
         }
+
         // Result
         if (intentsUpdated && entitiesUpdated) {
             if (updateInt.errors.length === 0 && updateEnt.errors.length === 0) {

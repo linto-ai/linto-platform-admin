@@ -99,9 +99,9 @@ export default new Vuex.Store({
                             let nodeSttConfig = sw.flow.configs.filter(node => node.type === 'linto-config-transcribe')
                             if (nodeSttConfig.length > 0 && !!nodeSttConfig[0].commandOffline) {
                                 sw.sttServices = {
-                                    sttCommandService: nodeSttConfig[0].commandOffline,
-                                    largeVocabStreaming: nodeSttConfig[0].largeVocabStreaming,
-                                    largeVocabOffline: nodeSttConfig[0].largeVocabOffline
+                                    cmd: nodeSttConfig[0].commandOffline,
+                                    lvOnline: nodeSttConfig[0].largeVocabStreaming,
+                                    lvOffline: nodeSttConfig[0].largeVocabOffline
                                 }
                             }
                         }

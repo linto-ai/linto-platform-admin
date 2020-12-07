@@ -23,7 +23,7 @@
   </div>
   <div v-else>
     <div v-if="dataLoaded && !sttServicesAvailable">
-      Used STT language model(s) in generation process. Please come back later.
+      Used STT language model(s) in generation process. <a href="/admin/applications/device">Back to overview</a>.
     </div>
     <div v-if="!dataLoaded && !sttServicesAvailable">Loading...</div>
   </div>
@@ -58,6 +58,9 @@ export default {
     await this.refreshStore()
     
     bus.$on('save_as_workflow_template_success', async (data) => {
+      await this.refreshStore()
+    })
+     bus.$on('iframe_reload', async () => {
       await this.refreshStore()
     })
   },

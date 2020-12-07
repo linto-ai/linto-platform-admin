@@ -288,7 +288,7 @@ export default {
           if(!!data.connexion) {
             this.staticClient.connexion = data.connexion
           }
-          if(!!data.last_up) { 
+          if(!!data.last_up && data.last_up.length > 0) { 
             this.staticClient.last_up = data.last_up
           }
           if(!!data.last_down) { 

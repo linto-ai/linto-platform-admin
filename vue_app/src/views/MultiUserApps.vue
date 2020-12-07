@@ -39,7 +39,11 @@
                 </button>
               </td>
               <td>
-                <a :href="`/admin/applications/multi/workflow/${app._id}`" class="button button-icon-txt button--bluemid button--with-desc bottom" data-desc="Edit on Node-red interface">
+                <a v-if="generating.indexOf(app.sttServices.cmd) >= 0 || generating.indexOf(app.sttServices.lvOnline) >= 0 || generating.indexOf(app.sttServices.lvOfline) >= 0" href="javascript:;" class="button button-icon-txt button--grey button--with-desc bottom" data-desc="Can't acces application while language model is in generation process...">
+                  <span class="button__icon button__icon--loading"></span>
+                  <span class="button__label">{{app.name}}</span>
+                </a>
+                <a v-else :href="`/admin/applications/multi/workflow/${app._id}`" class="button button-icon-txt button--bluemid button--with-desc bottom" data-desc="Edit on Node-red interface">
                   <span class="button__icon button__icon--workflow"></span>
                   <span class="button__label">{{ app.name }}</span>
                 </a>
@@ -79,7 +83,11 @@ export default {
     return {
       applicationWorkflowsLoaded: false,
       androidUsersLoaded: false,
-      webappHostsLoaded: false
+      webappHostsLoaded: false,
+      sttServicesLoaded: false,
+      sttLanguageModelsLoaded: false,
+      generating: []
+
     }
   },
   async created () {
@@ -100,7 +108,7 @@ export default {
   },
   computed: {
     dataLoaded () {
-      return this.applicationWorkflowsLoaded && this.androidUsersLoaded && this.webappHostsLoaded
+      return this.applicationWorkflowsLoaded && this.androidUsersLoaded && this.webappHostsLoaded && this.sttServicesLoaded && this.sttLanguageModelsLoaded
     },
     applicationWorkflows () {
       return this.$store.state.applicationWorkflows
@@ -113,6 +121,30 @@ export default {
     },
     hostByApps() {
       return this.$store.getters.WEB_APP_HOST_BY_APPS
+    },
+    sttAvailableServices () {
+      return this.$store.getters.STT_SERVICES_AVAILABLE
+    }
+  },
+  watch: {
+    'sttAvailableServices.generating' (data) {
+      let generating = []
+      if(data.cmd.length > 0) {
+        data.cmd.map(cmd => {
+          generating.push(cmd.serviceId)
+        })
+      }
+      if(data.lvOnline.length > 0) {
+        data.lvOnline.map(lvOnline => {
+          generating.push(lvOnline.serviceId)
+        })
+      }
+      if(data.lvOffline.length > 0) {
+        data.lvOffline.map(lvOffline => {
+          generating.push(lvOffline.serviceId)
+        })
+      }
+      this.generating = generating
     }
   },
   methods: {
@@ -145,6 +177,8 @@ export default {
         await this.dispatchStore('getApplicationWorkflows')
         await this.dispatchStore('getAndroidUsers')
         await this.dispatchStore('getWebappHosts')
+        await this.dispatchStore('getSttServices')
+        await this.dispatchStore('getSttLanguageModels')
       } catch (error) {
         bus.$emit('app_notif', {
           status: 'error',
@@ -161,6 +195,9 @@ export default {
         if (dispatch.status === 'error') {
           throw dispatch.msg
         }
+        if(process.env.VUE_APP_DEBUG) {
+          console.error(topic, dispatchSuccess)
+        }
         switch(topic) {
           case 'getApplicationWorkflows':
             this.applicationWorkflowsLoaded = dispatchSuccess
@@ -171,10 +208,19 @@ export default {
           case 'getWebappHosts':
             this.webappHostsLoaded = dispatchSuccess
             break
+          case 'getSttServices':
+            this.sttServicesLoaded = dispatchSuccess
+            break
+          case 'getSttLanguageModels':
+            this.sttLanguageModelsLoaded = dispatchSuccess
+            break
           default:
             return
         }  
       } catch (error) {
+        if(process.env.VUE_APP_DEBUG) {
+          console.error(topic, error)
+        }
         bus.$emit('app_notif', {
           status: 'error',
           msg: error,

@@ -514,13 +514,11 @@ export default {
       }
     },
     async sttLexicalSeeding (data) {
-        
       try {
         const payload = { 
             flowId: data.flowId,
             service_name: data.sttCommandService
         }
-        
         const sttLexSeed = await axios(`${process.env.VUE_APP_URL}/api/stt/lexicalseeding`, {
           method: 'post', 
           data: { payload }
