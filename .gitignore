@@ -3,8 +3,10 @@
 **/settings.tmp.js
 **/json_tmp
 **/public/tockapp.json
+**/public/tocksentences.json
 **/package-lock.json
 **/dist
 **/.vscode
 **/.local_cmd
 **/data
+/webserver/model/mongodb/schemas

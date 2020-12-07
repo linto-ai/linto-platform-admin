@@ -30,14 +30,15 @@ class MongoDriver {
 
     constructor() {
         this.poolOptions = {
-                numberOfRetries: 5,
-                auto_reconnect: true,
-                poolSize: 40,
-                connectTimeoutMS: 5000,
-                useNewUrlParser: true,
-                useUnifiedTopology: false
-            }
-            // if connexion exists
+            numberOfRetries: 5,
+            auto_reconnect: true,
+            poolSize: 40,
+            connectTimeoutMS: 5000,
+            useNewUrlParser: true,
+            useUnifiedTopology: true
+        }
+
+        // if connexion exists
         if (MongoDriver.checkConnection()) {
             return this
         }
@@ -45,7 +46,8 @@ class MongoDriver {
         // Otherwise, inits connexions and binds event handling
         MongoDriver.client.connect(MongoDriver.urlMongo, MongoDriver.poolOptions, (err, client) => {
             if (err) {
-                console.error('> MongoDB ERROR unable to connect:', err.toString())
+                console.error('> MongoDB ERROR unable to connect:')
+                console.error({ err })
             } else {
                 console.log('> MongoDB : Connected')
                 MongoDriver.db = client.db(process.env.LINTO_STACK_MONGODB_DBNAME)

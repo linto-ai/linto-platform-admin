@@ -2,7 +2,7 @@ const MongoModel = require(`${process.cwd()}/model/mongodb/model.js`)
 const flowPatternTmpSchema = require(`${process.cwd()}/model/mongodb/schemas/${process.env.LINTO_STACK_MONGODB_TARGET_VERSION}/schemas/flow_tmp.json`)
 
 // This class is a child of 'modelMongoDb' class. It contains all methods and requests to database used on API routes.
-class FLowPatternTmpModel extends MongoModel {
+class FlowPatternTmpModel extends MongoModel {
 
     constructor() {
         super('flow_tmp')
@@ -75,4 +75,4 @@ class FLowPatternTmpModel extends MongoModel {
 }
 
 
-module.exports = new FLowPatternTmpModel()
+module.exports = new FlowPatternTmpModel()
