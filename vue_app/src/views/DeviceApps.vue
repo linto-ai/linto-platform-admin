@@ -36,7 +36,7 @@
                 </a>
               </td>
               <td class="center">
-                <button class="button button-icon-txt button--blue button--with-desc bottom" data-desc="Edit services parameters" @click="updateWorkflowServicesSettings(wf.associated_device, {name: wf.name, _id: wf._id, description: wf.description})">
+                <button class="button button-icon-txt button--blue button--with-desc bottom" data-desc="Edit services parameters" @click="updateWorkflowServicesSettings(wf.associated_device, {name: wf.name, _id: wf._id, description: wf.description, sttServices: wf.sttServices})">
                   <span class="button__icon button__icon--edit"></span>
                   <span class="button__label">Edit</span>
                 </button>

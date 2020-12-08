@@ -158,7 +158,7 @@ export default {
       tockApplicationsLoaded: false,
       sttLanguageModelsLoaded: false,
       applicationWorkflowsLoaded: false
-          }
+      }
   },
   async mounted () {
     bus.$on('update_workflow_services', async (data) => {
@@ -188,7 +188,7 @@ export default {
     currentWorkflow () {
       if (this.workflowType === 'static' && this.dataLoaded)  {
         return this.$store.getters.STATIC_WORKFLOW_BY_ID(this.workflow._id) 
-      } else if (this.workflowType === 'application') {
+      } else if (this.workflowType === 'application' && this.dataLoaded) {
         return this.$store.getters.APP_WORKFLOW_BY_ID(this.workflow._id) 
       } else {
         return null
@@ -213,14 +213,14 @@ export default {
       }
     },
     sttServiceCmdByLanguage () {
-      if (this.sttServiceLanguage.value !== '') {
+      if (this.dataLoaded && this.sttServiceLanguage.value !== '') {
         let resp = []
         resp['generating'] = []
-
-        resp['cmd'] = this.sttServices.cmd.filter(s => s.lang === this.sttServiceLanguage.value).length > 0 ? this.sttServices.cmd.filter(s => s.lang === this.sttServiceLanguage.value) : []
-        
+        if(!!this.sttServices.cmd && this.sttServices.cmd.length > 0) {
+          resp['cmd'] = this.sttServices.cmd.filter(service => service.lang === this.sttServiceLanguage.value).length > 0 ? this.sttServices.cmd.filter(service => service.lang === this.sttServiceLanguage.value) : []
+        }
         if(!!this.sttServices.generating.cmd && this.sttServices.generating.cmd.length > 0) {
-          resp['generating'] = this.sttServices.generating.cmd.filter(s => s.lang === this.sttServiceLanguage.value).length > 0 ? this.sttServices.generating.cmd.filter(s => s.lang === this.sttServiceLanguage.value) : []
+          resp['generating'] = this.sttServices.generating.cmd.filter(service => service.lang === this.sttServiceLanguage.value).length > 0 ? this.sttServices.generating.cmd.filter(service => service.lang === this.sttServiceLanguage.value) : []
         }
         return resp
       } else {
@@ -228,12 +228,14 @@ export default {
       }
     },
     sttServiceLVOnlineByLanguage () {
-      if (this.sttServiceLanguage.value !== '') {
+      if (this.dataLoaded && this.sttServiceLanguage.value !== '') {
          let resp = []
         resp['generating'] = []
-        resp['lvOnline'] = this.sttServices.lvOnline.filter(service => service.lang === this.sttServiceLanguage.value).length > 0 ? this.sttServices.lvOnline.filter(service => service.lang === this.sttServiceLanguage.value) : []
+        if(!!this.sttServices.lvOnline && this.sttServices.lvOnline.length > 0) {
+          resp['lvOnline'] = this.sttServices.lvOnline.filter(service => service.lang === this.sttServiceLanguage.value).length > 0 ? this.sttServices.lvOnline.filter(service => service.lang === this.sttServiceLanguage.value) : []
+        }
         
-        if(!!this.sttServices.generating.lvOnline) {
+        if(!!this.sttServices.generating.lvOnline && this.sttServices.generating.lvOnline.length > 0) {
           resp['generating'] = this.sttServices.generating.lvOnline.filter(service => service.lang === this.sttServiceLanguage.value).length > 0 ? this.sttServices.generating.lvOnline.filter(service => service.lang === this.sttServiceLanguage.value) : []
         }
         return resp
@@ -242,11 +244,13 @@ export default {
       }
     },
     sttServiceLVOfflineByLanguage () {
-      if (this.sttServiceLanguage.value !== '') {
+      if (this.dataLoaded && this.sttServiceLanguage.value !== '') {
         let resp = []
         resp['generating'] = []
-        resp['lvOffline'] = this.sttServices.lvOffline.filter(service => service.lang === this.sttServiceLanguage.value).length > 0 ? this.sttServices.lvOffline.filter(service => service.lang === this.sttServiceLanguage.value) : []
-        if(!!this.sttServices.generating.lvOffline) {
+        if(!!this.sttServices.lvOffline && this.sttServices.lvOffline.length > 0) {
+          resp['lvOffline'] = this.sttServices.lvOffline.filter(service => service.lang === this.sttServiceLanguage.value).length > 0 ? this.sttServices.lvOffline.filter(service => service.lang === this.sttServiceLanguage.value) : []
+        }
+        if(!!this.sttServices.generating.lvOffline && this.sttServices.generating.lvOffline.length > 0) {
           resp['generating'] = this.sttServices.generating.lvOffline.filter(service => service.lang === this.sttServiceLanguage.value).length > 0 ? this.sttServices.generating.lvOffline.filter(service => service.lang === this.sttServiceLanguage.value) : []
         }
         return resp
@@ -272,30 +276,32 @@ export default {
             // get worlflow name
             this.workflowName.value = this.currentWorkflow.name
             this.workflowName.valid = true 
+            
+            if(!!this.currentWorkflow.sttServices) {
+              this.sttCommandService.value = this.currentWorkflow.sttServices.cmd
+              this.sttCommandService.valid = true
+              this.largeVocabStreaming.value = this.currentWorkflow.sttServices.lvOnline
+              this.largeVocabStreaming.valid = true
+              this.largeVocabOffline.value = this.currentWorkflow.sttServices.lvOffline
+              this.largeVocabOffline.valid = true
+            }
 
             // get worlflow language
-            const nodeConfig = this.currentWorkflow.flow.nodes.filter(node => node.type === 'linto-config')
-            if (nodeConfig.length > 0) {
-              this.sttServiceLanguage.value = nodeConfig[0].language
-              this.sttServiceLanguage.valid = true
+            if(!!this.currentWorkflow.flow && !!this.currentWorkflow.flow.nodes && this.currentWorkflow.flow.nodes.length > 0) {
+              const nodeConfig = this.currentWorkflow.flow.nodes.filter(node => node.type === 'linto-config')
+              if (nodeConfig.length > 0) {
+                this.sttServiceLanguage.value = nodeConfig[0].language
+                this.sttServiceLanguage.valid = true
+              }
+              let nodeSttConfig = ''
+              let nodeNluConfig = ''
             }
-            let nodeSttConfig = ''
-            let nodeNluConfig = ''
 
-            if(!!this.currentWorkflow.flow.configs && this.currentWorkflow.flow.configs.length > 0) {
-              // get STT service 
-              nodeSttConfig = this.currentWorkflow.flow.configs.filter(node => node.type === 'linto-config-transcribe')
-              if (nodeSttConfig.length > 0 && !!nodeSttConfig[0].commandOffline) {
-                this.sttCommandService.value = nodeSttConfig[0].commandOffline
-                this.largeVocabStreaming.value = nodeSttConfig[0].largeVocabStreaming
-                this.largeVocabOffline.value = nodeSttConfig[0].largeVocabOffline
-                this.sttCommandService.valid = true
-              } 
-
-              // get Tock application
-              nodeNluConfig = this.currentWorkflow.flow.configs.filter(node => node.type === 'linto-config-evaluate')
-              if (nodeNluConfig.length > 0) {
-                this.tockApplicationName.value = nodeNluConfig[0].appname
+          // get tock application name
+            if(!!this.currentWorkflow.flow && !!this.currentWorkflow.flow.configs && this.currentWorkflow.flow.configs.length > 0) {
+              const nodeConfigTock = this.currentWorkflow.flow.configs.filter(node => node.type === 'linto-config-evaluate')
+              if (nodeConfigTock.length > 0) {
+                this.tockApplicationName.value = nodeConfigTock[0].appname
                 this.tockApplicationName.valid = true
               }
             }

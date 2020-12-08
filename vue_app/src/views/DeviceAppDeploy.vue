@@ -194,7 +194,6 @@ export default {
       sttLexSeedUpdate: false,
       sttLexSeedStatus: 'Updating STT service dictionnaries',
       requiredErrorMsg: ''
-      
     }
   },
   computed: {
@@ -220,12 +219,13 @@ export default {
       }
     },
     sttServiceCmdByLanguage () {
-      if (this.sttServiceLanguage.value !== '') {
+      if (this.dataLoaded && this.sttServiceLanguage.value !== '') {
         let resp = []
         resp['generating'] = []
-        resp['cmd'] = this.sttServices.cmd.filter(service => service.lang === this.sttServiceLanguage.value).length > 0 ? this.sttServices.cmd.filter(service => service.lang === this.sttServiceLanguage.value) : []
-        
-        if(!!this.sttServices.generating.cmd) {
+        if(!!this.sttServices.cmd && this.sttServices.cmd.length > 0) {
+          resp['cmd'] = this.sttServices.cmd.filter(service => service.lang === this.sttServiceLanguage.value).length > 0 ? this.sttServices.cmd.filter(service => service.lang === this.sttServiceLanguage.value) : []
+        }
+        if(!!this.sttServices.generating.cmd && this.sttServices.generating.cmd.length > 0) {
           resp['generating'] = this.sttServices.generating.cmd.filter(service => service.lang === this.sttServiceLanguage.value).length > 0 ? this.sttServices.generating.cmd.filter(service => service.lang === this.sttServiceLanguage.value) : []
         }
         return resp
@@ -234,12 +234,14 @@ export default {
       }
     },
     sttServiceLVOnlineByLanguage () {
-      if (this.sttServiceLanguage.value !== '') {
+      if (this.dataLoaded && this.sttServiceLanguage.value !== '') {
          let resp = []
         resp['generating'] = []
-        resp['lvOnline'] = this.sttServices.lvOnline.filter(service => service.lang === this.sttServiceLanguage.value).length > 0 ? this.sttServices.lvOnline.filter(service => service.lang === this.sttServiceLanguage.value) : []
+        if(!!this.sttServices.lvOnline && this.sttServices.lvOnline.length > 0) {
+          resp['lvOnline'] = this.sttServices.lvOnline.filter(service => service.lang === this.sttServiceLanguage.value).length > 0 ? this.sttServices.lvOnline.filter(service => service.lang === this.sttServiceLanguage.value) : []
+        }
         
-        if(!!this.sttServices.generating.lvOnline) {
+        if(!!this.sttServices.generating.lvOnline && this.sttServices.generating.lvOnline.length > 0) {
           resp['generating'] = this.sttServices.generating.lvOnline.filter(service => service.lang === this.sttServiceLanguage.value).length > 0 ? this.sttServices.generating.lvOnline.filter(service => service.lang === this.sttServiceLanguage.value) : []
         }
         return resp
@@ -248,11 +250,13 @@ export default {
       }
     },
     sttServiceLVOfflineByLanguage () {
-      if (this.sttServiceLanguage.value !== '') {
+      if (this.dataLoaded && this.sttServiceLanguage.value !== '') {
         let resp = []
         resp['generating'] = []
-        resp['lvOffline'] = this.sttServices.lvOffline.filter(service => service.lang === this.sttServiceLanguage.value).length > 0 ? this.sttServices.lvOffline.filter(service => service.lang === this.sttServiceLanguage.value) : []
-        if(!!this.sttServices.generating.lvOffline) {
+        if(!!this.sttServices.lvOffline && this.sttServices.lvOffline.length > 0) {
+          resp['lvOffline'] = this.sttServices.lvOffline.filter(service => service.lang === this.sttServiceLanguage.value).length > 0 ? this.sttServices.lvOffline.filter(service => service.lang === this.sttServiceLanguage.value) : []
+        }
+        if(!!this.sttServices.generating.lvOffline && this.sttServices.generating.lvOffline.length > 0) {
           resp['generating'] = this.sttServices.generating.lvOffline.filter(service => service.lang === this.sttServiceLanguage.value).length > 0 ? this.sttServices.generating.lvOffline.filter(service => service.lang === this.sttServiceLanguage.value) : []
         }
         return resp

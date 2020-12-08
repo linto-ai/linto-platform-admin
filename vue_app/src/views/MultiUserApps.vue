@@ -196,7 +196,7 @@ export default {
           throw dispatch.msg
         }
         if(process.env.VUE_APP_DEBUG) {
-          console.error(topic, dispatchSuccess)
+          console.log(topic, dispatchSuccess)
         }
         switch(topic) {
           case 'getApplicationWorkflows':

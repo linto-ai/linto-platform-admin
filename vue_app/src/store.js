@@ -344,10 +344,22 @@ export default new Vuex.Store({
         STATIC_WORKFLOW_BY_ID: (state) => (id) => {
             try {
                 if (!!state.staticWorkflows && state.staticWorkflows.length > 0) {
-                    const staticWorkflow = state.staticWorkflows.filter(sw => sw._id === id)
-                    if (staticWorkflow.length > 0) {
-                        return staticWorkflow[0]
+                    const workflow = state.staticWorkflows.filter(sw => sw._id === id)
+                    let resp = workflow[0]
+                    let sttServices =   {}
+                    if (!!resp.flow && !!resp.flow.configs && resp.flow.configs.length > 0) {
+                        // get STT service 
+                        let nodeSttConfig = resp.flow.configs.filter(node => node.type === 'linto-config-transcribe')
+                        if (nodeSttConfig.length > 0 && !!nodeSttConfig[0].commandOffline) {
+                            sttServices = {
+                                cmd: nodeSttConfig[0].commandOffline,
+                                lvOnline: nodeSttConfig[0].largeVocabStreaming,
+                                lvOffline: nodeSttConfig[0].largeVocabOffline
+                            }
+                        }
                     }
+                    resp.sttServices = sttServices
+                    return resp
                 }
                 return []
             } catch (error) {
@@ -422,6 +434,23 @@ export default new Vuex.Store({
                 if (!!state.applicationWorkflows && state.applicationWorkflows.length > 0) {
                     const workflows = state.applicationWorkflows
                     const workflow = workflows.filter(wf => wf._id === workflowId)
+                    if (workflow.length > 0) {
+                        let resp = workflow[0]
+                        let sttServices =   {}
+                        if (!!resp.flow && !!resp.flow.configs && resp.flow.configs.length > 0) {
+                            // get STT service 
+                            let nodeSttConfig = resp.flow.configs.filter(node => node.type === 'linto-config-transcribe')
+                            if (nodeSttConfig.length > 0 && !!nodeSttConfig[0].commandOffline) {
+                                sttServices = {
+                                    cmd: nodeSttConfig[0].commandOffline,
+                                    lvOnline: nodeSttConfig[0].largeVocabStreaming,
+                                    lvOffline: nodeSttConfig[0].largeVocabOffline
+                                }
+                            }
+                        }
+                        resp.sttServices = sttServices
+                        return resp
+                    }
                     return workflow[0]
                 }
                 return []
