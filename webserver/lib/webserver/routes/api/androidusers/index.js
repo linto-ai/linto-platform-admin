@@ -1,9 +1,9 @@
 const applicationWorkflowsModel = require(`${process.cwd()}/model/mongodb/models/workflows-application.js`)
 const androidUsersModel = require(`${process.cwd()}/model/mongodb/models/android-users.js`)
+const mqttdUsersModel = require(`${process.cwd()}/model/mongodb/models/mqtt-users.js`)
 module.exports = (webServer) => {
     return [{
             // Get all android users
-            // link: /api-docs/#/android_users/getAllAndroidUsers
             path: '/',
             method: 'get',
             requireAuth: true,
@@ -31,8 +31,6 @@ module.exports = (webServer) => {
               applications: Array (Array of workflow_id)
             }
             */
-            // link: /api-docs/#/android_users/addAndroidUsers
-
             path: '/',
             method: 'post',
             requireAuth: true,
@@ -70,7 +68,6 @@ module.exports = (webServer) => {
               name: String (application worfklow name),
             }
             */
-            // Link: /api-docs/#/android_users/removeApplicationFromAndroidUsers
             path: '/applications',
             method: 'patch',
             requireAuth: true,
@@ -107,7 +104,6 @@ module.exports = (webServer) => {
               applications: Array (Array of application workflow_id)
             }
             */
-            // Link : /api-docs/#/android_users/AddApplicationToAndroidUser
             path: '/:userId/applications',
             method: 'put',
             requireAuth: true,
@@ -148,7 +144,6 @@ module.exports = (webServer) => {
         },
         {
             // Dissociate an android user from an android application
-            // Link: /api-docs/#/android_users/RemoveApplicationFromAndroidUser
             path: '/:userId/applications/:applicationId/remove',
             method: 'patch',
             requireAuth: true,
@@ -168,11 +163,18 @@ module.exports = (webServer) => {
                     let applications = user.applications
                     applications.pop(applicationId)
 
+                    // Remove MQTT user if user is no longer attached to any application
+                    if (applications.length === 0 && !!user.email) {
+                        await mqttdUsersModel.deleteMqttUserByEmail(user.email)
+                    }
+
                     // Request
                     const updateUser = await androidUsersModel.updateAndroidUser({
                         _id: userId,
                         applications
                     })
+
+
 
                     // Response
                     if (updateUser === 'success') {
@@ -194,7 +196,6 @@ module.exports = (webServer) => {
         },
         {
             // Get an android user by its id
-            // Link: /api-docs/#/android_users/GetAndroidUserById
             path: '/:userId',
             method: 'get',
             requireAuth: true,
@@ -265,6 +266,11 @@ module.exports = (webServer) => {
                         }
                         const updateUserPswd = await androidUsersModel.upadeAndroidUserPassword(userPayload)
 
+                        // Remove MQTT user on password change
+                        if (payload.email) {
+                            await mqttdUsersModel.deleteMqttUserByEmail(payload.email)
+                        }
+
                         if (updateUserPswd === 'success') {
                             res.json({
                                 status: 'success',
@@ -292,7 +298,6 @@ module.exports = (webServer) => {
               email : String (android user email)
             }
             */
-            // Link: /api-docs/#/android_users/deleteAndroidUser
             path: '/:userId',
             method: 'delete',
             requireAuth: true,
@@ -302,6 +307,12 @@ module.exports = (webServer) => {
                     const userId = req.params.userId
                     const payload = req.body.payload
 
+                    const getUserById = await androidUsersModel.getUserById(userId)
+
+                    // Remove MQTT user
+                    if (!!getUserById.email) {
+                        await mqttdUsersModel.deleteMqttUserByEmail(getUserById.email)
+                    }
                     // Request
                     const removeUser = await androidUsersModel.deleteAndroidUser(userId)
 
