@@ -25,7 +25,17 @@
                 </button>
               </td>
               <td class="table--desc">{{ !!wf.description && wf.description.length > 0 ? wf.description : 'No description'}}</td>
-              <td>
+              <td v-if="!!sttAvailableServices.allServicesNames && (
+                  (wf.sttServices.cmd !== '' && sttAvailableServices.allServicesNames.indexOf(wf.sttServices.cmd) < 0) || 
+                  (wf.sttServices.lvOnline !== '' && sttAvailableServices.allServicesNames.indexOf(wf.sttServices.lvOnline) < 0) || 
+                  (wf.sttServices.lvOffline !== '' && sttAvailableServices.allServicesNames.indexOf(wf.sttServices.lvOfline) < 0)
+                )">
+                <a href="javascript:;" class="button button-icon-txt button--red button--with-desc bottom" data-desc="STT service not found">
+                  <span class="button__icon button__icon--close"></span>
+                  <span class="button__label">{{wf.name}}</span>
+                </a>
+              </td>
+              <td v-else>
                 <a v-if="generating.indexOf(wf.sttServices.cmd) >= 0 || generating.indexOf(wf.sttServices.lvOnline) >= 0 || generating.indexOf(wf.sttServices.lvOfline) >= 0" href="javascript:;" class="button button-icon-txt button--grey button--with-desc bottom" data-desc="Can't acces application while language model is in generation process...">
                   <span class="button__icon button__icon--loading"></span>
                   <span class="button__label">{{wf.name}}</span>

@@ -38,14 +38,24 @@
                   <span class="button__label">Domains ({{ !!hostByApps[app._id] ? hostByApps[app._id].length : 0 }})</span>
                 </button>
               </td>
-              <td>
+              <td v-if="!!sttAvailableServices.allServicesNames && (
+                  (app.sttServices.cmd !== '' && sttAvailableServices.allServicesNames.indexOf(app.sttServices.cmd) < 0) || 
+                  (app.sttServices.lvOnline !== '' && sttAvailableServices.allServicesNames.indexOf(app.sttServices.lvOnline) < 0) || 
+                  (app.sttServices.lvOffline !== '' && sttAvailableServices.allServicesNames.indexOf(app.sttServices.lvOfline) < 0)
+                )">
+                <a href="javascript:;" class="button button-icon-txt button--red button--with-desc bottom" data-desc="STT service not found">
+                  <span class="button__icon button__icon--close"></span>
+                  <span class="button__label">{{app.name}}</span>
+                </a>
+              </td>
+              <td v-else>
                 <a v-if="generating.indexOf(app.sttServices.cmd) >= 0 || generating.indexOf(app.sttServices.lvOnline) >= 0 || generating.indexOf(app.sttServices.lvOfline) >= 0" href="javascript:;" class="button button-icon-txt button--grey button--with-desc bottom" data-desc="Can't acces application while language model is in generation process...">
                   <span class="button__icon button__icon--loading"></span>
                   <span class="button__label">{{app.name}}</span>
                 </a>
                 <a v-else :href="`/admin/applications/multi/workflow/${app._id}`" class="button button-icon-txt button--bluemid button--with-desc bottom" data-desc="Edit on Node-red interface">
                   <span class="button__icon button__icon--workflow"></span>
-                  <span class="button__label">{{ app.name }}</span>
+                  <span class="button__label">{{app.name}}</span>
                 </a>
               </td>
               <td class="center">

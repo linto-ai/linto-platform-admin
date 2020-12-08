@@ -229,12 +229,15 @@ export default new Vuex.Store({
                 generating['cmd'] = []
                 generating['lvOffline'] = []
                 generating['lvOnline'] = []
+                let allServicesNames = []
                 if (services.length > 0) {
                     services.map(s => {
+                        allServicesNames.push(s.serviceId)
                         if (languageModels.length > 0) {
                             let lm = languageModels.filter(l => l.modelId === s.LModelId)
                             if (lm.length > 0) {
                                 // in generation progress
+
                                 if (lm[0].updateState > 0) {
                                     if (lm[0].type === 'cmd') {
                                         generating['cmd'].push({
@@ -285,7 +288,8 @@ export default new Vuex.Store({
                         cmd: servicesCMD,
                         lvOnline: serviceLVOnline,
                         lvOffline: serviceLVOffline,
-                        generating
+                        generating,
+                        allServicesNames
                     }
                     return availableServices
                 } else {
