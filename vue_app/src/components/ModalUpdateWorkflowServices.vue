@@ -59,8 +59,6 @@
             :params="{key:'_id', value:'serviceId', optLabel: 'serviceId'}" 
             :disabled="sttServiceLanguage.value === ''" 
             :disabledTxt="'Please select a language'"
-            :disabled2="sttServiceLVOnlineByLanguage.length === 0" 
-            :disabled2Txt="'No service available'"
             :required="false"
             :resetValue="true"
           ></AppSelect>
@@ -74,8 +72,6 @@
             :params="{key:'_id', value:'serviceId', optLabel: 'serviceId'}" 
             :disabled="sttServiceLanguage.value === ''" 
             :disabledTxt="'Please select a language'"
-            :disabled2="sttServiceLVOfflineByLanguage.length === 0" 
-            :disabled2Txt="'No service available'"
             :required="false"
             :resetValue="true"
           ></AppSelect>

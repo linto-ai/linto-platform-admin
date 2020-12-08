@@ -104,12 +104,6 @@ export default {
     bus.$on('dissociate_static_device_success', async (data) => {
       await this.refreshStore()
     })
-    if(process.env.VUE_APP_DEBUG) {
-      setTimeout(()=>{
-        console.log('Stt services : ', this.sttAvailableServices)
-        console.log('applications : ', this.staticWorkflows)
-      }, 1000);
-    }
   },
   computed: {
     staticClients () {
