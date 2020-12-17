@@ -6,17 +6,38 @@ const md5 = require('md5')
 function formatFlowGroupedNodes(flow) {
     let formattedFlow = {}
     let nodes = []
+    let registeredIds = []
     flow.map(f => {
         if (f.type === 'tab') {
             formattedFlow.id = f.id
             formattedFlow.label = f.label
             formattedFlow.configs = []
             formattedFlow.nodes = []
+            registeredIds.push(f.id)
         } else {
-            nodes.push(f)
+            if (registeredIds.indexOf(f.id) < 0) {
+                registeredIds.push(f.id)
+                nodes.push(f)
+            }
         }
     })
     formattedFlow.nodes = nodes
+
+    if (formattedFlow.nodes[0].type !== 'tab') {
+        console.log('tab not first')
+        console.log('first is', formattedFlow.nodes[0].type)
+
+        const configIndex = formattedFlow.nodes.findIndex(flow => flow.type === 'linto-config')
+        let tmpIndex0 = formattedFlow.nodes[0]
+        let tmpConfig = formattedFlow.nodes[configIndex]
+
+        formattedFlow.nodes[0] = tmpConfig
+        formattedFlow.nodes[configIndex] = tmpIndex0
+
+
+
+    }
+    console.log(formattedFlow)
     return formattedFlow
 }
 
