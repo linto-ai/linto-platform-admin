@@ -24,20 +24,12 @@ function formatFlowGroupedNodes(flow) {
     formattedFlow.nodes = nodes
 
     if (formattedFlow.nodes[0].type !== 'tab') {
-        console.log('tab not first')
-        console.log('first is', formattedFlow.nodes[0].type)
-
         const configIndex = formattedFlow.nodes.findIndex(flow => flow.type === 'linto-config')
         let tmpIndex0 = formattedFlow.nodes[0]
         let tmpConfig = formattedFlow.nodes[configIndex]
-
         formattedFlow.nodes[0] = tmpConfig
         formattedFlow.nodes[configIndex] = tmpIndex0
-
-
-
     }
-    console.log(formattedFlow)
     return formattedFlow
 }
 
@@ -365,7 +357,6 @@ async function getFlowById(id) {
             }
         })
         return getFlow.data
-
     } catch (error) {
         return {
             status: 'error',
