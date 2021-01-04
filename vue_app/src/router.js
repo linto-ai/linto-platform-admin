@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import axios from 'axios'
+import { bus } from './main.js'
 
 // Views
 import DeviceApps from './views/DeviceApps.vue'
@@ -74,22 +75,7 @@ const router = new Router({
                     name: 'robots',
                     content: 'noindex, nofollow'
                 }
-            ],
-            /*beforeEnter: async(to, from, next) => {
-                try {
-                    // Check if the targeted static device exists
-                    const sn = to.params.sn
-                    const getStaticDevice = await axios(`${process.env.VUE_APP_URL}/api/clients/static/${sn}`)
-                    if (getStaticDevice.data.associated_workflow !== null) {
-                        next('/admin/applications/device')
-                    } else {
-                        next()
-                    }
-                } catch (error) {
-                    console.error(error)
-                    next('/admin/applications/device')
-                }
-            }*/
+            ]
         },
         {
             path: '/admin/applications/device/deploy/:sn',
@@ -278,7 +264,7 @@ const router = new Router({
 })
 
 /* The following function parse the route.meta attribtue to set page "title" and "meta" before entering a route" */
-router.beforeEach((to, from, next) => {
+router.beforeEach(async(to, from, next) => {
     if (to.meta.length > 0) {
         to.meta.map(m => {
             if (m.name === 'title') {
@@ -289,6 +275,39 @@ router.beforeEach((to, from, next) => {
                 meta.setAttribute('content', m.content)
                 document.getElementsByTagName('head')[0].appendChild(meta)
             }
+        })
+    }
+
+    try {
+        const getSandBoxId = await axios(`${process.env.VUE_APP_URL}/api/flow/sandbox`, {
+            method: 'get'
+        })
+        if (!!getSandBoxId.data.sandBoxId && getSandBoxId.data.sandBoxId !== null) {
+            next()
+        } else {
+            bus.$emit('app_notif', {
+                status: 'success',
+                msg: 'Creation of a Sandbox flow',
+                timeout: 3000
+            })
+            const createSandbox = await axios(`${process.env.VUE_APP_URL}/api/flow/sandbox`, {
+                method: 'post'
+            })
+            if (createSandbox.data.status === 'success') {
+                bus.$emit('app_notif', {
+                    status: 'success',
+                    msg: 'Sandbox flow has been created.',
+                    timeout: 3000,
+                    redirect: false
+                })
+            }
+        }
+    } catch (error) {
+        console.error(error)
+        bus.$emit('app_notif', {
+            status: 'success',
+            msg: 'Error on trying to access SandBox workflow',
+            timeout: 4000
         })
     }
     next()

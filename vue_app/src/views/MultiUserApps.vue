@@ -205,7 +205,7 @@ export default {
         if (dispatch.status === 'error') {
           throw dispatch.msg
         }
-        if(process.env.VUE_APP_DEBUG) {
+        if(process.env.VUE_APP_DEBUG === true) {
           console.log(topic, dispatchSuccess)
         }
         switch(topic) {
@@ -228,7 +228,7 @@ export default {
             return
         }  
       } catch (error) {
-        if(process.env.VUE_APP_DEBUG) {
+        if(process.env.VUE_APP_DEBUG === true) {
           console.error(topic, error)
         }
         bus.$emit('app_notif', {

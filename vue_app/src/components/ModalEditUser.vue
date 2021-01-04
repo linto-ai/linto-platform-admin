@@ -171,8 +171,11 @@ export default {
               error: null,
               valid: false
             }
-            this.userPswdConfirm = this.userPswd
-
+            this.userPswdConfirm = {
+              value: '',
+              error: null,
+              valid: false 
+            }
             bus.$emit('app_notif', {
               status: 'success',
               msg: updateUser.data.msg,

@@ -83,11 +83,9 @@ export default {
             bus.$emit('app_notif', {
               status: 'success',
               msg: 'Sandbox flow created. Reloading...',
-              timeout: 3000
+              timeout: 3000,
+              redirect: '/admin/workflow-editor'
             })
-            setTimeout(() => {
-              document.location.reload()
-            }, 4000)
           }
         }  
       } catch (error) {

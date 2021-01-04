@@ -67,7 +67,6 @@
   import ModalEditDomain from '@/components/ModalEditDomain.vue'
   import ModalEditDomainApplications from '@/components/ModalEditDomainApplications.vue'
   import ModalManageDomains from '@/components/ModalManageDomains.vue'
-  
 
   import { bus } from './main.js'
   import io from 'socket.io-client'
@@ -108,24 +107,24 @@
       AppNotif,
       AppNotifTop,
       AppVerticalNav,
-      // Static clients
+      // Terminals
       ModalAddTerminal,
       ModalDeleteTerminal,
       ModalReplaceTerminal,
-      ModalUpdateWorkflowServices,
       ModalDissociateTerminal,
+      // Applications
+      ModalDeleteMultiUserApp,
+      ModalUpdateWorkflowServices,
       // Workflow editor
       ModalSaveAsWorkflowTemplate,
       ModalManageWorkflowTemplates,
-      // Applications
-      ModalDeleteMultiUserApp,
-      // Android users Modal
+      // Users
       ModalAddUsers,
       ModalManageUsers,
       ModalEditUser,
       ModalEditUserApps,
       ModalDeleteUser,
-      // Webapp hosts
+      // Domains
       ModalAddDomain,
       ModalDeleteDomain,
       ModalEditDomain,
