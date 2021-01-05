@@ -28,20 +28,6 @@
       <option v-if="!!options" :value="options.value">{{ options.label }}</option>
     </select>
 
-    <select 
-      v-else 
-      class="form__select"
-      v-model="obj.value"
-      :class="[
-        obj.error !== null ? 'form__select--error' : '', 
-        obj.valid && !!extraClass && extraClass !== 'form__select--inarray' ? 'form__select--valid' : '', 
-        !!extraClass ? extraClass : ''
-      ]"
-      @change="testInteger(obj)"
-      :disabled="disabled || disabled2 ? 'disabled' : false"
-    >
-      <option v-for="index in numberArray" :key="index" :value="index">{{ index }}</option>
-    </select>
     <span class="form__error-field" v-if="disabled">{{ disabledTxt }}</span>
     <span class="form__error-field" v-if="!disabled && disabled2">{{ disabled2Txt }}</span>
     <span class="form__error-field" v-if="extraClass !== 'form__select--inarray'">{{ obj.error }}</span>
@@ -49,18 +35,9 @@
 </template>
 <script>
 export default {
-  props: ['label','obj','list', 'list2','options','params', 'disabled', 'disabledTxt', 'disabled2', 'disabled2Txt', 'type', 'min','max', 'extraClass', 'noLabel', 'required', 'resetValue'],
+  props: ['label','obj','list', 'list2','options','params', 'disabled', 'disabledTxt', 'disabled2', 'disabled2Txt', 'type', 'extraClass', 'noLabel', 'required', 'resetValue'],
   data () {
-    return {
-      numberArray: []
-    }
-  },
-  mounted () {
-    if (!!this.type && this.type === 'numberArray' && !!this.min && !!this.max) {
-      for(let i = this.min; i <= this.max; i++) {
-        this.numberArray.push(i)
-      }
-    }
+    return {}
   },
   methods: {
     testSelectField (obj) {

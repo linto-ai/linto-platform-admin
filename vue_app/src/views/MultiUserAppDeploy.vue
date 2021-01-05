@@ -6,7 +6,7 @@
       <AppInput 
         :label="'Application name'" 
         :obj="workflowName" 
-        :test="'testApplicationWorkflowName'"
+        :test="'testMultiUserWorkflowName'"
         :required="true"
       ></AppInput>
 
@@ -294,7 +294,7 @@ export default {
     async handleForm () {
 
       /* Workflow Name */ 
-      this.$options.filters.testApplicationWorkflowName(this.workflowName) // Test if workflow name is not used
+      this.$options.filters.testMultiUserWorkflowName(this.workflowName) // Test if workflow name is not used
       if (this.workflowName.error === null) {
         this.$options.filters.testName(this.workflowName) // Test if workflow name is valid
       }

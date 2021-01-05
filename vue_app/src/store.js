@@ -7,10 +7,10 @@ Vue.use(Vuex)
 export default new Vuex.Store({
     strict: false,
     state: {
-        applicationWorkflows: '',
+        multiUserApplications: '',
+        deviceApplications: '',
         androidUsers: '',
         staticClients: '',
-        staticWorkflows: '',
         sttServices: '',
         sttLanguageModels: '',
         sttAcousticModels: '',
@@ -19,14 +19,14 @@ export default new Vuex.Store({
         workflowsTemplates: '',
     },
     mutations: {
-        SET_APPLICATION_WORKFLOWS: (state, data) => {
-            state.applicationWorkflows = data
+        SET_MULTI_USER_APPLICATIONS: (state, data) => {
+            state.multiUserApplications = data
+        },
+        SET_DEVICE_APPLICATIONS: (state, data) => {
+            state.deviceApplications = data
         },
         SET_STATIC_CLIENTS: (state, data) => {
             state.staticClients = data
-        },
-        SET_STATIC_WORKFLOWS: (state, data) => {
-            state.staticWorkflows = data
         },
         SET_WORKFLOWS_TEMPLATES: (state, data) => {
             state.workflowsTemplates = data
@@ -61,13 +61,13 @@ export default new Vuex.Store({
                 return { error: 'Error on getting Linto(s) static devices' }
             }
         },
-        // Static workflows
-        getStaticWorkflows: async({ commit, state }) => {
+        // Device applications
+        getDeviceApplications: async({ commit, state }) => {
             try {
-                const getStaticWorkflows = await axios.get(`${process.env.VUE_APP_URL}/api/workflows/static`)
-                let allStaticWorkflows = getStaticWorkflows.data
-                if (allStaticWorkflows.length > 0) {
-                    allStaticWorkflows.map(sw => {
+                const getDeviceApplications = await axios.get(`${process.env.VUE_APP_URL}/api/workflows/static`)
+                let allDeviceApplications = getDeviceApplications.data
+                if (allDeviceApplications.length > 0) {
+                    allDeviceApplications.map(sw => {
                         if (!!sw.flow && !!sw.flow.configs && sw.flow.configs.length > 0) {
                             // get STT service 
                             let nodeSttConfig = sw.flow.configs.filter(node => node.type === 'linto-config-transcribe')
@@ -81,19 +81,19 @@ export default new Vuex.Store({
                         }
                     })
                 }
-                commit('SET_STATIC_WORKFLOWS', allStaticWorkflows)
-                return state.staticWorkflows
+                commit('SET_DEVICE_APPLICATIONS', allDeviceApplications)
+                return state.deviceApplications
             } catch (error) {
                 return { error: 'Error on getting static workflows' }
             }
         },
-        // Application workflows
-        getApplicationWorkflows: async({ commit, state }) => {
+        // Multi-user applications
+        getMultiUserApplications: async({ commit, state }) => {
             try {
-                const getApplicationWorkflows = await axios.get(`${process.env.VUE_APP_URL}/api/workflows/application`)
-                let allApplicationWorkflows = getApplicationWorkflows.data
-                if (allApplicationWorkflows.length > 0) {
-                    allApplicationWorkflows.map(sw => {
+                const getMultiUserApplications = await axios.get(`${process.env.VUE_APP_URL}/api/workflows/application`)
+                let allMultiUserApplications = getMultiUserApplications.data
+                if (allMultiUserApplications.length > 0) {
+                    allMultiUserApplications.map(sw => {
                         if (!!sw.flow && !!sw.flow.configs && sw.flow.configs.length > 0) {
                             // get STT service 
                             let nodeSttConfig = sw.flow.configs.filter(node => node.type === 'linto-config-transcribe')
@@ -107,8 +107,8 @@ export default new Vuex.Store({
                         }
                     })
                 }
-                commit('SET_APPLICATION_WORKFLOWS', allApplicationWorkflows)
-                return state.applicationWorkflows
+                commit('SET_MULTI_USER_APPLICATIONS', allMultiUserApplications)
+                return state.multiUserApplications
             } catch (error) {
                 return { error: 'Error on getting Linto(s) static devices' }
             }
@@ -347,8 +347,8 @@ export default new Vuex.Store({
         },
         STATIC_WORKFLOW_BY_ID: (state) => (id) => {
             try {
-                if (!!state.staticWorkflows && state.staticWorkflows.length > 0) {
-                    const workflow = state.staticWorkflows.filter(sw => sw._id === id)
+                if (!!state.deviceApplications && state.deviceApplications.length > 0) {
+                    const workflow = state.deviceApplications.filter(sw => sw._id === id)
                     let resp = workflow[0]
                     let sttServices =   {}
                     if (!!resp.flow && !!resp.flow.configs && resp.flow.configs.length > 0) {
@@ -376,10 +376,10 @@ export default new Vuex.Store({
                 if (!!state.staticClients && state.staticClients.length > 0) {
                     const associatedClients = state.staticClients.filter(sc => sc.associated_workflow !== null)
 
-                    if (associatedClients.length > 0 && state.staticWorkflows.length > 0) {
+                    if (associatedClients.length > 0 && state.deviceApplications.length > 0) {
                         associatedClients.map(ac => {
                             if (!wfByClients[ac._id]) {
-                                wfByClients[ac._id] = state.staticWorkflows.filter(sw => sw._id === ac.associated_workflow._id)[0]
+                                wfByClients[ac._id] = state.deviceApplications.filter(sw => sw._id === ac.associated_workflow._id)[0]
                             }
                         })
                     }
@@ -435,8 +435,8 @@ export default new Vuex.Store({
         },
         APP_WORKFLOW_BY_ID: (state) => (workflowId) => {
             try {
-                if (!!state.applicationWorkflows && state.applicationWorkflows.length > 0) {
-                    const workflows = state.applicationWorkflows
+                if (!!state.multiUserApplications && state.multiUserApplications.length > 0) {
+                    const workflows = state.multiUserApplications
                     const workflow = workflows.filter(wf => wf._id === workflowId)
                     if (workflow.length > 0) {
                         let resp = workflow[0]
@@ -517,8 +517,8 @@ export default new Vuex.Store({
         },
         APP_WORKFLOWS_NAME_BY_ID: (state) => {
             try {
-                if (!!state.applicationWorkflows && state.applicationWorkflows.length > 0) {
-                    const workflows = state.applicationWorkflows
+                if (!!state.multiUserApplications && state.multiUserApplications.length > 0) {
+                    const workflows = state.multiUserApplications
                     let workflowNames = []
                     if (workflows.length > 0) {
                         workflows.map(wf => {

@@ -21,62 +21,74 @@ export default {
   },
   computed: {
     staticWorkflow () {
-      return this.$store.state.staticWorkflows
+      return this.$store.state.deviceApplications
     }
   },
   methods: {
-    testStaticWorkflowName (obj) {
+    testDeviceWorkflowName (obj) {
       // Test if workflow name is not used
-      this.$options.filters.testStaticWorkflowName(obj)
+      this.$options.filters.testDeviceWorkflowName(obj)
       if (obj.error === null) {
-        // Test if workflow name is valid
+        // Test if workflow name format is valid
         this.$options.filters.testName(obj)
       }
     },
-    testApplicationWorkflowName (obj) {
+    testMultiUserWorkflowName (obj) {
       // Test if workflow name is not used
-      this.$options.filters.testApplicationWorkflowName(obj)
+      this.$options.filters.testMultiUserWorkflowName(obj)
       if (obj.error === null) {
-        // Test if workflow name is valid
+        // Test if workflow name format is valid
         this.$options.filters.testName(obj)
       }
     },
     testName (obj) {
+      // Test if name is valid
       this.$options.filters.testName(obj)
     },
     testWorkflowTemplateName (obj) {
+      // Test if workflow name is not used
       this.$options.filters.testWorkflowTemplateName(obj)
       if (obj.error === null) {
+        // Test if workflow name format is valid
         this.$options.filters.testName(obj)
       }
     },
     testStaticClientsSN (obj) {
+      // Test if serial number is not used
       this.$options.filters.testStaticClientsSN(obj)
       if (obj.error === null) {
+        // Test if serial number format is valid
         this.$options.filters.testName(obj)
       }
     },
     testEmail (obj) {
+      // Test if email format is valid
       this.$options.filters.testEmail(obj)
     },
     testAndroidUserEmail (obj) {
+      // Test if andoid use email format is valid
       this.$options.filters.testAndroidUserEmail(obj)
     },
     testPassword (obj) {
+      // Test if password format is valid
       this.$options.filters.testPassword(obj)
     },
     testPasswordConfirm (obj) {
       if (!!this.compare) {
+        // Test if confirmation password format is valid
         this.$options.filters.testPasswordConfirm(obj, this.compare)
       }
     },
     testUrl (obj) {
+      // Test if url format is valid
       this.$options.filters.testUrl(obj)
     },
     testContentSay(obj) {
+      // Test if content format is valid
        this.$options.filters.testContentSay(obj)
     },
     testInteger (obj) {
+      // Test if integer format is valid
       this.$options.filters.testInteger(obj)
     },
     exec (functionName) {
@@ -84,11 +96,11 @@ export default {
         case 'testName':
           this.testName(this.obj)
           break
-        case 'testStaticWorkflowName':
-          this.testStaticWorkflowName(this.obj)
+        case 'testDeviceWorkflowName':
+          this.testDeviceWorkflowName(this.obj)
           break
-        case 'testApplicationWorkflowName':
-          this.testApplicationWorkflowName(this.obj)
+        case 'testMultiUserWorkflowName':
+          this.testMultiUserWorkflowName(this.obj)
           break
         case 'testWorkflowTemplateName':
           this.testWorkflowTemplateName(this.obj)

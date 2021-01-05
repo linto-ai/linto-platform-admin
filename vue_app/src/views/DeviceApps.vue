@@ -4,7 +4,7 @@
     <div class="flex col" >
       <h2>Deployed applications</h2>
       <div class="flex row">
-        <table class="table" v-if="staticWorkflows.length > 0">
+        <table class="table" v-if="deviceApplications.length > 0">
           <thead>
             <tr>
               <th>Application name</th>
@@ -16,7 +16,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="wf in staticWorkflows" :key="wf._id">
+            <tr v-for="wf in deviceApplications" :key="wf._id">
               <td><strong>{{wf.name}}</strong></td>
               <td class="right">
                 <strong class="button__label">{{ wf.associated_device }}</strong>
@@ -79,7 +79,7 @@ export default {
   data () {
     return {
       staticClientsLoaded: false,
-      staticWorkflowsLoaded: false,
+      deviceApplicationsLoaded: false,
       sttServicesLoaded: false,
       sttLanguageModelsLoaded: false,
       socket: null,
@@ -116,10 +116,10 @@ export default {
       return this.$store.getters.STATIC_WORKFLOWS_BY_CLIENTS
     },
     dataLoaded () {
-      return this.staticClientsLoaded && this.staticWorkflowsLoaded && this.sttServicesLoaded && this.sttLanguageModelsLoaded
+      return this.staticClientsLoaded && this.deviceApplicationsLoaded && this.sttServicesLoaded && this.sttLanguageModelsLoaded
     },
-    staticWorkflows () {
-      return this.$store.state.staticWorkflows
+    deviceApplications () {
+      return this.$store.state.deviceApplications
     },
     sttAvailableServices () {
       return this.$store.getters.STT_SERVICES_AVAILABLE
@@ -163,7 +163,7 @@ export default {
     async refreshStore () {
       try {
         await this.dispatchStore('getStaticClients')
-        await this.dispatchStore('getStaticWorkflows')
+        await this.dispatchStore('getDeviceApplications')
         await this.dispatchStore('getSttServices')
         await this.dispatchStore('getSttLanguageModels')
       } catch (error) {
@@ -190,8 +190,8 @@ export default {
           case 'getStaticClients':
             this.staticClientsLoaded = dispatchSuccess
             break
-          case 'getStaticWorkflows':
-            this.staticWorkflowsLoaded = dispatchSuccess
+          case 'getDeviceApplications':
+            this.deviceApplicationsLoaded = dispatchSuccess
             break
           case 'getSttServices':
             this.sttServicesLoaded = dispatchSuccess

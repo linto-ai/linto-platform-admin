@@ -6,7 +6,7 @@
       <AppInput 
         :label="'Application name'" 
         :obj="workflowName" 
-        :test="'testStaticWorkflowName'"
+        :test="'testDeviceWorkflowName'"
         :required="true"
       ></AppInput>
       
@@ -324,7 +324,7 @@ export default {
     },
     async handleForm () {
       /* Workflow Name */ 
-      await this.$options.filters.testStaticWorkflowName(this.workflowName) // Test if workflow name is not used
+      await this.$options.filters.testDeviceWorkflowName(this.workflowName) // Test if workflow name is not used
       if (this.workflowName.error === null) {
         this.$options.filters.testName(this.workflowName) // Test if workflow name is valid
       }

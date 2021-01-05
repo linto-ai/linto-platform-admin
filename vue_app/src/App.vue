@@ -9,20 +9,15 @@
       </div>
     </div>
     <AppNotif></AppNotif>
-
     <!-- Mono user applications -->
     <ModalReplaceTerminal v-if="path.indexOf('/admin/applications/device') >= 0"></ModalReplaceTerminal>
     <ModalDissociateTerminal v-if="path.indexOf('/admin/applications/device') >= 0 || path.indexOf('/admin/devices') >= 0"></ModalDissociateTerminal>
-
     <!-- Multi user applications --> 
     <ModalDeleteMultiUserApp v-if="path.indexOf('/admin/applications/multi') >= 0"></ModalDeleteMultiUserApp>
-    
     <ModalUpdateWorkflowServices v-if="path.indexOf('/admin/applications/device') >= 0 || path.indexOf('/admin/applications/multi') >= 0"></ModalUpdateWorkflowServices>
-    
-    <!-- Terminals -->
+    <!-- Devices -->
     <ModalAddTerminal v-if="path.indexOf('/admin/devices') >= 0"></ModalAddTerminal>
     <ModalDeleteTerminal v-if="path.indexOf('/admin/devices') >= 0"></ModalDeleteTerminal>
-
     <!-- Users -->
     <ModalManageUsers v-if="path.indexOf('/admin/applications/multi') >= 0"></ModalManageUsers>
     <ModalAddUsers v-if="path.indexOf('/admin/users') >= 0"></ModalAddUsers>
@@ -131,6 +126,5 @@
       ModalEditDomainApplications,
       ModalManageDomains
     }
-    
   }
 </script>

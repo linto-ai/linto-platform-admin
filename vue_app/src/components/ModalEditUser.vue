@@ -90,7 +90,7 @@ export default {
       return this.$store.getters.APP_WORKFLOWS_NAME_BY_ID
     },
     applicationWorkflows () {
-      return this.$store.state.applicationWorkflows
+      return this.$store.state.multiUserApplications
     },
     user () {
       if(this.userId !== null) {

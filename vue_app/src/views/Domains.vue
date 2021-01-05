@@ -108,7 +108,7 @@ export default {
     async refreshStore () {
       try {
         await this.dispatchStore('getWebappHosts')
-        await this.dispatchStore('getApplicationWorkflows')
+        await this.dispatchStore('getMultiUserApplications')
       } catch (error) {
         bus.$emit('app_notif', {
           status: 'error',
@@ -129,7 +129,7 @@ export default {
           case 'getWebappHosts':
             this.webappHostsLoaded = dispatchSuccess
             break
-          case 'getApplicationWorkflows':
+          case 'getMultiUserApplications':
             this.applicationWorkflowsLoaded = dispatchSuccess
             break
           default:

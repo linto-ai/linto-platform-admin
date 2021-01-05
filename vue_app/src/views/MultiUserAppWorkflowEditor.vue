@@ -118,7 +118,7 @@ export default {
      },
      async refreshStore () {
       try {
-        await this.dispatchStore('getApplicationWorkflows')
+        await this.dispatchStore('getMultiUserApplications')
         await this.dispatchStore('getSttServices')
         await this.dispatchStore('getSttLanguageModels')
       } catch (error) {
@@ -138,7 +138,7 @@ export default {
           throw dispatch.msg
         }
         switch(topic) {
-          case 'getApplicationWorkflows':
+          case 'getMultiUserApplications':
             this.applicationWorkflowsLoaded = dispatchSuccess
             break
           case 'getSttServices':

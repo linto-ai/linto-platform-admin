@@ -148,7 +148,7 @@ export default {
         error: null,
         valid: false
       },
-      staticWorkflowsLoaded: false,
+      deviceApplicationsLoaded: false,
       staticClientsLoaded: false,
       sttServicesLoaded: false,
       tockApplicationsLoaded: false,
@@ -179,7 +179,7 @@ export default {
   },
   computed: {
     dataLoaded () {
-      return (this.staticClientsLoaded && this.staticWorkflowsLoaded && this.sttServicesLoaded && this.applicationWorkflowsLoaded && this.tockApplicationsLoaded && this.sttLanguageModelsLoaded)
+      return (this.staticClientsLoaded && this.deviceApplicationsLoaded && this.sttServicesLoaded && this.applicationWorkflowsLoaded && this.tockApplicationsLoaded && this.sttLanguageModelsLoaded)
     },
     currentWorkflow () {
       if (this.workflowType === 'static' && this.dataLoaded)  {
@@ -377,8 +377,8 @@ export default {
     },
     async refreshStore () {
       try {
-        await this.dispatchStore('getStaticWorkflows')
-        await this.dispatchStore('getApplicationWorkflows')
+        await this.dispatchStore('getDeviceApplications')
+        await this.dispatchStore('getMultiUserApplications')
         await this.dispatchStore('getStaticClients')
         await this.dispatchStore('getSttServices')
         await this.dispatchStore('getSttLanguageModels')
@@ -400,10 +400,10 @@ export default {
           throw dispatch.msg
         }
         switch(topic) {
-          case 'getStaticWorkflows':
-            this.staticWorkflowsLoaded = dispatchSuccess
+          case 'getDeviceApplications':
+            this.deviceApplicationsLoaded = dispatchSuccess
             break
-          case 'getApplicationWorkflows': 
+          case 'getMultiUserApplications': 
             this.applicationWorkflowsLoaded = dispatchSuccess
             break
           case 'getStaticClients':

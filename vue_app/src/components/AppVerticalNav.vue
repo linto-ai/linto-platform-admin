@@ -83,34 +83,6 @@ export default {
   },
   created () {
     this.routePath = this.$route.fullPath
-  },
-  methods: {
-    toggleChildren (e, id) {
-      e.preventDefault()
-      const parent = e.target
-      const childContainer = document.getElementById(id)
-      const childs = childContainer.childNodes
-      const nbItems = childs.length
-      let childContainerHeight = 0
-      for (let i = 0; i < nbItems; i++) {
-        childContainerHeight += childs[i].offsetHeight
-      }
-      if (childContainer.classList.contains('hidden')) {
-        // show children
-        parent.classList.remove('closed')
-        parent.classList.add('opened')
-        childContainer.classList.remove('hidden')
-        childContainer.classList.add('visible')
-        childContainer.setAttribute('style', 'height: ' + childContainerHeight + 'px;')
-      } else if (childContainer.classList.contains('visible')) {
-        // hide children
-        parent.classList.remove('opened')
-        parent.classList.add('closed')
-        childContainer.classList.remove('visible')
-        childContainer.classList.add('hidden')
-        childContainer.setAttribute('style','height: 0px;')
-      }
-    }
   }
 }
 </script>

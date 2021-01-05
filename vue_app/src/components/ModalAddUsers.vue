@@ -97,7 +97,7 @@ export default {
       return this.$store.state.androidUsers
     },
     applicationWorkflows () {
-      return this.$store.state.applicationWorkflows
+      return this.$store.state.multiUserApplications
     },
     formValid () {
       return (this.userEmail.valid && this.userPswd.valid && this.userPswdConfirm.valid)
@@ -186,7 +186,7 @@ export default {
     async refreshStore () {
       try {
         await this.dispatchStore('getAndroidUsers')
-        await this.dispatchStore('getApplicationWorkflows')
+        await this.dispatchStore('getMultiUserApplications')
       } catch (error) {
         bus.$emit('app_notif', {
           status: 'error',
@@ -207,7 +207,7 @@ export default {
           case 'getAndroidUsers':
             this.androidUsersLoaded = dispatchSuccess
             break
-          case 'getApplicationWorkflows':
+          case 'getMultiUserApplications':
             this.applicationWorkflowsLoaded = dispatchSuccess
             break
           default:

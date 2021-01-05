@@ -93,7 +93,7 @@ export default {
   data () {
     return {
       staticClientsLoaded: false,
-      staticWorkflowsLoaded: false
+      deviceApplicationsLoaded: false
     }
   },
   async mounted () {
@@ -131,7 +131,7 @@ export default {
       return this.$store.getters.STATIC_WORKFLOWS_BY_CLIENTS
     },
     dataLoaded () {
-      return this.staticClientsLoaded && this.staticWorkflowsLoaded
+      return this.staticClientsLoaded && this.deviceApplicationsLoaded
     }
   },
   methods: {
@@ -167,7 +167,7 @@ export default {
     async refreshStore () {
       try {
         await this.dispatchStore('getStaticClients')
-        await this.dispatchStore('getStaticWorkflows')
+        await this.dispatchStore('getDeviceApplications')
       } catch (error) {
         bus.$emit('app_notif', {
           status: 'error',
@@ -195,8 +195,8 @@ export default {
           case 'getStaticClients':
             this.staticClientsLoaded = dispatchSuccess
             break
-          case 'getStaticWorkflows':
-            this.staticWorkflowsLoaded = dispatchSuccess
+          case 'getDeviceApplications':
+            this.deviceApplicationsLoaded = dispatchSuccess
             break
           default:
             return

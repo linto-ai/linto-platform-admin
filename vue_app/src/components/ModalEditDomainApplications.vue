@@ -181,7 +181,7 @@ export default {
       return this.$store.getters.APP_WORKFLOWS_NAME_BY_ID
     },
     applicationWorkflows () {
-      return this.$store.state.applicationWorkflows
+      return this.$store.state.multiUserApplications
     },
     filteredApplicationWorkflows () {
       const hostApplications = this.webappHost.applications
@@ -470,7 +470,7 @@ export default {
     async refreshStore () {
       try {
         await this.dispatchStore('getWebappHosts')
-        await this.dispatchStore('getApplicationWorkflows')
+        await this.dispatchStore('getMultiUserApplications')
       } catch (error) {
         bus.$emit('app_notif', {
           status: 'error',
@@ -488,7 +488,7 @@ export default {
           throw dispatch.msg
         }
         switch(topic) {
-          case 'getApplicationWorkflows':
+          case 'getMultiUserApplications':
             this.applicationWorkflowsLoaded = dispatchSuccess
             break
           case 'getWebappHosts':

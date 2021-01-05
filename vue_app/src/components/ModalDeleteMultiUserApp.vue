@@ -39,7 +39,6 @@ export default {
       applicationWorkflowId: null,
       applicationWorkflowName: null,
       flowId: null
-
     }
   },
   mounted () {

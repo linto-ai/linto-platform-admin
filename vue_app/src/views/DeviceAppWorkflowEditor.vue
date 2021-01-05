@@ -40,7 +40,7 @@ export default {
       blsUrl: '',
       noderedUser: process.env.VUE_APP_NODERED_USER,
       noderedPassword: process.env.VUE_APP_NODERED_PASSWORD,
-      staticWorkflowsLoaded: false,
+      deviceApplicationsLoaded: false,
       staticWorkflowId: null,
       sttCommandService: null,
       largeVocabStreaming: null,
@@ -66,7 +66,7 @@ export default {
   },
   computed: {
     dataLoaded () {
-      return this.staticWorkflowsLoaded && this.blsUp && !this.currentWorkflow.error && this.sttServicesLoaded && this.sttLanguageModelsLoaded
+      return this.deviceApplicationsLoaded && this.blsUp && !this.currentWorkflow.error && this.sttServicesLoaded && this.sttLanguageModelsLoaded
     },
     currentWorkflow () {
       return this.$store.getters.STATIC_WORKFLOW_BY_ID(this.staticWorkflowId)
@@ -118,7 +118,7 @@ export default {
     },
      async refreshStore () {
       try {
-        await this.dispatchStore('getStaticWorkflows')
+        await this.dispatchStore('getDeviceApplications')
         await this.dispatchStore('getSttServices')
         await this.dispatchStore('getSttLanguageModels')
       } catch (error) {
@@ -138,8 +138,8 @@ export default {
           throw dispatch.msg
         }
         switch(topic) {
-          case 'getStaticWorkflows':
-            this.staticWorkflowsLoaded = dispatchSuccess
+          case 'getDeviceApplications':
+            this.deviceApplicationsLoaded = dispatchSuccess
             break
           case 'getSttServices':
             this.sttServicesLoaded = dispatchSuccess

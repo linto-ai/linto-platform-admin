@@ -121,7 +121,7 @@ export default {
       return this.applicationWorkflowsLoaded && this.androidUsersLoaded && this.webappHostsLoaded && this.sttServicesLoaded && this.sttLanguageModelsLoaded
     },
     applicationWorkflows () {
-      return this.$store.state.applicationWorkflows
+      return this.$store.state.multiUserApplications
     },
     androidUsers () {
       return this.$store.state.androidUsers
@@ -184,7 +184,7 @@ export default {
     },
     async refreshStore () {
       try {
-        await this.dispatchStore('getApplicationWorkflows')
+        await this.dispatchStore('getMultiUserApplications')
         await this.dispatchStore('getAndroidUsers')
         await this.dispatchStore('getWebappHosts')
         await this.dispatchStore('getSttServices')
@@ -209,7 +209,7 @@ export default {
           console.log(topic, dispatchSuccess)
         }
         switch(topic) {
-          case 'getApplicationWorkflows':
+          case 'getMultiUserApplications':
             this.applicationWorkflowsLoaded = dispatchSuccess
             break
           case 'getAndroidUsers':
