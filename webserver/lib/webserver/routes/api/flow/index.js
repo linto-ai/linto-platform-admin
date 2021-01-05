@@ -132,7 +132,7 @@ module.exports = (webServer) => {
                     }
 
                     // Format flow to be posted on BLS
-                    const formattedFlow = nodered.generateStaticWorkflowFromTemplate(workflowTemplate.flow, flowPayload)
+                    const formattedFlow = nodered.generateDeviceApplicationWorkflowFromTemplate(workflowTemplate.flow, flowPayload)
 
                     // Request
                     const postFlowOnBLS = await nodered.postBLSFlow(formattedFlow)
@@ -174,7 +174,7 @@ module.exports = (webServer) => {
 
 
                     // Format flow to be posted on BLS
-                    const formattedFlow = nodered.generateApplicationWorkflowFromTemplate(workflowTemplate.flow, {
+                    const formattedFlow = nodered.generateMultiUserApplicationWorkflowFromTemplate(workflowTemplate.flow, {
                         workflowName: payload.workflowName,
                         language: payload.sttServiceLanguage,
                         nlu: {

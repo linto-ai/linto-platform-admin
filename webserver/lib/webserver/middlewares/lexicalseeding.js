@@ -2,15 +2,20 @@ const axios = require('axios')
 const nodered = require('./nodered.js')
 const middlewares = require('./index.js')
 const fs = require('fs')
-    //const request = require('request')
 var FormData = require('form-data')
+
+/**
+ * @desc Execute STT lexical seeding on a flowID, by its service_name
+ * @param {string} flowId - Id of the flow used on nodered
+ * @param {string} service_name - Name of the targeted stt service
+ * @return {object} - {status, msg, error(optional)}
+ */
 
 async function sttLexicalSeeding(flowId, service_name) {
     try {
         // Get stt service data
         const accessToken = await nodered.getBLSAccessToken()
         const sttAuthToken = middlewares.basicAuthToken(process.env.LINTO_STACK_STT_SERVICE_MANAGER_SERVICE_LOGIN, process.env.LINTO_STACK_STT_SERVICE_MANAGER_SERVICE_PASSWORD)
-
         const getSttService = await axios(`${middlewares.useSSL() + process.env.LINTO_STACK_STT_SERVICE_MANAGER_SERVICE}/service/${service_name}`, {
             method: 'get',
             headers: {
@@ -121,8 +126,14 @@ async function sttLexicalSeeding(flowId, service_name) {
     }
 }
 
+/**
+ * @desc filter language model data/values for lexical seeding
+ * @param {string} type - "intents" or "entities"
+ * @param {string} modelId - id of the targeted language model
+ * @param {object} newData - data/values to be updated
+ * @return {object} - {type, data(filtered)}
+ */
 async function filterLMData(type, modelId, newData) {
-
     let getDataroutePath = ''
     if (type === 'intent') {
         getDataroutePath = 'intents'
@@ -177,8 +188,13 @@ async function filterLMData(type, modelId, newData) {
     }
 }
 
+/**
+ * @desc Execute requests to start generating graph on a service_name language model
+ * @param {string} service_name - STT service name
+ */
 async function generateGraph(service_name) {
     try {
+        // get stt service data
         const sttAuthToken = middlewares.basicAuthToken(process.env.LINTO_STACK_STT_SERVICE_MANAGER_SERVICE_LOGIN, process.env.LINTO_STACK_STT_SERVICE_MANAGER_SERVICE_PASSWORD)
         const getSttService = await axios(`${middlewares.useSSL() + process.env.LINTO_STACK_STT_SERVICE_MANAGER_SERVICE}/service/${service_name}`, {
             method: 'get',
@@ -190,6 +206,8 @@ async function generateGraph(service_name) {
             }
         })
         const sttService = getSttService.data.data
+
+        // Generate graph
         const generateGraph = await axios(`${middlewares.useSSL() + process.env.LINTO_STACK_STT_SERVICE_MANAGER_SERVICE}/langmodel/${sttService.LModelId}/generate/graph`, {
             method: 'get',
             headers: {
@@ -213,7 +231,12 @@ async function generateGraph(service_name) {
     }
 }
 
-// Update a langage model with intents/entities object to add/update
+/** 
+ * @desc Update a langage model with intents/entities object to add/update
+ * @param {object} payload - data to be updated
+ * @param {string} modelId - Id of the targeted language model 
+ * @return {object} {errors, success}
+ */
 async function updateLangModel(payload, modelId) {
     try {
         let success = []
@@ -254,6 +277,11 @@ async function updateLangModel(payload, modelId) {
     }
 }
 
+/**
+ * @desc Execute requests to update NLU application
+ * @param {string} flowId - Id of the application nodered flow
+ * @return {object} - {status, msg, error (optional)}
+ */
 async function nluLexicalSeedingApplications(flowId) {
     try {
         // Get lexical seeding object to send to TOCK
@@ -271,7 +299,6 @@ async function nluLexicalSeedingApplications(flowId) {
 
         // get Tock auth token
         const token = middlewares.basicAuthToken(process.env.LINTO_STACK_TOCK_USER, process.env.LINTO_STACK_TOCK_PASSWORD)
-
 
         // Tmp json file path
         const jsonApplicationContent = `{"application": ${JSON.stringify(getNluLexicalSeeding.data.application)}}`
@@ -322,6 +349,12 @@ async function nluLexicalSeedingApplications(flowId) {
         })
     }
 }
+
+/**
+ * @desc Execute requests to update NLU sentences
+ * @param {string} flowId - Id of the application nodered flow
+ * @return {object} - {status, msg, error (optional)}
+ */
 
 async function nluLexicalSeedingSentences(flowId) {
     try {
@@ -391,6 +424,12 @@ async function nluLexicalSeedingSentences(flowId) {
         })
     }
 }
+
+/** 
+ * @desc Tock application lexical seeding
+ * @param {string} flowId - Id of the application nodered flow
+ * @return {object} - {status, msg, error (optional)}
+ */
 async function nluLexicalSeeding(flowId) {
     try {
         const postApp = await nluLexicalSeedingApplications(flowId)
@@ -428,6 +467,12 @@ async function nluLexicalSeeding(flowId) {
     }
 }
 
+/** 
+ * @desc Execute functions to strat process of lexical seeding for STT and NLU applications
+ * @param {string} sttServiceName - name of the targeted STT service
+ * @param {string} flowId - Id of the application nodered flow
+ * @return {object} - {status, msg, error (optional)}
+ */
 async function doLexicalSeeding(sttServiceName, flowId) {
     try {
 

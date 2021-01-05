@@ -3,6 +3,9 @@ const uuid = require('uuid/v1')
 const middlewares = require('./index.js')
 const md5 = require('md5')
 
+/**
+ * @desc Format a nodered flow object to be send by POST/PUT
+ */
 function formatFlowGroupedNodes(flow) {
     let formattedFlow = {}
     let nodes = []
@@ -34,8 +37,13 @@ function formatFlowGroupedNodes(flow) {
 }
 
 
-/* Generate a workflow to be posted on BLS */
-function generateStaticWorkflowFromTemplate(flow, payload) {
+/**
+ * @desc Generate a workflow from a "device application" template to be posted on nodered 
+ * @param {object} flow - selected worklow template 
+ * @param {object} payload - data to be updated
+ * @return {object} formatted flow
+ */
+function generateDeviceApplicationWorkflowFromTemplate(flow, payload) {
     const flowId = uuid()
     const mqttId = flowId + '-mqtt'
     const nluId = flowId + '-nlu'
@@ -128,21 +136,16 @@ function generateStaticWorkflowFromTemplate(flow, payload) {
 }
 
 
-/* Generate a workflow to be posted on BLS */
-/* 
-payload = {
-  workflowName
-  language
-  nlu: {
-    app_name
-  },
-  stt: {
-    service_name
-  },
-  mqttScope
-}*/
 
-function generateApplicationWorkflowFromTemplate(flow, payload) {
+
+
+/**
+ * @desc Generate a workflow from a "multi-user application" template to be posted on nodered 
+ * @param {object} flow - selected worklow template 
+ * @param {object} payload - data to be updated
+ * @return {object} formatted flow
+ */
+function generateMultiUserApplicationWorkflowFromTemplate(flow, payload) {
     const flowId = uuid()
     const mqttId = flowId + '-mqtt'
     const nluId = flowId + '-nlu'
@@ -226,8 +229,11 @@ function generateApplicationWorkflowFromTemplate(flow, payload) {
     }
     return formattedFlow
 }
+/**
+ * @desc Get a business logic server bearer token
+ * @return {string}
+ */
 
-/* Get a business logic server bearer token */
 async function getBLSAccessToken() {
     if (!process.env.LINTO_STACK_BLS_USE_LOGIN || process.env.LINTO_STACK_BLS_USE_LOGIN === 'false') {
         return ''
@@ -246,7 +252,10 @@ async function getBLSAccessToken() {
     })
     return 'Bearer ' + request.data.access_token
 }
-
+/**
+ * @desc PUT request on business-logic-server
+ * @return {object} {status, msg, error(optional)}
+ */
 async function putBLSFlow(flowId, workflow) {
     try {
         const accessToken = await getBLSAccessToken()
@@ -272,10 +281,17 @@ async function putBLSFlow(flowId, workflow) {
         console.error(error)
         return {
             status: 'error',
-            msg: error
+            msg: error,
+            error
         }
     }
 }
+
+/**
+ * @desc POST request on business-logic-server
+ * @param {object} flow - flow object to be send
+ * @return {object} {status, msg, error(optional)}
+ */
 async function postBLSFlow(flow) {
     try {
         const accessToken = await getBLSAccessToken()
@@ -307,10 +323,17 @@ async function postBLSFlow(flow) {
         console.error(error)
         return {
             status: 'error',
+            msg: !!error.msg ? error.msg : 'Error on posting flow on business logic server',
             error
         }
     }
 }
+
+/**
+ * @desc DELETE request on business-logic-server
+ * @param {string} flowId - id of the nodered flow
+ * @return {object} {status, msg, error(optional)}
+ */
 async function deleteBLSFlow(flowId) {
     try {
         const accessToken = await getBLSAccessToken()
@@ -343,6 +366,12 @@ async function deleteBLSFlow(flowId) {
         }
     }
 }
+
+/**
+ * @desc request on business-logic-server to get a worflow by its id
+ * @param {string} id - id of the nodered flow
+ * @return {object} {status, msg, error(optional)}
+ */
 async function getFlowById(id) {
     try {
         const accessToken = await getBLSAccessToken()
@@ -360,7 +389,8 @@ async function getFlowById(id) {
     } catch (error) {
         return {
             status: 'error',
-            msg: error
+            msg: error,
+            error
         }
     }
 }
@@ -368,8 +398,8 @@ module.exports = {
     deleteBLSFlow,
     formatFlowGroupedNodes,
     getBLSAccessToken,
-    generateApplicationWorkflowFromTemplate,
-    generateStaticWorkflowFromTemplate,
+    generateMultiUserApplicationWorkflowFromTemplate,
+    generateDeviceApplicationWorkflowFromTemplate,
     getFlowById,
     postBLSFlow,
     putBLSFlow,

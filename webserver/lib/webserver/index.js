@@ -40,26 +40,26 @@ class WebServer extends EventEmitter {
         this.app.use(bodyParser.urlencoded({
             extended: false
         }))
+
+        // CORS
         this.app.use(cookieParser())
         this.app.use(CORS(corsOptions))
+
+        // SESSION
         let sessionConfig = {
-                resave: false,
-                saveUninitialized: false,
-                secret: process.env.LINTO_STACK_ADMIN_COOKIE_SECRET,
-                cookie: {
-                    maxAge: 30240000000 // 1 year
-                }
+            resave: false,
+            saveUninitialized: false,
+            secret: process.env.LINTO_STACK_ADMIN_COOKIE_SECRET,
+            cookie: {
+                maxAge: 30240000000 // 1 year
             }
-            // Redis
-            // if (process.env.NODE_ENV === 'production') {
+        }
         this.app.redis = new redisClient()
         sessionConfig.store = this.app.redis.redisStore
-
-        // }
-
         this.session = Session(sessionConfig)
         this.app.use(this.session)
 
+        // Server
         this.httpServer = this.app.listen(process.env.LINTO_STACK_ADMIN_HTTP_PORT, "0.0.0.0", (err) => {
             if (err) console.error(err)
         })
@@ -72,14 +72,18 @@ class WebServer extends EventEmitter {
 
         // Router
         require('./routes')(this)
+
+        // API Swagger
         this.app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
+        // 404
         this.app.use((req, res, next) => {
             res.status(404)
             res.setHeader("Content-Type", "text/html")
             res.sendFile(process.cwd() + '/dist/404.html')
         })
 
+        // 500
         this.app.use((err, req, res, next) => {
             console.error(err)
             res.status(500)
