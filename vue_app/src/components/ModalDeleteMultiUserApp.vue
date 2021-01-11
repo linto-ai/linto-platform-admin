@@ -58,28 +58,26 @@ export default {
     },
     async removeApplicationWorkflow () {
       try {
+
         // Step 1: remove application from android users in DB
         const removeUsers = await this.removeApplicationFromAndroidUsers()
-        if (removeUsers === 'success') {
-          // Step 2: remove application from web-app hosts in DB
-          const removeFromHosts = await this.removeApplicationFromWebappHosts()
-          if (removeFromHosts === 'success') {
-            // Step 3: remove BLS flow > "Success" NOT REQUIRED
-            const removeFlow = await this.removeBLSFlow(this.flowId)
-            // Step 4: Remove application workflow from DB 
-            const removeApplication = await this.removeApplication(this.applicationWorkflowId)
-              // success
-              if(removeApplication === 'success') {
-              bus.$emit('app_notif', {
-                status: 'success',
-                msg: `The application workflow "${this.applicationWorkflowName}" has been removed`,
-                timeout: 3000,
-                redirect: false
-              })
-              bus.$emit('delete_application_workflow_success', {})
-              this.closeModal()
-            }
-          }
+        // Step 2: remove application from web-app hosts in DB
+        const removeFromHosts = await this.removeApplicationFromWebappHosts()
+        // Step 3: remove BLS flow > "Success" NOT REQUIRED
+        const removeFlow = await this.removeBLSFlow(this.flowId)
+        // Step 4: Remove application workflow from DB 
+        const removeApplication = await this.removeApplication(this.applicationWorkflowId)
+         
+         // success
+        if(removeApplication === 'success') {
+          bus.$emit('app_notif', {
+            status: 'success',
+            msg: `The application workflow "${this.applicationWorkflowName}" has been removed`,
+            timeout: 3000,
+            redirect: false
+          })
+          bus.$emit('delete_application_workflow_success', {})
+          this.closeModal()
         }
       } catch (error) {
         console.error(error)

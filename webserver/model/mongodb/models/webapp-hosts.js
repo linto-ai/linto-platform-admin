@@ -113,13 +113,15 @@ class WebAppHosts extends MongoModel {
     async removeApplicationForAllHosts(applicationId) {
         try {
             const query = {
-                applications: {
-                    $in: [applicationId]
-                }
+                'applications.applicationId': applicationId
             }
             const operators = {
                 pull: {
-                    applications: applicationId
+                    applications: {
+                        applicationId: {
+                            $in: [applicationId]
+                        }
+                    }
                 }
             }
             return await this.mongoUpdateMany(query, operators)

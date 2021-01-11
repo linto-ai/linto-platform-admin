@@ -82,7 +82,10 @@ export default {
     }
   },
   created () {
-    this.routePath = this.$route.fullPath
+    setTimeout(()=> {
+      this.routePath = this.$route.fullPath
+    }, 300)
+    
   }
 }
 </script>
