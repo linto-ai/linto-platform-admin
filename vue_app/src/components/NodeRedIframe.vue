@@ -11,67 +11,89 @@
           :class="fullScreen ? 'enabled' : 'disabled'"
           @click="toggleFullScreen()"
           :data-desc="fullScreen ? 'Leave full screen' : 'Full screen'"
+          style="margin-right: 10px;"
         ><span class="button__icon" :class="fullScreen ? 'button__icon--leave-fullscreen' : 'button__icon--fullscreen'"></span></button>
+
+        <button
+          class="button button-icon-txt button--green"
+          @click="showTemplateList()"
+          v-if="contextFrame === 'sandbox'"
+        >
+          <span class="button__icon button__icon--settings"></span>
+          <span class="button__label">Manage workflow templates</span>
+        </button>
       </div>
       <div class="flex1 flex row iframe__controls-right">
+
+        <!-- Save and publish -->
         <button
           class="button button-icon-txt button--bluemid"
-          @click="OpenSavePatternModal()"
+          @click="SaveAsWorkflowTemplate()"
         >
           <span class="button__icon button__icon--save"></span>
-          <span class="button__label">Save as new flow pattern</span></button>
-        <button
-          class="button button-icon-txt button--bluemid"
-          @click="OpenLoadFromPatternModal()"
-        >
-          <span class="button__icon button__icon--load"></span>
-          <span class="button__label">Load from flow pattern</span>
+          <span class="button__label">Save as new template</span>
         </button>
+        
         <button
           class="button button-icon-txt button--valid"
           @click="saveAndPublish()"
-          v-if="contextFrame !== 'manager'"
+          v-if="contextFrame !== 'sandbox'"
         >
           <span class="button__icon button__icon--publish"></span>
           <span class="button__label">Save and publish</span>
         </button>
       </div>
     </div>
-    <iframe
-      :src="iframeUrl"
-      id="nodered-iframe"
-      class="iframe flex1"
-      sandbox="allow-same-origin allow-forms allow-scripts"
-    ></iframe>
+    <AppIframe
+      :iframeUrl="iframeUrl"
+      :key="refresh"
+    ></AppIframe>
   </div>
 </template>
 <script>
 import axios from 'axios'
+import randomstring from 'randomstring'
 import { bus } from '../main.js'
+import AppIframe from '@/components/AppIframe.vue'
 export default {
-  props: ['contextFrame', 'blsurl','flowId','contextId'],
+  props: ['contextFrame','blsurl','noderedFlowId','workflowId', 'workflowName'],
   data () {
     return {
       iframeUrl: '',
-      fullScreen: false
+      fullScreen: false,
+      payload: {},
+      refresh: 1
     }
   },
   mounted () {
     if (this.blsurl !== null && typeof(this.blsurl) !== 'undefined') {
       this.iframeUrl = this.blsurl
+      
     } else {
       this.iframeUrl = process.env.VUE_APP_NODERED
     }
 
+    //'contextFrame','blsurl','noderedFlowId','wokflowId'
+    if (!!this.contextFrame) {
+      this.payload.contextFrame = this.contextFrame
+    }
+    if (!!this.blsurl) {
+      this.payload.blsurl = this.blsurl
+    }
+    if (!!this.noderedFlowId) {
+      this.payload.noderedFlowId = this.noderedFlowId
+    }
+    if (!!this.workflowId) {
+      this.payload.workflowId = this.workflowId
+    }
+    if (!!this.workflowName) {
+      this.payload.workflowName = this.workflowName
+    }
+
     bus.$on('iframe_reload', () => {
-      setTimeout(() => {
-        const url = this.iframeUrl
-        this.iframeUrl = ""
-          setTimeout(() => {
-            this.iframeUrl = url
-          },100)
-        },100)
+        this.refresh++
     })
+    
   },
   methods: {
     toggleFullScreen () {
@@ -82,24 +104,47 @@ export default {
         bus.$emit('iframe-unset-fullscreen', {})
       }
     },
-    OpenSavePatternModal () {
-      bus.$emit('save_new_pattern', {})
+    SaveAsWorkflowTemplate () {
+      bus.$emit('save_as_workflow_template', {payload: this.payload})
     },
-    OpenLoadFromPatternModal () {
-      bus.$emit('load_from_pattern', {})
+    showTemplateList () {
+      bus.$emit('manage_workflow_templates', {})
     },
     async saveAndPublish () {
-      const save = await axios(`${process.env.VUE_APP_URL}/api/flow/publish`, {
-        method: 'post',
-        data: {
-          flowId: this.flowId,
-          contextId: this.contextId
+      try {
+        if (this.payload.contextFrame === 'staticWorkflow') {
+          this.payload.type = 'static'
+        } else if  (this.payload.contextFrame === 'applicationWorkflow') {
+          this.payload.type = 'application'
         }
-      })
-      if (save.data.status === 'success') {
-        location.reload()
+        const saveAndPublish = await axios(`${process.env.VUE_APP_URL}/api/workflows/saveandpublish`, {
+            method: 'post',
+            data: { payload: this.payload }
+          })
+          if (saveAndPublish.data.status === 'success') {
+            bus.$emit('app_notif', {
+              status: 'success',
+              msg: saveAndPublish.data.msg,
+              timeout: 3000,
+              redirect: false
+            })
+            bus.$emit('iframe_reload', {})
+          } else {
+            throw saveAndPublish
+        }
+      } catch (error) {
+        console.error(error)
+        bus.$emit('app_notif', {
+          status: 'error',
+          msg: !!error.data.msg ? error.data.msg : error,
+          timeout: false,
+          redirect: false
+        })
       }
     }
+  },
+  components: {
+    AppIframe
   }
 }
 </script>

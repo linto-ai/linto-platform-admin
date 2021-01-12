@@ -30,12 +30,6 @@ module.exports = {
             filename: 'index.html',
             title: 'admin'
         },
-        healthcheck: {
-            entry: 'src/healthcheck.js',
-            template: 'public/default.html',
-            filename: 'healthcheck.html',
-            title: 'healthcheck'
-        },
         page404: {
             entry: 'src/page404.js',
             template: 'public/404.html',

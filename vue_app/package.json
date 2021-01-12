@@ -2,7 +2,7 @@
     "name": "linto-admin",
     "author": "Romain Lopez <rlopez@linagora.com>",
     "description": "This is the linto-platform-admin front-end web interface",
-    "version": "0.1.0",
+    "version": "0.2.2",
     "license": "GNU AFFERO GPLV3",
     "scripts": {
         "build-app": "npm run build:css && vue-cli-service build --mode production",
@@ -17,6 +17,7 @@
         "html-webpack-plugin": "^3.2.0",
         "moment": "^2.24.0",
         "node-sass": "^4.13.1",
+        "randomstring": "^1.1.5",
         "socket.io-client": "^2.3.0",
         "vue": "^2.6.11",
         "vue-router": "^3.1.6",

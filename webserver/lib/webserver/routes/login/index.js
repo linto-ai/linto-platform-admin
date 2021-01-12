@@ -6,11 +6,11 @@ module.exports = (webServer) => {
     return [{
             path: '/',
             method: 'get',
-            requireAuth: false,
+            requireAuth: true,
             controller: async(req, res, next) => {
                 try {
                     if (!!req.session && req.session.logged === 'on') {
-                        res.redirect('/admin/fleet')
+                        res.redirect('/admin/applications/device')
                     } else {
                         const users = await UsersModel.getUsers()
                         if (users.length === 0) {

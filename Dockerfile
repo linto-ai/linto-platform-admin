@@ -8,7 +8,12 @@ COPY ./webserver /usr/src/app/linto-admin/webserver
 COPY ./docker-entrypoint.sh /
 COPY ./wait-for-it.sh /
 
+WORKDIR /usr/src/app/linto-admin/vue_app
+RUN npm install && npm install -s node-sass
+
 WORKDIR /usr/src/app/linto-admin/webserver
+RUN npm install
+
 HEALTHCHECK CMD node docker-healthcheck.js || exit 1
 
 EXPOSE 80

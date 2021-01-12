@@ -7,48 +7,29 @@ Vue.use(Vuex)
 export default new Vuex.Store({
     strict: false,
     state: {
-        contextTypes: '',
-        contextFleet: '',
-        flowPatterns: '',
-        flowPatternTmp: '',
-        lintoFleet: '',
-        mqttDefaultSettings: '',
-        nluServices: '',
-        tockapps: '',
+        multiUserApplications: '',
+        deviceApplications: '',
+        androidUsers: '',
+        staticClients: '',
         sttServices: '',
         sttLanguageModels: '',
-        sttAcousticModels: ''
+        sttAcousticModels: '',
+        tockApplications: '',
+        webappHosts: '',
+        workflowsTemplates: '',
     },
     mutations: {
-        SET_LINTO_FLEET: (state, data) => {
-            state.lintoFleet = data
+        SET_MULTI_USER_APPLICATIONS: (state, data) => {
+            state.multiUserApplications = data
         },
-        UPDATE_LINTO_FLEET: (state, data) => {
-            state.lintoFleet.map(l => {
-                if (l.sn === data.sn) {
-                    for (let index in data) {
-                        l[index] = data[index]
-                    }
-                }
-            })
+        SET_DEVICE_APPLICATIONS: (state, data) => {
+            state.deviceApplications = data
         },
-        SET_CONTEXT_FLEET: (state, data) => {
-            state.contextFleet = data
+        SET_STATIC_CLIENTS: (state, data) => {
+            state.staticClients = data
         },
-        SET_CONTEXT_TYPES: (state, data) => {
-            state.contextTypes = data
-        },
-        SET_PATTERNS: (state, data) => {
-            state.flowPatterns = data
-        },
-        SET_TMP_PATTERN: (state, data) => {
-            state.flowPatternTmp = data
-        },
-        SET_MQTT_SETTINGS: (state, data) => {
-            state.mqttDefaultSettings = data
-        },
-        SET_NLU_SERVICES: (state, data) => {
-            state.nluServices = data
+        SET_WORKFLOWS_TEMPLATES: (state, data) => {
+            state.workflowsTemplates = data
         },
         SET_STT_SERVICES: (state, data) => {
             state.sttServices = data
@@ -60,76 +41,156 @@ export default new Vuex.Store({
             state.sttAcousticModels = data
         },
         SET_TOCK_APPS: (state, data) => {
-            state.tockapps = data
+            state.tockApplications = data
+        },
+        SET_ANDROID_USERS: (state, data) => {
+            state.androidUsers = data
+        },
+        SET_WEB_APP_HOSTS: (state, data) => {
+            state.webappHosts = data
         }
     },
     actions: {
-        getLintoFleet: async({ commit, state }) => {
+        // Static clients
+        getStaticClients: async({ commit, state }) => {
             try {
-                const getLintos = await axios.get(`${process.env.VUE_APP_URL}/api/lintos/fleet`)
-                commit('SET_LINTO_FLEET', getLintos.data)
-                return state.lintoFleet
+                const getStaticClients = await axios.get(`${process.env.VUE_APP_URL}/api/clients/static`)
+                commit('SET_STATIC_CLIENTS', getStaticClients.data)
+                return state.staticClients
             } catch (error) {
-                return ({
-                    error: 'Error on getting Linto(s)'
-                })
+                return { error: 'Error on getting Linto(s) static devices' }
             }
         },
-        getFleetContexts: async({ commit, state }) => {
+        // Device applications
+        getDeviceApplications: async({ commit, state }) => {
             try {
-                const getFleetContexts = await axios.get(`${process.env.VUE_APP_URL}/api/context/fleet`)
-                commit('SET_CONTEXT_FLEET', getFleetContexts.data)
-                return state.contextFleet
+                const getDeviceApplications = await axios.get(`${process.env.VUE_APP_URL}/api/workflows/static`)
+                let allDeviceApplications = getDeviceApplications.data
+                if (allDeviceApplications.length > 0) {
+                    allDeviceApplications.map(sw => {
+                        if (!!sw.flow && !!sw.flow.configs && sw.flow.configs.length > 0) {
+                            // get STT service 
+                            let nodeSttConfig = sw.flow.configs.filter(node => node.type === 'linto-config-transcribe')
+                            if (nodeSttConfig.length > 0 && !!nodeSttConfig[0].commandOffline) {
+                                sw.sttServices = {
+                                    cmd: nodeSttConfig[0].commandOffline,
+                                    lvOnline: nodeSttConfig[0].largeVocabStreaming,
+                                    lvOffline: nodeSttConfig[0].largeVocabOffline
+                                }
+                            }
+                        }
+                    })
+                }
+                commit('SET_DEVICE_APPLICATIONS', allDeviceApplications)
+                return state.deviceApplications
             } catch (error) {
-                return ({
-                    error: 'Error on getting contexts'
-                })
+                return { error: 'Error on getting static workflows' }
             }
         },
-        getContextTypes: async({ commit, state }) => {
+        // Multi-user applications
+        getMultiUserApplications: async({ commit, state }) => {
             try {
-                const getTypes = await axios.get(`${process.env.VUE_APP_URL}/api/context/types`)
-                commit('SET_CONTEXT_TYPES', getTypes.data)
-                return state.contextTypes
+                const getMultiUserApplications = await axios.get(`${process.env.VUE_APP_URL}/api/workflows/application`)
+                let allMultiUserApplications = getMultiUserApplications.data
+                if (allMultiUserApplications.length > 0) {
+                    allMultiUserApplications.map(sw => {
+                        if (!!sw.flow && !!sw.flow.configs && sw.flow.configs.length > 0) {
+                            // get STT service 
+                            let nodeSttConfig = sw.flow.configs.filter(node => node.type === 'linto-config-transcribe')
+                            if (nodeSttConfig.length > 0 && !!nodeSttConfig[0].commandOffline) {
+                                sw.sttServices = {
+                                    cmd: nodeSttConfig[0].commandOffline,
+                                    lvOnline: nodeSttConfig[0].largeVocabStreaming,
+                                    lvOffline: nodeSttConfig[0].largeVocabOffline
+                                }
+                            }
+                        }
+                    })
+                }
+                commit('SET_MULTI_USER_APPLICATIONS', allMultiUserApplications)
+                return state.multiUserApplications
             } catch (error) {
-                return ({
-                    error: 'Error on getting contexts types'
-                })
+                return { error: 'Error on getting Linto(s) static devices' }
             }
         },
-        getFlowPatterns: async({ commit, state }) => {
+        // Workflow templates
+        getWorkflowsTemplates: async({ commit, state }) => {
             try {
-                const getPatterns = await axios.get(`${process.env.VUE_APP_URL}/api/flow/patterns`)
-                commit('SET_PATTERNS', getPatterns.data)
-                return state.flowPatterns
+                const getWorkflowsTemplates = await axios.get(`${process.env.VUE_APP_URL}/api/workflows/templates`)
+                commit('SET_WORKFLOWS_TEMPLATES', getWorkflowsTemplates.data)
+                return state.workflowsTemplates
             } catch (error) {
-                return ({
-                    error: 'Error on getting workflow patterns'
-                })
+                return { error: 'Error on getting workflow templates' }
             }
         },
-        getTmpPattern: async({ commit, state }) => {
+        // Android users 
+        getAndroidUsers: async({ commit, state }) => {
             try {
-                const getTmpPattern = await axios.get(`${process.env.VUE_APP_URL}/api/flow/tmp`)
-                commit('SET_TMP_PATTERN', getTmpPattern.data[0])
-                return state.flowPatternTmp
-            } catch (error) {
-                return ({
-                    error: 'Error on saving changes'
+                const getAndroidUsers = await axios.get(`${process.env.VUE_APP_URL}/api/androidusers`)
+                let nestedObj = []
+                getAndroidUsers.data.map(user => {
+                    nestedObj.push({
+                        _id: user._id,
+                        email: user.email,
+                        applications: user.applications
+                    })
                 })
+                commit('SET_ANDROID_USERS', nestedObj)
+                return state.androidUsers
+            } catch (error) {
+                return { error: 'Error on getting android applications users' }
             }
         },
-        getNluServices: async({ commit, state }) => {
+        // Web app hosts
+        getWebappHosts: async({ commit, state }) => {
             try {
-                const getSettings = await axios.get(`${process.env.VUE_APP_URL}/api/context/nluServices`)
-                commit('SET_NLU_SERVICES', getSettings.data)
-                return state.nluServices
+                const getWebappHosts = await axios.get(`${process.env.VUE_APP_URL}/api/webapphosts`)
+                commit('SET_WEB_APP_HOSTS', getWebappHosts.data)
+                return state.webappHosts
             } catch (error) {
-                return ({
-                    error: 'Error on getting NLU services'
-                })
+                return { error: 'Error on getting web app hosts' }
             }
         },
+        // Stt services
+        getSttServices: async({ commit, state }) => {
+            try {
+                const getServices = await axios.get(`${process.env.VUE_APP_URL}/api/stt/services`)
+                if (!!getServices.data.status && getServices.data.status === 'error') {
+                    throw getServices.datagetTockApplications.data.msg
+                }
+                commit('SET_STT_SERVICES', getServices.data)
+                return state.sttServices
+            } catch (error) {
+                return { error: 'Error on getting STT services' }
+            }
+        },
+        // Stt language models
+        getSttLanguageModels: async({ commit, state }) => {
+            try {
+                const getSttLanguageModels = await axios.get(`${process.env.VUE_APP_URL}/api/stt/langmodels`)
+                if (!!getSttLanguageModels.data.status && getSttLanguageModels.data.status === 'error') {
+                    throw getSttLanguageModels.data.msg
+                }
+                commit('SET_STT_LANG_MODELS', getSttLanguageModels.data)
+                return state.sttLanguageModels
+            } catch (error) {
+                return { error: 'Error on getting language models' }
+            }
+        },
+        // Stt acoustic models
+        getSttAcousticModels: async({ commit, state }) => {
+            try {
+                const getSttAcousticModels = await axios.get(`${process.env.VUE_APP_URL}/api/stt/acmodels`)
+                if (!!getSttAcousticModels.data.status && getSttAcousticModels.data.status === 'error') {
+                    throw getSttAcousticModels.data.msg
+                }
+                commit('SET_STT_AC_MODELS', getSttAcousticModels.data)
+                return state.sttAcousticModels
+            } catch (error) {
+                return { error: 'Error on getting acoustic models' }
+            }
+        },
+        // Tock applications
         getTockApplications: async({ commit, state }) => {
             try {
                 const getApps = await axios.get(`${process.env.VUE_APP_URL}/api/tock/applications`)
@@ -137,169 +198,341 @@ export default new Vuex.Store({
                     throw getApps.data.msg
                 }
                 let applications = []
-                getApps.data.map(app => {
-                    applications.push({
-                        name: app.name,
-                        namespace: app.namespace
+                if (getApps.data.length > 0) {
+                    getApps.data.map(app => {
+                        applications.push({
+                            name: app.name,
+                            namespace: app.namespace
+                        })
                     })
-                })
-                commit('SET_TOCK_APPS', applications)
-                return state.tockapps
+                    commit('SET_TOCK_APPS', applications)
+                    return state.tockApplications
+                } else {
+                    // If no service is created
+                    commit('SET_TOCK_APPS', [])
+                    return state.tockApplications
+                }
             } catch (error) {
-                return ({
-                    error: 'Error on getting tock applications'
-                })
+                return { error: 'Error on getting tock applications' }
             }
-        },
-        getmqttDefaultSettings: async({ commit, state }) => {
-            try {
-                const getSettings = await axios.get(`${process.env.VUE_APP_URL}/api/context/getMqttDefaultSettings`)
-                commit('SET_MQTT_SETTINGS', getSettings.data)
-                return state.mqttDefaultSettings
-            } catch (error) {
-                return ({
-                    error: 'Error on getting MQTT default settings'
-                })
-            }
-        },
-        getSttServices: async({ commit, state }) => {
-            try {
-                const getServices = await axios.get(`${process.env.VUE_APP_URL}/api/stt/services`)
-                commit('SET_STT_SERVICES', getServices.data)
-                return state.sttServices
-            } catch (error) {
-                return ({
-                    error: 'Error on getting STT services'
-                })
-            }
-        },
-        getSttLanguageModels: async({ commit, state }) => {
-            try {
-                const getSttLanguageModels = await axios.get(`${process.env.VUE_APP_URL}/api/stt/langmodels`)
-                commit('SET_STT_LANG_MODELS', getSttLanguageModels.data)
-                return state.sttLanguageModels
-            } catch (error) {
-                return ({
-                    error: 'Error on getting language models'
-                })
-            }
-        },
-        getSttAcousticModels: async({ commit, state }) => {
-            try {
-                const getSttAcousticModels = await axios.get(`${process.env.VUE_APP_URL}/api/stt/acmodels`)
-
-                commit('SET_STT_AC_MODELS', getSttAcousticModels.data)
-                return state.sttAcousticModels
-            } catch (error) {
-                return ({
-                    error: 'Error on getting acoustic models'
-                })
-            }
-        },
+        }
     },
     getters: {
-        ASSOCIATED_LINTO_FLEET: (state) => {
-            try {
-                return state.lintoFleet.filter(f => f.associated_context !== null)
-            } catch (error) {
-                return error.toString()
-            }
-        },
-        NOT_ASSOCIATED_LINTO_FLEET: (state) => {
-            try {
-                return state.lintoFleet.filter(f => f.associated_context === null)
-            } catch (error) {
-                return error.toString()
-            }
-        },
-        LINTO_FLEET_BY_SN: (state) => (sn) => {
-            try {
-                if (state.lintoFleet.length > 0) {
-                    return state.lintoFleet.filter(f => f.sn === sn)[0]
-                } else {
-                    throw null
-                }
-
-            } catch (error) {
-                return error.toString()
-            }
-        },
-        CONTEXT_BY_ID: (state) => (id) => {
-            try {
-                return state.contextFleet.filter(context => context._id === id)[0]
-            } catch (error) {
-                return error.toString()
-            }
-        },
         STT_SERVICES_AVAILABLE: (state) => {
             try {
                 let services = state.sttServices || []
                 let languageModels = state.sttLanguageModels || []
-                let availableServices = []
+                let servicesCMD = []
+                let serviceLVOnline = []
+                let serviceLVOffline =   []
+                let generating = []
+                generating['cmd'] = []
+                generating['lvOffline'] = []
+                generating['lvOnline'] = []
+                let allServicesNames = []
                 if (services.length > 0) {
                     services.map(s => {
-                        let lm = languageModels.filter(l => l.modelId === s.LModelId)
-                        if (lm.length > 0) {
-                            if (lm[0].isGenerated === 1 || lm[0].isDirty === 1 && lm[0].isGenerated === 0 && lm[0].updateState >= 0) {
-                                availableServices.push(s)
+                        allServicesNames.push(s.serviceId)
+                        if (languageModels.length > 0) {
+                            let lm = languageModels.filter(l => l.modelId === s.LModelId)
+                            if (lm.length > 0) {
+                                // in generation progress
+
+                                if (lm[0].updateState > 0) {
+                                    if (lm[0].type === 'cmd') {
+                                        generating['cmd'].push({
+                                            ...s,
+                                            langModel: lm[0]
+                                        })
+                                    } else if (lm[0].type === 'lvcsr') {
+                                        if (s.tag === 'online') {
+                                            generating['lvOnline'].push({
+                                                ...s,
+                                                langModel: lm[0]
+                                            })
+                                        } else if (s.tag === 'offline') {
+                                            generating['lvOffline'].push({
+                                                ...s,
+                                                langModel: lm[0]
+                                            })
+                                        }
+                                    }
+                                }
+                                // Available services
+                                else if (lm[0].isGenerated === 1 || lm[0].isDirty === 1 && lm[0].isGenerated === 0 && lm[0].updateState >= 0) {
+                                    if (lm[0].type === 'cmd') {
+                                        servicesCMD.push({
+                                            ...s,
+                                            langModel: lm[0]
+                                        })
+                                    } else if (lm[0].type === 'lvcsr') {
+                                        if (s.tag === 'online') {
+                                            serviceLVOnline.push({
+                                                ...s,
+                                                langModel: lm[0]
+                                            })
+                                        } else if (s.tag === 'offline') {
+                                            serviceLVOffline.push({
+                                                ...s,
+                                                langModel: lm[0]
+                                            })
+                                        }
+                                    }
+                                }
                             }
+                        } else  {
+                            return []
                         }
                     })
+                    const availableServices = {
+                        cmd: servicesCMD,
+                        lvOnline: serviceLVOnline,
+                        lvOffline: serviceLVOffline,
+                        generating,
+                        allServicesNames
+                    }
                     return availableServices
                 } else {
-                    throw 'No service found.'
+                    return []
                 }
             } catch (error) {
-                return error.toString()
+                return { error }
             }
         },
-        STT_SERVICES_LANGUAGES: (state) => {
+
+        WORKFLOW_TEMPLATES_BY_TYPE: (state) => (type) => {
             try {
-                let lang = []
-                let resp = []
-                state.sttServices.map(s => {
-                    if (lang.indexOf(s.lang) < 0) {
-                        lang.push(s.lang)
-                        resp.push({
-                            value: s.lang
+                if (!!state.workflowsTemplates && state.workflowsTemplates.length > 0) {
+                    return state.workflowsTemplates.filter(wf => wf.type === type)
+                } else {
+                    return []
+                }
+            } catch (error) {
+                return { error }
+            }
+        },
+        STATIC_CLIENTS_AVAILABLE: (state) => {
+            try {
+                if (!!state.staticClients && state.staticClients.length > 0) {
+                    return state.staticClients.filter(sc => sc.associated_workflow === null)
+                } else {
+                    return []
+                }
+            } catch (error) {
+                return { error }
+            }
+        },
+        STATIC_CLIENTS_ENROLLED: (state) => {
+            try {
+                if (!!state.staticClients && state.staticClients.length > 0) {
+                    return state.staticClients.filter(sc => sc.associated_workflow !== null)
+                } else {
+                    return []
+                }
+            } catch (error) {
+                return { error }
+            }
+        },
+        STATIC_CLIENT_BY_SN: (state) => (sn) => {
+            try {
+                if (!!state.staticClients && state.staticClients.length > 0) {
+                    const client = state.staticClients.filter(sc => sc.sn === sn)
+                    return client[0]
+                } else  {
+                    return []
+                }
+            } catch (error) {
+                return { error }
+            }
+        },
+        STATIC_WORKFLOW_BY_ID: (state) => (id) => {
+            try {
+                if (!!state.deviceApplications && state.deviceApplications.length > 0) {
+                    const workflow = state.deviceApplications.filter(sw => sw._id === id)
+                    let resp = workflow[0]
+                    let sttServices =   {}
+                    if (!!resp.flow && !!resp.flow.configs && resp.flow.configs.length > 0) {
+                        // get STT service 
+                        let nodeSttConfig = resp.flow.configs.filter(node => node.type === 'linto-config-transcribe')
+                        if (nodeSttConfig.length > 0 && !!nodeSttConfig[0].commandOffline) {
+                            sttServices = {
+                                cmd: nodeSttConfig[0].commandOffline,
+                                lvOnline: nodeSttConfig[0].largeVocabStreaming,
+                                lvOffline: nodeSttConfig[0].largeVocabOffline
+                            }
+                        }
+                    }
+                    resp.sttServices = sttServices
+                    return resp
+                }
+                return []
+            } catch (error) {
+                return { error }
+            }
+        },
+        STATIC_WORKFLOWS_BY_CLIENTS: (state) => {
+            try {
+                let wfByClients = []
+                if (!!state.staticClients && state.staticClients.length > 0) {
+                    const associatedClients = state.staticClients.filter(sc => sc.associated_workflow !== null)
+
+                    if (associatedClients.length > 0 && state.deviceApplications.length > 0) {
+                        associatedClients.map(ac => {
+                            if (!wfByClients[ac._id]) {
+                                wfByClients[ac._id] = state.deviceApplications.filter(sw => sw._id === ac.associated_workflow._id)[0]
+                            }
                         })
                     }
-                })
-                return resp
+                }
+                return wfByClients
             } catch (error) {
-                return error.toString()
+                return { error }
             }
         },
-        STT_LM_ERRORS: (state) => {
+        ANDROID_USERS_BY_APPS: (state) => {
             try {
-                const langModels = state.sttLanguageModels
-                const brokenModel = []
-                if (!!langModels) {
-                    langModels.map(lm => {
-                        if (lm.updateState < 0 && lm.isDirty === 1) {
-                            brokenModel.push(lm)
-                        }
+                const users = state.androidUsers
+                let usersByApp = []
+
+                if (users.length > 0) {
+                    users.map(user => {
+                        user.applications.map(app => {
+                            if (!usersByApp[app]) {
+                                usersByApp[app] = [user.email]
+                            } else {
+                                usersByApp[app].push(user.email)
+                            }
+                        })
                     })
-                    return brokenModel
                 }
+                return usersByApp
             } catch (error) {
-                return error.toString
+                return { error }
             }
         },
-        STT_GRAPH_GENERATION: (state) => {
+        ANDROID_USERS_BY_APP_ID: (state) => (workflowId) => {
             try {
-                const langModels = state.sttLanguageModels
-                let generating = []
-                if (!!langModels) {
-                    langModels.map(lm => {
-                        if (lm.updateState > 0 && lm.isDirty === 1) {
-                            generating.push(lm)
-                        }
-                    })
-                    return generating
+                if (!!state.androidUsers && state.androidUsers.length > 0) {
+                    const users = state.androidUsers
+                    return users.filter(user => user.applications.indexOf(workflowId) >= 0)
                 }
+                return []
             } catch (error) {
-                return error.toString
+                return { error }
+            }
+        },
+        ANDROID_USER_BY_ID: (state) => (userId) => {
+            try {
+                if (!!state.androidUsers && state.androidUsers.length > 0) {
+                    const users = state.androidUsers
+                    const user = users.filter(user => user._id.indexOf(userId) >= 0)
+                    return user[0]
+                }
+                return []
+            } catch (error) {
+                return { error }
+            }
+        },
+        APP_WORKFLOW_BY_ID: (state) => (workflowId) => {
+            try {
+                if (!!state.multiUserApplications && state.multiUserApplications.length > 0) {
+                    const workflows = state.multiUserApplications
+                    const workflow = workflows.filter(wf => wf._id === workflowId)
+                    if (workflow.length > 0) {
+                        let resp = workflow[0]
+                        let sttServices =   {}
+                        if (!!resp.flow && !!resp.flow.configs && resp.flow.configs.length > 0) {
+                            // get STT service 
+                            let nodeSttConfig = resp.flow.configs.filter(node => node.type === 'linto-config-transcribe')
+                            if (nodeSttConfig.length > 0 && !!nodeSttConfig[0].commandOffline) {
+                                sttServices = {
+                                    cmd: nodeSttConfig[0].commandOffline,
+                                    lvOnline: nodeSttConfig[0].largeVocabStreaming,
+                                    lvOffline: nodeSttConfig[0].largeVocabOffline
+                                }
+                            }
+                        }
+                        resp.sttServices = sttServices
+                        return resp
+                    }
+                    return workflow[0]
+                }
+                return []
+            } catch (error) {
+                return { error }
+            }
+        },
+        WEB_APP_HOST_BY_ID: (state) => (id) => {
+            try {
+                if (!!state.webappHosts && state.webappHosts.length > 0) {
+                    const webappHosts = state.webappHosts
+                    const webappHost = webappHosts.filter(wh => wh._id === id)
+                    return webappHost[0]
+                }
+                return []
+            } catch (error) {
+                return { error }
+            }
+        },
+        WEB_APP_HOST_BY_APP_ID: (state) => (workflowId) => {
+            try {
+                if (!!state.webappHosts && state.webappHosts.length > 0) {
+                    let hosts = state.webappHosts
+                    let webappHostsById = []
+                    hosts.map(host => {
+                        host.applications.map(app => {
+                            if (app.applicationId.indexOf(workflowId) >= 0) {
+                                webappHostsById.push(host)
+                            }
+                        })
+                    })
+                    return webappHostsById
+                }
+                return []
+            } catch (error) {
+                return { error }
+            }
+        },
+        WEB_APP_HOST_BY_APPS: (state) => {
+            try {
+                let hostByApp = []
+                if (!!state.webappHosts && state.webappHosts.length > 0) {
+                    const webappHosts = state.webappHosts
+                    if (webappHosts.length > 0) {
+                        webappHosts.map(host => {
+                            host.applications.map(app => {
+                                if (!hostByApp[app.applicationId]) {
+                                    hostByApp[app.applicationId] = [host.originUrl]
+                                } else {
+                                    hostByApp[app.applicationId].push(host.originUrl)
+                                }
+                            })
+                        })
+                    }
+                }
+                return hostByApp
+            } catch (error) {
+                return { error }
+            }
+        },
+        APP_WORKFLOWS_NAME_BY_ID: (state) => {
+            try {
+                if (!!state.multiUserApplications && state.multiUserApplications.length > 0) {
+                    const workflows = state.multiUserApplications
+                    let workflowNames = []
+                    if (workflows.length > 0) {
+                        workflows.map(wf => {
+                            workflowNames[wf._id] = {
+                                name: wf.name,
+                                description: wf.description
+                            }
+                        })
+                    }
+                    return workflowNames
+                }
+                return []
+            } catch (error) {
+                return { error }
             }
         }
     }

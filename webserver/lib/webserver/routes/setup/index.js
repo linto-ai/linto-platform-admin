@@ -34,7 +34,7 @@ module.exports = (webServer) => {
                     console.error(error)
                     res.json({
                         status: 'error',
-                        error: error.toString()
+                        error: error
                     })
                 }
             }

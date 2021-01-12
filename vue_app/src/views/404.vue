@@ -2,7 +2,7 @@
   <div>
     Page not found :(
 
-    <a href="/admin/fleet"> Back to homepage</a>
+    <a href="/admin/applications/device"> Back to homepage</a>
   </div>
 </template>
 <script>

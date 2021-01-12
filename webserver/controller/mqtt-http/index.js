@@ -11,8 +11,32 @@ module.exports = function() {
         }
     })
 
+    this.webServer.ioHandler.on('linto_subscribe', (data) => {
+        this.mqttMonitor.subscribe(data)
+    })
+
+    this.webServer.ioHandler.on('linto_subscribe_all', (data) => {
+        this.mqttMonitor.subscribe({})
+    })
+
+    this.webServer.ioHandler.on('linto_unsubscribe_all', (data) => {
+        this.mqttMonitor.unsubscribe({})
+    })
+
     this.webServer.ioHandler.on('linto_ping', (data) => {
         this.mqttMonitor.ping(data)
+    })
+
+    this.webServer.ioHandler.on('linto_say', (data) => {
+        this.mqttMonitor.lintoSay(data)
+    })
+
+    this.webServer.ioHandler.on('linto_volume', (data) => {
+        this.mqttMonitor.setVolume(data)
+    })
+
+    this.webServer.ioHandler.on('linto_volume_end', (data) => {
+        this.mqttMonitor.setVolumeEnd(data)
     })
     this.webServer.ioHandler.on('linto_mute', (data) => {
         this.mqttMonitor.mute(data)
@@ -20,13 +44,5 @@ module.exports = function() {
     this.webServer.ioHandler.on('linto_unmute', (data) => {
         this.mqttMonitor.unmute(data)
     })
-    this.webServer.ioHandler.on('linto_volume', (data) => {
-        this.mqttMonitor.setVolume(data)
-    })
-    this.webServer.ioHandler.on('linto_volume_end', (data) => {
-        this.mqttMonitor.setVolumeEnd(data)
-    })
-    this.webServer.ioHandler.on('linto_say', (data) => {
-        this.mqttMonitor.lintoSay(data)
-    })
+
 }

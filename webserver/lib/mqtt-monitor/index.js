@@ -21,8 +21,8 @@ class MqttMonitor extends EventEmitter {
             this.cnxParam.username = process.env.LINTO_STACK_MQTT_USER
             this.cnxParam.password = process.env.LINTO_STACK_MQTT_PASSWORD
         }
+        this.isSubscribed = false
 
-        this.subscribeScope()
         this.init()
 
         return this
@@ -38,27 +38,8 @@ class MqttMonitor extends EventEmitter {
                 console.error('Logic MQTT Broker error : ' + e)
             })
             this.client.on('connect', () => {
-
                 console.log('> Logic MQTT Broker: Connected')
-                for (let index in this.subscribtionTopics) {
-                    const topic = this.subscribtionTopics[index]
-                    this.client.unsubscribe(topic, (err) => {
-                        if (err) console.error('disconnecting while unsubscribing', err)
-
-                        //Subscribe to the client topics
-                        debug(`subscribing topics...`)
-
-                        this.client.subscribe(topic, (err) => {
-                            if (!err) {
-                                debug(`subscribed successfully to ${topic}`)
-                            } else {
-                                console.error(err)
-                            }
-                        })
-                    })
-                }
-
-
+                this.unsubscribe()
             })
 
             this.client.once('connect', () => {
@@ -71,9 +52,10 @@ class MqttMonitor extends EventEmitter {
 
             this.client.on('message', (topics, payload) => {
                 try {
+                    debug(topics, payload)
                     let topicArray = topics.split('/')
                     payload = payload.toString()
-                    debug(payload)
+
                     payload = JSON.parse(payload)
                     payload = Object.assign(payload, {
                         topicArray
@@ -85,16 +67,50 @@ class MqttMonitor extends EventEmitter {
             })
         })
     }
+    subscribe(data) {
+        let range = '+'
+        if (!!data.sn) {
+            range = data.sn
+        }
+        // Unsubscribe current Topics
+        this.unsubscribe()
 
-    subscribeScope() {
-        this.subscribtionTopics['status'] = `${this.scope}/fromlinto/+/status`
-        this.subscribtionTopics['pong'] = `${this.scope}/fromlinto/+/pong`
-        this.subscribtionTopics['muteack'] = `${this.scope}/fromlinto/+/muteack`
-        this.subscribtionTopics['unmuteack'] = `${this.scope}/fromlinto/+/unmuteack`
-        this.subscribtionTopics['tts_lang'] = `${this.scope}/fromlinto/+/tts_lang`
-        this.subscribtionTopics['say'] = `${this.scope}/fromlinto/+/say`
+        // Set new topics
+        this.subscribtionTopics['status'] = `${this.scope}/fromlinto/${range}/status`
+        this.subscribtionTopics['pong'] = `${this.scope}/fromlinto/${range}/pong`
+        this.subscribtionTopics['muteack'] = `${this.scope}/fromlinto/${range}/muteack`
+        this.subscribtionTopics['unmuteack'] = `${this.scope}/fromlinto/${range}/unmuteack`
+        this.subscribtionTopics['tts_lang'] = `${this.scope}/fromlinto/${range}/tts_lang`
+        this.subscribtionTopics['say'] = `${this.scope}/fromlinto/${range}/say`
+
+        // Subscribe to new topics
+        for (let index in this.subscribtionTopics) {
+            const topic = this.subscribtionTopics[index]
+
+            //Subscribe to the client topics
+            this.client.subscribe(topic, (err) => {
+                if (!err) {
+                    this.isSubscribed = true
+                    debug(`subscribed successfully to ${topic}`)
+                } else {
+                    console.error(err)
+                }
+            })
+        }
     }
 
+    unsubscribe() {
+        if (this.isSubscribed) {
+            for (let index in this.subscribtionTopics) {
+                const topic = this.subscribtionTopics[index]
+                this.client.unsubscribe(topic, (err) => {
+                    if (err) console.error('disconnecting while unsubscribing', err)
+                    debug('Unsubscribe to : ', topic)
+                    this.isSubscribed = false
+                })
+            }
+        }
+    }
     ping(payload) {
         try {
             this.client.publish(`${this.scope}/tolinto/${payload.sn}/ping`, '{}', (err) => {
@@ -102,32 +118,45 @@ class MqttMonitor extends EventEmitter {
                     throw err
                 }
             })
-        } catch (err) {
-            console.error(err)
+        } catch (error) {
+            console.error(error)
             this.client.emit('tolinto_debug', {
                 status: 'error',
-                message: 'error on pong response'
+                message: 'error on pong response',
+                error
             })
         }
     }
 
-    mute(payload) {
+    lintoSay(payload) {
         try {
-            this.client.publish(`${this.scope}/tolinto/${payload.sn}/mute`, '{}', (err) => {
-                let msg = `Mute - ${payload.sn}`
+            this.client.publish(`${this.scope}/tolinto/${payload.sn}/say`, `{"value":"${payload.value}"}`, (err) => {
                 if (err) {
                     throw err
                 }
-                this.client.emit('tolinto_debug', {
-                    status: 'success',
-                    message: msg + ' - success'
-                })
             })
-        } catch (err) {
-            console.error(err)
+        } catch (error) {
+            console.error(error)
             this.client.emit('tolinto_debug', {
                 status: 'error',
-                message: 'error on mute ack'
+                message: 'error on linto say',
+                error
+            })
+        }
+    }
+    mute(payload) {
+        try {
+            this.client.publish(`${this.scope}/tolinto/${payload.sn}/mute`, '{}', (err) => {
+                if (err) {
+                    throw err
+                }
+            })
+        } catch (error) {
+            console.error(error)
+            this.client.emit('tolinto_debug', {
+                status: 'error',
+                message: 'error on linto mute',
+                error
             })
         }
     }
@@ -135,20 +164,16 @@ class MqttMonitor extends EventEmitter {
     unmute(payload) {
         try {
             this.client.publish(`${this.scope}/tolinto/${payload.sn}/unmute`, '{}', (err) => {
-                let msg = `Unmute - ${payload.sn}`
                 if (err) {
                     throw err
                 }
-                this.client.emit('tolinto_debug', {
-                    status: 'success',
-                    message: msg + ' - success'
-                })
             })
-        } catch (err) {
-            console.error(err)
+        } catch (error) {
+            console.error(error)
             this.client.emit('tolinto_debug', {
                 status: 'error',
-                message: 'error on unmute ack'
+                message: 'error on unmute ack',
+                error
             })
         }
     }
@@ -156,63 +181,33 @@ class MqttMonitor extends EventEmitter {
     setVolume(payload) {
         try {
             this.client.publish(`${this.scope}/tolinto/${payload.sn}/volume`, `{"value":"${payload.value}"}`, (err) => {
-                if (!err) {
-                    return
-                } else {
-                    this.client.emit('tolinto_debug', {
-                        status: 'error',
-                        message: 'error on updating volume'
-                    })
-                    return
+                if (err) {
+                    throw err
                 }
             })
-        } catch (err) {
-            console.error(err)
+        } catch (error) {
+            console.error(error)
+            this.client.emit('tolinto_debug', {
+                status: 'error',
+                message: 'error on setting volume',
+                error
+            })
         }
     }
     setVolumeEnd(payload) {
         try {
             this.client.publish(`${this.scope}/tolinto/${payload.sn}/endvolume`, `{"value":"${payload.value}"}`, (err) => {
-                if (!err) {
-                    const message = `Volume - ${payload.sn} - Set to "${payload.value}"`
-                    this.client.emit('tolinto_debug', {
-                        status: 'success',
-                        message
-                    })
-                    return
-                } else {
-                    this.client.emit('tolinto_debug', {
-                        status: 'error',
-                        message: 'error on updating volume'
-                    })
-                    return
+                if (err) {
+                    throw err
                 }
             })
-        } catch (err) {
-            console.error(err)
-        }
-    }
-
-    lintoSay(payload) {
-        try {
-            this.client.publish(`${this.scope}/tolinto/${payload.sn}/say`, `{"value":"${payload.content}"}`, (err) => {
-                const message = `LinTO Say : "${payload.content}" - ${payload.sn}`
-                if (!err) {
-                    this.client.emit('tolinto_debug', {
-                        status: 'success',
-                        message: message + ' - success'
-                    })
-                    return
-                } else {
-                    this.client.emit('tolinto_debug', {
-                        status: 'error',
-                        message: message + ' - error'
-                    })
-                    return
-                }
+        } catch (error) {
+            console.error(error)
+            this.client.emit('tolinto_debug', {
+                status: 'error',
+                message: 'error on setting volume',
+                error
             })
-        } catch (err) {
-            console.error(err)
         }
     }
 }

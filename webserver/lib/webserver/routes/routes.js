@@ -26,10 +26,22 @@ module.exports = (webServer) => {
         "/admin": require('./admin')(webServer),
         "/healthcheck": require('./healthcheck')(webServer),
         "/api": require('./api')(webServer),
+        "/api/swagger": require('./api/swagger')(webServer),
+        "/api/clients/static": require('./api/clients/static')(webServer),
+        "/api/workflows": require('./api/workflows')(webServer),
+        "/api/workflows/application": require('./api/workflows/application')(webServer),
+        "/api/workflows/static": require('./api/workflows/static')(webServer),
+        "/api/workflows/template": require('./api/workflows/template')(webServer),
+        "/api/workflows/templates": require('./api/workflows/templates')(webServer),
+        // Android users
+        "/api/androidusers": require('./api/androidusers')(webServer),
+        // Webapp hosts
+        "/api/webapphosts": require('./api/webapphosts')(webServer),
+        // Flow
         "/api/flow": require('./api/flow')(webServer),
+        "/api/flow/tmp": require('./api/flow/tmp')(webServer),
+        "/api/flow/sandbox": require('./api/flow/sandbox')(webServer),
         "/api/tock": require('./api/tock')(webServer),
-        "/api/lintos": require('./api/lintos')(webServer),
-        "/api/context": require('./api/context')(webServer),
         "/api/stt": require('./api/stt')(webServer),
         "/": require('./_root')(webServer)
     }

@@ -14,271 +14,133 @@ const AMstorage = multer.diskStorage({
     }
 })
 
-const AMupload = multer({ storage: AMstorage }).any()
-const request = require('request')
-const fs = require('fs')
-
 module.exports = (webServer) => {
     return [{
             // Get all services in stt-service-manager
+            // Link : /api-docs/#/stt/GetAllSttServices
             path: '/services',
             method: 'get',
             requireAuth: true,
             controller: async(req, res, next) => {
                 try {
+                    const sttAuthToken = middlewares.basicAuthToken(process.env.LINTO_STACK_STT_SERVICE_MANAGER_SERVICE_LOGIN, process.env.LINTO_STACK_STT_SERVICE_MANAGER_SERVICE_PASSWORD)
+
                     const getServices = await axios(`${middlewares.useSSL() + process.env.LINTO_STACK_STT_SERVICE_MANAGER_SERVICE}/services`, {
-                        method: 'get'
+                        method: 'get',
+                        headers: {
+                            'charset': 'utf-8',
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'Authorization': sttAuthToken
+                        }
                     })
                     res.json(getServices.data.data)
                 } catch (error) {
                     console.error(error)
-                    res.json({ error: error.toString() })
-                }
-            }
-        },
-        {
-            // Create a service in stt-service-manager
-            path: '/service',
-            method: 'post',
-            requireAuth: true,
-            controller: async(req, res, next) => {
-                try {
-                    const payload = req.body
-                    const createService = await axios(`${middlewares.useSSL() + process.env.LINTO_STACK_STT_SERVICE_MANAGER_SERVICE}/service/${payload.serviceId}`, {
-                        method: 'post',
-                        data: payload
+                    res.json({
+                        status: 'error',
+                        msg: 'Error on joining STT service',
+                        error
                     })
-                    if (!!createService.status && createService.status === 200) {
-                        res.json({
-                            status: 'success',
-                            msg: createService.data
-                        })
-                    } else {
-                        throw createService
-                    }
-                } catch (error) {
-                    if (!!error.response.status && error.response.status !== 200) {
-                        res.json({
-                            status: 'error',
-                            msg: error.response.data.status
-                        })
-                    } else {
-                        res.json({
-                            error: 'An error has occured'
-                        })
-                    }
                 }
             }
         },
         {
+            // Link : /api-docs/#/stt/GetAllSttServicesLModels
             path: '/langmodels',
             method: 'get',
             requireAuth: true,
             controller: async(req, res, next) => {
                 try {
+                    const sttAuthToken = middlewares.basicAuthToken(process.env.LINTO_STACK_STT_SERVICE_MANAGER_SERVICE_LOGIN, process.env.LINTO_STACK_STT_SERVICE_MANAGER_SERVICE_PASSWORD)
                     const getLanguageModels = await axios(`${middlewares.useSSL() + process.env.LINTO_STACK_STT_SERVICE_MANAGER_SERVICE}/langmodels`, {
-                        method: 'get'
+                        method: 'get',
+                        headers: {
+                            'charset': 'utf-8',
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'Authorization': sttAuthToken
+                        }
                     })
                     res.json(getLanguageModels.data.data)
                 } catch (error) {
-                    res.json({ error: error.toString() })
-                }
-            }
-        },
-        {
-            path: '/langmodel',
-            method: 'post',
-            requireAuth: true,
-            controller: async(req, res, next) => {
-                try {
-                    const acmodel = req.body.acmodelname
-                    const lmodel = req.body.lmodelname.replace(/\s/g, '_')
-                    const createLM = await axios(`${middlewares.useSSL() + process.env.LINTO_STACK_STT_SERVICE_MANAGER_SERVICE}/langmodel/${lmodel}`, {
-                        method: 'post',
-                        data: {
-                            acousticModel: acmodel
-                        }
+                    console.error(error)
+                    res.json({
+                        status: 'error',
+                        msg: 'Error on getting STT language models',
+                        error
                     })
-                    if (!!createLM.status && createLM.status === 200) {
-                        res.json({
-                            status: 'success',
-                            msg: createLM.data
-                        })
-                    } else {
-                        throw createLM
-                    }
-                } catch (error) {
-                    if (!!error.response.status && error.response.status !== 200) {
-                        res.json({
-                            status: 'error',
-                            msg: error.response.data.status
-                        })
-                    } else {
-                        res.json({
-                            error: 'An error has occured'
-                        })
-                    }
                 }
             }
         },
         {
-            path: '/langmodel',
-            method: 'delete',
-            requireAuth: true,
-            controller: async(req, res, next) => {
-                try {
-                    const modelId = req.body.modelId
-                    const deleteModel = await axios(`${middlewares.useSSL() + process.env.LINTO_STACK_STT_SERVICE_MANAGER_SERVICE}/langmodel/${modelId}`, {
-                        method: 'delete'
-                    })
-                    if (!!deleteModel.status && deleteModel.status === 200) {
-                        res.json({
-                            status: 'success',
-                            msg: deleteModel.data
-                        })
-                    } else {
-                        throw deleteModel
-                    }
-                } catch (error) {
-                    if (!!error.response.status && error.response.status !== 200) {
-                        res.json({
-                            status: 'error',
-                            msg: error.response.data.status
-                        })
-                    } else {
-                        res.json({
-                            error: 'An error has occured'
-                        })
-                    }
-                }
-            }
-        },
-        {
+            // Link : /api-docs/#/stt/GetAllSttServicesACModels
             path: '/acmodels',
             method: 'get',
             requireAuth: true,
             controller: async(req, res, next) => {
                 try {
+                    const sttAuthToken = middlewares.basicAuthToken(process.env.LINTO_STACK_STT_SERVICE_MANAGER_SERVICE_LOGIN, process.env.LINTO_STACK_STT_SERVICE_MANAGER_SERVICE_PASSWORD)
+
                     const getACModels = await axios(`${middlewares.useSSL() + process.env.LINTO_STACK_STT_SERVICE_MANAGER_SERVICE}/acmodels`, {
-                        method: 'get'
+                        method: 'get',
+                        headers: {
+                            'charset': 'utf-8',
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'Authorization': sttAuthToken
+                        }
                     })
                     res.json(getACModels.data.data)
-                } catch (e) {
-                    res.json({ error: e })
-                }
-            }
-        },
-        {
-            path: '/acmodel',
-            method: 'post',
-            requireAuth: true,
-            controller: async(req, res, next) => {
-                try {
-                    AMupload(req, res, async(error) => {
-                        if (error || error instanceof multer.MulterError) {
-                            // A Multer error occurred when uploading.
-                            console.error(error)
-                            throw error
-                        }
-                        const infos = JSON.parse(req.body.infos)
-                        const file = req.files[0]
-                        const acModelName = infos.acmodel.replace(/\s/g, '_')
-                        request.post({
-                            url: `${middlewares.useSSL() + process.env.LINTO_STACK_STT_SERVICE_MANAGER_SERVICE}/acmodel/${acModelName}`,
-                            formData: {
-                                file: fs.createReadStream(AMPath + file.filename),
-                                filetype: file.mimetype,
-                                lang: infos.lang
-
-                            },
-                        }, (err, response, body) => {
-                            if (err) {
-                                res.json({
-                                    status: 'error',
-                                    error: err
-                                })
-                            }
-                            if (response.statusCode === 200) {
-                                fs.unlinkSync(AMPath + file.filename)
-                                res.json({
-                                    status: 'success',
-                                    msg: body
-                                })
-                            } else {
-                                res.json({
-                                    status: 'error',
-                                    msg: body
-                                })
-                            }
-                        })
-                    })
                 } catch (error) {
                     console.error(error)
                     res.json({
                         status: 'error',
-                        msg: error
+                        msg: 'Error on getting STT acoustic models',
+                        error
                     })
                 }
             }
         },
         {
-            path: '/acmodel',
-            method: 'delete',
-            requireAuth: true,
-            controller: async(req, res, next) => {
-                try {
-                    const modelId = req.body.modelId
-                    const deleteModel = await axios(`${middlewares.useSSL() + process.env.LINTO_STACK_STT_SERVICE_MANAGER_SERVICE}/acmodel/${modelId}`, {
-                        method: 'delete'
-                    })
-                    if (!!deleteModel.status && deleteModel.status === 200) {
-                        res.json({
-                            status: 'success',
-                            msg: deleteModel.data
-                        })
-                    } else {
-                        throw deleteModel
-                    }
-                } catch (error) {
-                    if (!!error.response.status && error.response.status !== 200) {
-                        res.json({
-                            status: 'error',
-                            msg: error.response.data.status
-                        })
-                    } else {
-                        res.json({
-                            error: 'An error has occured'
-                        })
-                    }
-                }
-            }
-        },
-        {
+            // Link : /api-docs/#/stt/SttLexicalSeeding
             path: '/lexicalseeding',
             method: 'post',
             requireAuth: true,
             controller: async(req, res, next) => {
                 try {
-                    const flowId = req.body.flowId
-                    const service_name = req.body.service_name
+                    const flowId = req.body.payload.flowId
+                    const service_name = req.body.payload.service_name
                     const lexicalseeding = await lexSeed.sttLexicalSeeding(flowId, service_name)
-                    res.json(lexicalseeding)
+                    if (lexicalseeding.status === 'success') {
+                        res.json({
+                            status: 'success',
+                            msg: 'STT service has been updated'
+                        })
+                    } else {
+                        throw lexicalseeding
+                    }
                 } catch (error) {
                     console.error(error)
                     res.json({
                         status: 'error',
-                        msg: 'Error on updating language model',
-                        error: error.toString()
+                        msg: !!error.msg ? error.msg : 'Error on updating language model',
+                        error: error
                     })
                 }
             }
-        }, {
+        },
+        {
+            // Link : /api-docs/#/stt/SttGenerateGraph
+
             path: '/generategraph',
             method: 'post',
             requireAuth: true,
             controller: async(req, res, next) => {
                 try {
-                    await lexSeed.generateGraph()
+                    const serviceName = req.body.serviceName
+                    const lexicalSeeding = await lexSeed.generateGraph(serviceName)
+                    res.json(lexicalSeeding)
                 } catch (error) {
                     console.error(error)
                     res.json({
@@ -287,13 +149,23 @@ module.exports = (webServer) => {
                     })
                 }
             }
-        }, {
+        },
+        {
             path: '/healthcheck',
             method: 'get',
             requireAuth: true,
             controller: async(req, res, next) => {
                 try {
-                    const getSttManager = await axios(middlewares.useSSL() + process.env.LINTO_STACK_STT_SERVICE_MANAGER_SERVICE)
+                    const sttAuthToken = middlewares.basicAuthToken(process.env.LINTO_STACK_STT_SERVICE_MANAGER_SERVICE_LOGIN, process.env.LINTO_STACK_STT_SERVICE_MANAGER_SERVICE_PASSWORD)
+                    const getSttManager = await axios(middlewares.useSSL() + process.env.LINTO_STACK_STT_SERVICE_MANAGER_SERVICE, {
+                        method: 'get',
+                        headers: {
+                            'charset': 'utf-8',
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'Authorization': sttAuthToken
+                        }
+                    })
                     if (getSttManager.status === 200) {
                         res.json({
                             status: 'success',

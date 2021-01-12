@@ -38,7 +38,7 @@
             :class="formValid ? 'button--login-enabled' : 'button--login-disabled'"
             @click="handleForm()"
           ><span class="button__label">Login</span></button>
-          <span class="form__error-field">{{ loginError }}</span>
+          <span style="padding-top:5px;" class="form__error-field">{{ loginError }}</span>
         </div>
       </div>
     </div>
@@ -106,9 +106,9 @@ export default {
         data: payload
       })
       if (userAuth.data.status === 'success') {
-        window.location.href = process.env.VUE_APP_URL + '/admin/fleet'
+        window.location.href = process.env.VUE_APP_URL + '/admin/applications/device'
       } else {
-        this.loginError = userAuth.data.msg
+        this.loginError = "The login/password combination is invalid."
       }
     }
   }

@@ -17,9 +17,20 @@ module.exports = (webServer) => {
                             'Authorization': tockToken
                         }
                     })
-                    res.json(getTockApplications.data)
+                    if (!!getTockApplications.data && getTockApplications.data.length > 0) {
+                        res.json(getTockApplications.data)
+                    } else {
+                        // If no application is created
+                        res.json([])
+                    }
                 } catch (error) {
                     console.error(error)
+                    if ((!!error.response && !!error.response === undefined) || (!!error.code && error.code === 'ECONNREFUSED')) {
+                        res.json({
+                            status: 'error',
+                            msg: 'Tock service unvavailable'
+                        })
+                    }
                     res.json({
                         status: 'error',
                         msg: 'Error on getting tock applications'
@@ -62,14 +73,22 @@ module.exports = (webServer) => {
             method: 'post',
             controller: async(req, res, next) => {
                 try {
-                    const flowId = req.body.flowId
+                    const flowId = req.body.payload.flowId
                     const lexicalSeeding = await lexSeed.nluLexicalSeeding(flowId)
-                    res.json(lexicalSeeding)
+                    if (lexicalSeeding.status === 'success') {
+                        res.json({
+                            status: 'success',
+                            msg: 'Tock application updated'
+                        })
+                    } else {
+                        throw 'Error on updating tock application'
+                    }
                 } catch (error) {
                     console.error(error)
                     res.json({
                         status: 'error',
-                        msg: error.toString()
+                        msg: error,
+                        error
                     })
                 }
             }

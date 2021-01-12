@@ -1,83 +1,270 @@
 import Vue from 'vue'
 import Router from 'vue-router'
+import axios from 'axios'
+import { bus } from './main.js'
 
 // Views
-import ContextAdd from './views/ContextAdd.vue'
-import ContextOverview from './views/ContextOverview.vue'
-import ContextWorkflow from './views/ContextWorkflow.vue'
-import WorkflowEditor from './views/WorkflowEditor.vue'
-import FleetManagement from './views/FleetManagement.vue'
-import FleetMonitoring from './views/FleetMonitoring.vue'
-import SttManagement from './views/SttManagement.vue'
+import DeviceApps from './views/DeviceApps.vue'
+import DeviceAppDeploy from './views/DeviceAppDeploy.vue'
+import DeviceAppWorkflowEditor from './views/DeviceAppWorkflowEditor.vue'
+import MultiUserApps from './views/MultiUserApps.vue'
+import MultiUserAppDeploy from './views/MultiUserAppDeploy.vue'
+import MultiUserAppWorkflowEditor from './views/MultiUserAppWorkflowEditor.vue'
+import Terminals from './views/Terminals.vue'
+import TerminalsMonitoring from './views/TerminalsMonitoring.vue'
+import Users from './views/Users.vue'
+import Domains from './views/Domains.vue'
 import TockView from './views/TockView.vue'
-import page404 from './views/404.vue'
-
+import WorkflowEditor from './views/WorkflowEditor.vue'
 Vue.use(Router)
 const router = new Router({
     mode: 'history',
     routes: [{
-            path: '/admin/fleet',
-            name: 'Fleet overview',
-            component: FleetManagement,
-            /* ADD META DATA : EXAMPLE
-            meta: [
-              {
-                name: 'title',
-                content: 'Linto Admin - Tock interface'
-              },
-              {
-                name: 'robots',
-                content: 'noindex, nofollow'
-              }
+            path: '/admin/applications/device',
+            name: 'Static devices overview',
+            component: DeviceApps,
+            meta: [{
+                    name: 'title',
+                    content: 'LinTO Admin - Static clients'
+                },
+                {
+                    name: 'robots',
+                    content: 'noindex, nofollow'
+                }
             ]
-          */
         },
         {
-            path: '/admin/fleet/monitoring/:sn',
-            name: 'Fleet monitoring',
-            component: FleetMonitoring
+            path: '/admin/applications/device/workflow/:workflowId',
+            name: 'Static device flow editor',
+            component: DeviceAppWorkflowEditor,
+            meta: [{
+                    name: 'title',
+                    content: 'LinTO Admin - Static clients workflow editor'
+                },
+                {
+                    name: 'robots',
+                    content: 'noindex, nofollow'
+                }
+            ],
+            beforeEnter: async(to, from, next) => {
+                try {
+                    // Check if the targeted device application exists
+                    const workflowId = to.params.workflowId
+                    const getWorkflow = await axios(`${process.env.VUE_APP_URL}/api/workflows/static/${workflowId}`)
+                    if (!!getWorkflow.data.error) {
+                        next('/admin/applications/device')
+                    } else {
+                        next()
+                    }
+                } catch (error) {
+                    console.error(error)
+                    next('/admin/applications/device')
+
+                }
+            }
         },
         {
-            path: '/admin/workflows',
+            path: '/admin/applications/device/deploy',
+            name: 'Static devices - deployment',
+            component: DeviceAppDeploy,
+            meta: [{
+                    name: 'title',
+                    content: 'LinTO Admin - Static clients deployment'
+                },
+                {
+                    name: 'robots',
+                    content: 'noindex, nofollow'
+                }
+            ]
+        },
+        {
+            path: '/admin/applications/device/deploy/:sn',
+            name: 'Static devices - deployment by id',
+            component: DeviceAppDeploy,
+            meta: [{
+                    name: 'title',
+                    content: 'LinTO Admin - Static clients deployment'
+                },
+                {
+                    name: 'robots',
+                    content: 'noindex, nofollow'
+                }
+            ],
+            beforeEnter: async(to, from, next) => {
+                try {
+                    // Check if the targeted device exists
+                    const sn = to.params.sn
+                    const getStaticDevice = await axios(`${process.env.VUE_APP_URL}/api/clients/static/${sn}`)
+                    if (getStaticDevice.data.associated_workflow !== null) {
+                        next('/admin/applications/device')
+                    } else {
+                        next()
+                    }
+                } catch (error) {
+                    console.error(error)
+                    next('/admin/applications/device')
+                }
+            }
+        },
+        {
+            path: '/admin/devices',
+            name: 'Devices - statice devices',
+            component: Terminals,
+            meta: [{
+                    name: 'title',
+                    content: 'Devices and static devices'
+                },
+                {
+                    name: 'robots',
+                    content: 'noindex, nofollow'
+                }
+            ]
+        },
+        {
+            path: '/admin/device/:sn/monitoring',
+            name: 'Static devices - monitoring',
+            component: TerminalsMonitoring,
+            meta: [{
+                    name: 'title',
+                    content: 'LinTO Admin - Static clients monitoring'
+                },
+                {
+                    name: 'robots',
+                    content: 'noindex, nofollow'
+                }
+            ],
+            beforeEnter: async(to, from, next) => {
+                try {
+                    // Check if the targeted device exists
+                    const sn = to.params.sn
+                    const getStaticDevice = await axios(`${process.env.VUE_APP_URL}/api/clients/static/${sn}`)
+                    if (getStaticDevice.data.associated_workflow === null) {
+                        next('/admin/applications/device')
+                    } else {
+                        next()
+                    }
+                } catch (error) {
+                    console.error(error)
+                    next('/admin/applications/device')
+                }
+            }
+        },
+        {
+            path: '/admin/applications/multi',
+            name: 'Applications overview',
+            component: MultiUserApps,
+            meta: [{
+                    name: 'title',
+                    content: 'LinTO Admin - applications'
+                },
+                {
+                    name: 'robots',
+                    content: 'noindex, nofollow'
+                }
+            ]
+        }, {
+            path: '/admin/applications/multi/deploy',
+            name: 'Create new application',
+            component: MultiUserAppDeploy,
+            meta: [{
+                    name: 'title',
+                    content: 'LinTO Admin - Create an application workflow'
+                },
+                {
+                    name: 'robots',
+                    content: 'noindex, nofollow'
+                }
+            ],
+        },
+        {
+            path: '/admin/applications/multi/workflow/:workflowId',
+            name: 'Nodered application flow editor',
+            component: MultiUserAppWorkflowEditor,
+            meta: [{
+                    name: 'title',
+                    content: 'LinTO Admin - Application flow editor'
+                },
+                {
+                    name: 'robots',
+                    content: 'noindex, nofollow'
+                }
+            ],
+            beforeEnter: async(to, from, next) => {
+                try {
+                    // Check if the targeted mutli-user application exists
+                    const workflowId = to.params.workflowId
+                    const getWorkflow = await axios(`${process.env.VUE_APP_URL}/api/workflows/application/${workflowId}`)
+                    if (!!getWorkflow.data.error) {
+                        next('/admin/applications/multi')
+                    } else {
+                        next()
+                    }
+                } catch (error) {
+                    console.error(error)
+                    next('/admin/applications/multi')
+                }
+            }
+        },
+        {
+            path: '/admin/workflow-editor',
             name: 'Worflow editor',
             component: WorkflowEditor,
-        },
-        {
-            path: '/admin/context/overview',
-            name: 'Admin context overview',
-            component: ContextOverview
-        },
-        {
-            path: '/admin/context/create',
-            name: 'Admin create context',
-            component: ContextAdd
-        },
-        {
-            path: '/admin/context/workflow/:id',
-            name: 'Context worflow editor',
-            component: ContextWorkflow
-        },
-        {
+            meta: [{
+                    name: 'title',
+                    content: 'Sandbox workflow editor'
+                },
+                {
+                    name: 'robots',
+                    content: 'noindex, nofollow'
+                }
+            ],
+        }, {
             path: '/admin/nlu',
             name: 'tock interface',
-            component: TockView
+            component: TockView,
+            meta: [{
+                    name: 'title',
+                    content: 'Tock interface'
+                },
+                {
+                    name: 'robots',
+                    content: 'noindex, nofollow'
+                }
+            ]
         },
         {
-            path: '/admin/stt/overview',
-            name: 'STT management',
-            component: SttManagement
+            path: '/admin/users',
+            name: 'Android users interface',
+            component: Users,
+            meta: [{
+                    name: 'title',
+                    content: 'LinTO admin - android users'
+                },
+                {
+                    name: 'robots',
+                    content: 'noindex, nofollow'
+                }
+            ]
         },
-        // Other routes > 404
         {
-            path: '/admin/*',
-            name: '404',
-            component: page404,
-        },
+            path: '/admin/domains',
+            name: 'Web app hosts interface',
+            component: Domains,
+            meta: [{
+                    name: 'title',
+                    content: 'LinTO admin - Web app hosts'
+                },
+                {
+                    name: 'robots',
+                    content: 'noindex, nofollow'
+                }
+            ]
+        }
     ]
 })
 
 /* The following function parse the route.meta attribtue to set page "title" and "meta" before entering a route" */
-router.beforeEach((to, from, next) => {
+router.beforeEach(async(to, from, next) => {
     if (to.meta.length > 0) {
         to.meta.map(m => {
             if (m.name === 'title') {
@@ -90,8 +277,40 @@ router.beforeEach((to, from, next) => {
             }
         })
     }
+    // Check if the "Sandbox" workflow exists, if not, create it
+    try {
+        const getSandBoxId = await axios(`${process.env.VUE_APP_URL}/api/flow/sandbox`, {
+            method: 'get'
+        })
+        if (!!getSandBoxId.data.sandBoxId && getSandBoxId.data.sandBoxId !== null) {
+            next()
+        } else {
+            bus.$emit('app_notif', {
+                status: 'success',
+                msg: 'Creation of a Sandbox flow',
+                timeout: 3000
+            })
+            const createSandbox = await axios(`${process.env.VUE_APP_URL}/api/flow/sandbox`, {
+                method: 'post'
+            })
+            if (createSandbox.data.status === 'success') {
+                bus.$emit('app_notif', {
+                    status: 'success',
+                    msg: 'Sandbox flow has been created.',
+                    timeout: 3000,
+                    redirect: false
+                })
+            }
+        }
+    } catch (error) {
+        console.error(error)
+        bus.$emit('app_notif', {
+            status: 'success',
+            msg: 'Error on trying to access SandBox workflow',
+            timeout: 4000
+        })
+    }
     next()
-
 })
 
 export default router

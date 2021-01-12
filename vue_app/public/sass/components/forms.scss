@@ -10,7 +10,8 @@
     font-size: 16px;
     background-color: #fff;
     color: #333;
-    max-width: 400px;
+    max-width: 320px;
+    min-width: 160px;
     margin: 5px 0;
     outline: none;
     &.form__input--error {
@@ -59,6 +60,11 @@
         background-color: #ececec;
         border-color: #ccc;
         color: $textColor;
+        max-width: 180px;
+    }
+    &.input--number {
+        max-width: 100px;
+        min-width: 100px;
     }
 }
 
@@ -101,10 +107,11 @@
     4px,
     0,
     rgba(0, 0, 0, 0.3));
-    font-size: 16px;
+    font-size: 15px;
     background-color: #fff;
     color: #333;
-    max-width: 400px;
+    max-width: 320px;
+    min-width: 160px;
     margin: 5px 0;
     outline: none;
     &.form__select--error {
@@ -120,6 +127,43 @@
         border-color: #ccc;
         color: $textColor;
     }
+    &.form__select--inarray {
+        max-width: 120px;
+        min-width: 80px;
+    }
+}
+
+
+/* Textarea */
+
+.form__textarea {
+    display: inline-block;
+    flex: 1;
+    padding: 5px;
+    border: 1px solid #fff;
+    @include borderRadius(5px);
+    @include boxShadow(0,
+    2px,
+    4px,
+    0,
+    rgba(0, 0, 0, 0.3));
+    font-size: 14px;
+    background-color: #fff;
+    color: #333;
+    max-width: 400px;
+    min-width: 220px;
+    min-height: 80px;
+    height: auto;
+    margin: 5px 0;
+    resize: vertical;
+    &.form__textarea--error {
+        background-color: rgba(255, 112, 112, 0.1);
+        border-color: $error;
+    }
+    &.form__textarea--valid {
+        background-color: rgba(125, 252, 245, 0.1);
+        border-color: $valid;
+    }
 }
 
 
@@ -132,6 +176,10 @@
     &.form__label--sub {
         line-height: 30px;
         font-weight: 500;
+    }
+    strong {
+        font-size: 16px;
+        color: $error;
     }
 }
 

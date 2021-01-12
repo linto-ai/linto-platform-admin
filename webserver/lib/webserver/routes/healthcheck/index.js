@@ -18,15 +18,19 @@ module.exports = (webServer) => {
                     }])
                 } catch (error) {
                     console.error(error)
-                    res.json([{
-                            service: 'mongo',
-                            connected: mongoUp
-                        }, {
-                            service: 'redis',
-                            connected: redisUp
-                        },
-                        { error: error.toString() }
-                    ])
+                    res.json(
+                        [{
+                                service: 'mongo',
+                                connected: mongoUp
+                            },
+                            {
+                                service: 'redis',
+                                connected: redisUp
+                            },
+                            {
+                                error
+                            }
+                        ])
                 }
             }
         }, {

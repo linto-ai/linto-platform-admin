@@ -42,7 +42,7 @@ export default {
       if (!!data.timeout && data.timeout !== null) {
         setTimeout(() => {
           this.showNotif = false
-          // Redirect ?
+          // Redirect
           if (!!data.redirect && data.timeout !== null) {
             window.location.href = data.redirect
           }

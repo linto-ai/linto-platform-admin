@@ -25,14 +25,14 @@ h1 {
 }
 
 h2 {
-    font-size: 26px;
+    font-size: 24px;
     font-weight: 600;
-    padding: 0 0 5px 0;
+    padding: 20px 0;
     color: $blueMid;
 }
 
 h3 {
-    font-size: 22px;
+    font-size: 20px;
     font-weight: 500;
     padding: 0 0 5px 0;
 }
@@ -67,8 +67,68 @@ img {
     display: inline-block;
 }
 
+ul {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+    li {
+        padding: 0;
+    }
+    &.checkbox-list {
+        padding: 20px;
+        border: 1px solid $blueLight;
+        display: flex;
+        flex-direction: column;
+        padding: 10px;
+        li {
+            display: inline-block;
+            flex: 1;
+            height: 30px;
+            input[type=checkbox] {
+                display: inline-block;
+                line-height: 30px;
+                vertical-align: top;
+                margin: 10px 5px;
+            }
+            .checkbox__label {
+                line-height: 30px;
+                vertical-align: top;
+                font-size: 16px;
+                color: $blueDark;
+            }
+            .none {
+                display: inline-block;
+                font-style: italic;
+                color: #ccc;
+            }
+        }
+        &.no-borders {
+            border: none;
+            padding: 10px;
+        }
+    }
+    &.array-list {
+        padding: 0 10px;
+        list-style-type: circle;
+        li {
+            padding: 2px 0;
+            font-size: 15px;
+            font-weight: 600;
+        }
+    }
+}
+
 .hidden {
     display: none;
+}
+
+.divider {
+    height: 1px;
+    width: 100%;
+    margin: 40px 0 0 0;
+    &.small {
+        margin: 20px 0 0 0;
+    }
 }
 
 .block {
@@ -128,17 +188,18 @@ img {
 .table {
     border-collapse: separate;
     border-spacing: 0;
+    width: auto;
     &.table--full {
         width: 100%;
     }
     thead {
         tr {
             th {
-                font-size: 16px;
+                font-size: 14px;
                 font-weight: 600;
-                padding: 5px 10px;
+                padding: 5px 20px;
                 text-align: left;
-                color: $greenChart;
+                color: $textColor;
                 &.status {
                     width: 100px;
                 }
@@ -172,17 +233,22 @@ img {
                     -moz-border-radius-bottomright: 3px;
                     border-bottom-right-radius: 3px;
                 }
-                td {
-                    border: none;
-                }
             }
             td {
                 border-bottom: 1px solid #ececec;
                 font-size: 16px;
-                padding: 15px 10px;
+                padding: 10px 20px;
                 background-color: #fefefe;
                 font-size: 14px;
-                color: #777;
+                border-right: 1px solid #f2f2f2;
+                strong {
+                    display: inline-block;
+                    vertical-align: top;
+                    color: $blueMid;
+                    font-weight: 600;
+                    padding-right: 5px;
+                    line-height: 32px;
+                }
                 &.important {
                     font-weight: 600;
                     color: #545454;
@@ -190,8 +256,18 @@ img {
                 &.center {
                     text-align: center;
                 }
+                &.right {
+                    text-align: right;
+                }
                 &.status {
                     width: 100px;
+                }
+                &:last-child {
+                    border: none;
+                }
+                &.table--desc {
+                    font-size: 14px;
+                    font-style: italic;
                 }
             }
             &:hover {
@@ -200,12 +276,28 @@ img {
                 }
             }
             &.active {
+                &,
+                &:hover {
+                    td {
+                        background-color: rgba(125, 252, 245, 0.1);
+                        border: 1x solid $valid;
+                    }
+                }
+            }
+            &.center {
                 td {
-                    background-color: $greenLight;
+                    text-align: center;
                 }
             }
         }
     }
+}
+
+.no-content {
+    font-style: italic;
+    padding: 20px;
+    font-weight: 600;
+    color: $blueMid;
 }
 
 .icon.icon--status {

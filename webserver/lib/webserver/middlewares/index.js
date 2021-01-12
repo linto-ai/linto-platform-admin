@@ -1,5 +1,7 @@
 const debug = require('debug')('linto-admin:middlewares')
 const btoa = require('btoa')
+const atob = require('atob')
+const sha1 = require('sha1')
 const UsersModel = require(`${process.cwd()}/model/mongodb/models/users.js`)
 
 
@@ -13,39 +15,41 @@ function logger(req, res, next) {
 }
 
 async function checkAuth(req, res, next) {
-    //if (isProduction()) {
-    // If not connected
-    debug(req.session)
-    if (!!req && !!req.session) {
-        if (!!req.session.logged) {
-            debug(req.session.logged)
-            if (req.session.logged === 'on' && req.url === '/login') {
-                req.session.save((err) => {
-                    if (err && err !== 'undefined') {
-                        console.error('Err:', err)
-                    }
-                })
-                res.redirect('/admin/fleet')
-            } else if (req.session.logged === 'on' && req.url !== '/login') {
-                next()
-            } else if (req.session.logged !== 'on' && req.url !== '/login') {
-                res.redirect('/login')
-            } else if (req.session.logged !== 'on' && req.url === '/login') {
-                next()
-            }
-        } else {
-            const users = await UsersModel.getUsers()
-            if (users.length === 0) {
-                res.redirect('/setup')
-            } else if (req.url != '/login') {
-                res.redirect('/login')
+    try {
+        if (!!req.session) {
+            if (!!req.session.logged) {
+                if (req.session.logged === 'on' && req.url === '/login') {
+                    req.session.save((err) => {
+                        if (err && err !== 'undefined') {
+                            console.error('Err:', err)
+                        }
+                    })
+                    res.redirect('/admin/applications/device')
+                } else if (req.session.logged === 'on' && req.url !== '/login') {
+                    next()
+                } else if (req.session.logged !== 'on' && req.url !== '/login') {
+                    res.redirect('/login')
+                } else if (req.session.logged !== 'on' && req.url === '/login') {
+                    next()
+                }
             } else {
-                next()
+                const users = await UsersModel.getUsers()
+                if (users.length === 0) {
+                    res.redirect('/setup')
+                } else if (req.url != '/login') {
+                    res.redirect('/login')
+                } else {
+                    next()
+                }
             }
+        } else { // session not foun
+            res.redirect('/login')
         }
-    } else { // session not found
-        res.redirect('/login')
+    } catch (error) {
+        console.error(error)
+        res.json({ error })
     }
+
 }
 
 // Get a Basic Auth token from user and password
@@ -56,11 +60,16 @@ function basicAuthToken(user, password) {
 }
 
 function useSSL() {
-    if (process.env.LINTO_STACK_USE_SSL === true) {
-        return 'https://'
+    if (process.env.NODE_ENV === 'local') {
+        return ''
     } else {
-        return 'http://'
+        if (process.env.LINTO_STACK_USE_SSL === true) {
+            return 'https://'
+        } else {
+            return 'http://'
+        }
     }
+
 }
 
 module.exports = {

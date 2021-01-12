@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="dataLoaded">
     <h1>Workflow editor</h1>
     <details open class="description">
       <summary>Infos</summary>
@@ -13,9 +13,10 @@
       </span>
     </details>
     <div class="block block--transparent block--no-margin block--no-padding flex1 flex">
-      <NodeRedIframe :contextFrame="'manager'" v-if="sandBoxFound" :blsurl="sandBoxUrl"></NodeRedIframe>
+      <NodeRedIframe :contextFrame="'sandbox'" v-if="sandBoxFound" :blsurl="sandBoxUrl"></NodeRedIframe>
     </div>
   </div>
+  <div v-else>Loading...</div>
 </template>
 <script>
 import axios from 'axios'
@@ -35,20 +36,22 @@ export default {
   components: {
     NodeRedIframe
   },
-  mounted () {
-    setTimeout(async () => {
-      await this.isBlsUp()
-    }, 500)
+   beforeRouteEnter (to, form, next) {
+    // Check if Business logic server is UP before enter route
+    next(vm => vm.isBlsUp())
+  },
+  computed: {
+    dataLoaded () {
+      return this.sandBoxFound && this.blsUp
+    }
   },
   methods: {
     async isBlsUp () {
       try {
-        const connectBls = await axios.get(`${process.env.VUE_APP_URL}/api/flow/healthcheck`)
-        if (connectBls.data.status === 'success') {
+        const connectBls = await axios.get(process.env.VUE_APP_NODERED)
+        if (connectBls.status === 200) {
           this.blsUp = true
           this.getSandBoxId()
-        } else {
-          throw 'Cannot connect to Business logic server'
         }
       } catch (error) {
         bus.$emit('app_notif', {
@@ -80,11 +83,9 @@ export default {
             bus.$emit('app_notif', {
               status: 'success',
               msg: 'Sandbox flow created. Reloading...',
-              timeout: 3000
+              timeout: 3000,
+              redirect: '/admin/workflow-editor'
             })
-            setTimeout(() => {
-              document.location.reload()
-            }, 4000)
           }
         }  
       } catch (error) {

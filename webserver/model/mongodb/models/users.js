@@ -1,6 +1,7 @@
 const MongoModel = require(`${process.cwd()}/model/mongodb/model.js`)
 const sha1 = require('sha1')
 const randomstring = require('randomstring')
+const usersSchemas = require(`${process.cwd()}/model/mongodb/schemas/${process.env.LINTO_STACK_MONGODB_TARGET_VERSION}/schemas/users.json`)
 
 // This class is a child of 'modelMongoDb' class. It contains all methods and requests to database used on API routes.
 class UsersModel extends MongoModel {
@@ -14,7 +15,14 @@ class UsersModel extends MongoModel {
             const query = {
                 _id: this.getObjectId(id)
             }
-            return await this.mongoRequest(query)
+            const user = await this.mongoRequest(query)
+
+            // compare object with schema
+            if (this.testSchema(user, usersSchemas)) {
+                return user
+            } else {
+                throw 'Invalid document format'
+            }
         } catch (err) {
             console.error(err)
             return err
@@ -27,7 +35,14 @@ class UsersModel extends MongoModel {
             const query = {
                 userName: userName
             }
-            return await this.mongoRequest(query)
+            const user = await this.mongoRequest(query)
+
+            // compare object with schema
+            if (this.testSchema(user, usersSchemas)) {
+                return user
+            } else {
+                throw 'Invalid document format'
+            }
         } catch (err) {
             console.error(err)
             return err
@@ -38,8 +53,15 @@ class UsersModel extends MongoModel {
     async getUsers() {
         try {
             const query = {}
-            return await this.mongoRequest(query)
-        } catch (error) {
+            const users = await this.mongoRequest(query)
+
+            // compare object with schema
+            if (this.testSchema(users, usersSchemas)) {
+                return users
+            } else {
+                throw 'Invalid document format'
+            }
+        } catch (err) {
             console.error(err)
             return err
         }
@@ -53,7 +75,13 @@ class UsersModel extends MongoModel {
             }
             let mutableElements = payload
             delete mutableElements._id
-            return await this.mongoUpdate(query, mutableElements)
+
+            // compare object with schema
+            if (this.testSchema(mutableElements, usersSchemas)) {
+                return await this.mongoUpdate(query, mutableElements)
+            } else {
+                throw 'Invalid document format'
+            }
         } catch (err) {
             console.error(err)
             return err
@@ -73,10 +101,16 @@ class UsersModel extends MongoModel {
                 salt,
                 role: "administrator"
             }
-            return await this.mongoInsert(userPayload)
-        } catch (error) {
-            console.error(error)
-            return error
+
+            // compare object with schema
+            if (this.testSchema(userPayload, usersSchemas)) {
+                return await this.mongoInsert(userPayload)
+            } else {
+                throw 'Invalid document format'
+            }
+        } catch (err) {
+            console.error(err)
+            return err
         }
     }
 }

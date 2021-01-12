@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="dataLoaded">
     <h1>Tock interface</h1>
     <details open class="description">
       <summary>Infos</summary>
@@ -15,8 +15,8 @@
     <div class="block block--transparent block--no-margin block--no-padding flex1 flex">
       <TockIframe v-if="tockUp" :tockUrl="tockUrl"></TockIframe>
     </div>
-
   </div>
+  <div v-else>Loading...</div>
 </template>
 <script>
 import { bus } from '../main.js'
@@ -33,6 +33,11 @@ export default {
   },
   async mounted () {
     await this.isTockUp()
+  },
+  computed: {
+    dataLoaded () {
+      return this.tockUp
+    }
   },
   methods: {
     async isTockUp () {

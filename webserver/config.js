@@ -54,7 +54,7 @@ function configureDefaults() {
         process.env.LINTO_STACK_BLS_USER = ifHas(process.env.LINTO_STACK_BLS_USER, envdefault.LINTO_STACK_BLS_USER)
         process.env.LINTO_STACK_BLS_PASSWORD = ifHas(process.env.LINTO_STACK_BLS_PASSWORD, envdefault.LINTO_STACK_BLS_PASSWORD)
         LINTO_STACK_BLS_SERVICE_UI_PATH = ifHas(process.env.LINTO_STACK_BLS_SERVICE_UI_PATH, envdefault.LINTO_STACK_BLS_SERVICE_UI_PATH)
-        LINTO_STACK_BLS_SERVICE_API_PATH = ifHas(process.env.LINTO_STACK_BLS_SERVICE_API_PATH, envdefault.LINTO_STACK_BLS_SERVICE_API_PATH)
+        LINTO_STACK_BLS_SERVICE_API_PATH = '/red'
 
         // Mqtt
         process.env.LINTO_STACK_MQTT_HOST = ifHas(process.env.LINTO_STACK_MQTT_HOST, envdefault.LINTO_STACK_MQTT_HOST)
@@ -71,7 +71,6 @@ function configureDefaults() {
         process.env.LINTO_STACK_MONGODB_USE_LOGIN = ifHas(process.env.LINTO_STACK_MONGODB_USE_LOGIN, envdefault.LINTO_STACK_MONGODB_USE_LOGIN)
         process.env.LINTO_STACK_MONGODB_USER = ifHas(process.env.LINTO_STACK_MONGODB_USER, envdefault.LINTO_STACK_MONGODB_USER)
         process.env.LINTO_STACK_MONGODB_PASSWORD = ifHas(process.env.LINTO_STACK_MONGODB_PASSWORD, envdefault.LINTO_STACK_MONGODB_PASSWORD)
-        process.env.LINTO_STACK_MONGODB_SHARED_SCHEMAS = ifHas(process.env.LINTO_STACK_MONGODB_SHARED_SCHEMAS, envdefault.LINTO_STACK_MONGODB_SHARED_SCHEMAS)
         process.env.LINTO_STACK_MONGODB_TARGET_VERSION = ifHas(process.env.LINTO_STACK_MONGODB_TARGET_VERSION, envdefault.LINTO_STACK_MONGODB_TARGET_VERSION)
 
         // Redis
@@ -80,12 +79,15 @@ function configureDefaults() {
 
         // NLU - TOCK
         process.env.LINTO_STACK_TOCK_SERVICE = ifHas(process.env.LINTO_STACK_TOCK_SERVICE, envdefault.LINTO_STACK_TOCK_SERVICE)
+        process.env.LINTO_STACK_TOCK_NLP_API = ifHas(process.env.LINTO_STACK_TOCK_NLP_API, envdefault.LINTO_STACK_TOCK_NLP_API)
         process.env.LINTO_STACK_TOCK_SERVICE_PORT = ifHas(process.env.LINTO_STACK_TOCK_SERVICE_PORT, envdefault.LINTO_STACK_TOCK_SERVICE_PORT)
         process.env.LINTO_STACK_TOCK_LOGIN = ifHas(process.env.LINTO_STACK_TOCK_LOGIN, envdefault.LINTO_STACK_TOCK_LOGIN)
         process.env.LINTO_STACK_TOCK_PASSWORD = ifHas(process.env.LINTO_STACK_TOCK_PASSWORD, envdefault.LINTO_STACK_TOCK_PASSWORD)
 
         // STT service-manager
         process.env.LINTO_STACK_STT_SERVICE_MANAGER_SERVICE = ifHas(process.env.LINTO_STACK_STT_SERVICE_MANAGER_SERVICE, envdefault.LINTO_STACK_STT_SERVICE_MANAGER_SERVICE)
+        process.env.LINTO_STACK_STT_SERVICE_MANAGER_SERVICE_LOGIN = ifHas(process.env.LINTO_STACK_STT_SERVICE_MANAGER_SERVICE_LOGIN, envdefault.LINTO_STACK_STT_SERVICE_MANAGER_SERVICE_LOGIN)
+        process.env.LINTO_STACK_STT_SERVICE_MANAGER_SERVICE_PASSWORD = ifHas(process.env.LINTO_STACK_STT_SERVICE_MANAGER_SERVICE_PASSWORD, envdefault.LINTO_STACK_STT_SERVICE_MANAGER_SERVICE_PASSWORD)
 
     } catch (e) {
         console.error(debug.namespace, e)
