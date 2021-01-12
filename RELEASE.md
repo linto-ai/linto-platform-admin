@@ -1,3 +1,10 @@
+# 0.2.2
+#### Updates
+- fix "webapp_hosts" model issue on deleting multi-user application
+- fix flow formatting issue on "save and publish"
+- comment code (wip)
+- Add an "VUE_APP_DEBUG" environment variable on front to be able to log errors
+
 # 0.2.1
 #### Updates
 - Add tests on "applications" views to handle applications using STT services in process of generating

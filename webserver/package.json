@@ -1,6 +1,6 @@
 {
     "name": "linto-admin",
-    "version": "0.2.1",
+    "version": "0.2.2",
     "description": "This is the linto-platform-admin webserver",
     "main": "app.js",
     "scripts": {
