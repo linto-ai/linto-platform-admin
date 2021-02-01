@@ -17,6 +17,8 @@ export default new Vuex.Store({
         tockApplications: '',
         webappHosts: '',
         workflowsTemplates: '',
+        nodeRedCatalogue: '',
+        installedNodes: ''
     },
     mutations: {
         SET_MULTI_USER_APPLICATIONS: (state, data) => {
@@ -48,6 +50,12 @@ export default new Vuex.Store({
         },
         SET_WEB_APP_HOSTS: (state, data) => {
             state.webappHosts = data
+        },
+        SET_NODERED_CATALOGUE: (state, data) => {
+            state.nodeRedCatalogue = data
+        },
+        SET_INSTALLED_NODES: (state, data) => {
+            state.installedNodes = data
         }
     },
     actions: {
@@ -208,12 +216,59 @@ export default new Vuex.Store({
                     commit('SET_TOCK_APPS', applications)
                     return state.tockApplications
                 } else {
-                    // If no service is created
+                    // If no service is created<
                     commit('SET_TOCK_APPS', [])
                     return state.tockApplications
                 }
             } catch (error) {
                 return { error: 'Error on getting tock applications' }
+            }
+        },
+        // Node red catalogue
+        getNodeRedCatalogue: async({ commit, state }) => {
+            try {
+                const getCatalogue = await axios.get('https://catalogue.nodered.org/catalogue.json')
+                let lintoNodes = []
+                if (getCatalogue.status === 200 && !!getCatalogue.data.modules && getCatalogue.data.modules.length > 0) {
+                    lintoNodes = getCatalogue.data.modules.filter(node => node.id.indexOf('@linto-ai/') >= 0)
+                }
+                commit('SET_NODERED_CATALOGUE', lintoNodes)
+                return state.nodeRedCatalogue
+            } catch (error) {
+                return { error }
+            }
+        },
+        getInstalledNodes: async({ commit, state }) => {
+            try {
+                const getNodes = await axios.get(`${process.env.VUE_APP_URL}/api/flow/nodes`)
+                let lintoNodes = []
+                if (getNodes.status === 200 && !!getNodes.data.nodes) {
+                    lintoNodes = getNodes.data.nodes.filter(node => node.id.indexOf('@linto-ai/') >= 0)
+                }
+                let lintoModules = []
+                if (lintoNodes.length > 0) {
+                    lintoNodes.map(node => {
+                        if (lintoModules.length > 0) {
+                            let moduleExist = lintoModules.findIndex(mod => mod.module === node.module)
+                            if (moduleExist < 0) {
+                                lintoModules.push({
+                                    module: node.module,
+                                    version: node.version
+                                })
+                            }
+                        } else  {
+                            lintoModules.push({
+                                module: node.module,
+                                version: node.version
+                            })
+                        }
+                    })
+                }
+                commit('SET_INSTALLED_NODES', lintoModules)
+                return state.installedNodes
+            } catch (error) {
+                console.error(error)
+                return { error }
             }
         }
     },

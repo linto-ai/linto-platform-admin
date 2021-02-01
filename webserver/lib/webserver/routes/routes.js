@@ -41,6 +41,7 @@ module.exports = (webServer) => {
         "/api/flow": require('./api/flow')(webServer),
         "/api/flow/tmp": require('./api/flow/tmp')(webServer),
         "/api/flow/sandbox": require('./api/flow/sandbox')(webServer),
+        "/api/flow/node": require('./api/flow/node')(webServer),
         "/api/tock": require('./api/tock')(webServer),
         "/api/stt": require('./api/stt')(webServer),
         "/": require('./_root')(webServer)
