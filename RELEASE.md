@@ -1,3 +1,8 @@
+# 0.2.3
+- 2021/02/01
+#### Updates
+- Hotfix: update and fix tests on select fields for streaming services listing
+
 # 0.2.2
 #### Updates
 - fix "webapp_hosts" model issue on deleting multi-user application
