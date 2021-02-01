@@ -67,12 +67,12 @@
       <AppSelect 
         :label="'Select a LinSTT Large vocabulary streaming service'" 
         :obj="sttLVOnlineService" 
-        :list="!!sttServiceLVOnlineByLanguage['cmd'] ? sttServiceLVOnlineByLanguage['cmd'] : []" 
+        :list="!!sttServiceLVOnlineByLanguage['lvOnline'] ? sttServiceLVOnlineByLanguage['lvOnline'] : []" 
         :list2="!!sttServiceLVOnlineByLanguage['generating'] ? sttServiceLVOnlineByLanguage['generating'] : []"
         :params="{key:'_id', value:'serviceId', optLabel: 'serviceId'}" 
         :disabled="sttServiceLanguage.value === ''" 
         :disabledTxt="'Please select a language'"
-        :disabled2="sttServiceLVOnlineByLanguage.length === 0" 
+        :disabled2="!sttServiceLVOnlineByLanguage['lvOnline'] || sttServiceLVOnlineByLanguage['lvOnline'].length === 0" 
         :disabled2Txt="'No service available'"
         :required="false"
         :resetValue="true"
@@ -82,16 +82,16 @@
       <AppSelect 
         :label="'Select a LinSTT Large vocabulary file service'" 
         :obj="sttLVOfflineService" 
-        :list="!!sttServiceLVOfflineByLanguage['cmd'] ? sttServiceLVOfflineByLanguage['cmd'] : []" 
+        :list="!!sttServiceLVOfflineByLanguage['lvOffline'] ? sttServiceLVOfflineByLanguage['lvOffline'] : []" 
         :list2="!!sttServiceLVOfflineByLanguage['generating'] ? sttServiceLVOfflineByLanguage['generating'] : []"
         :params="{key:'_id', value:'serviceId', optLabel: 'serviceId'}" 
         :disabled="sttServiceLanguage.value === ''" 
         :disabledTxt="'Please select a language'"
-        :disabled2="sttServiceLVOfflineByLanguage.length === 0" 
+        :disabled2="!sttServiceLVOfflineByLanguage['lvOffline'] || sttServiceLVOfflineByLanguage['lvOffline'].length === 0" 
         :disabled2Txt="'No service available'"
         :required="false"
         :resetValue="true"
-      ></AppSelect> 
+      ></AppSelect>
 
       <!-- TOCK application -->
       <AppSelect 
