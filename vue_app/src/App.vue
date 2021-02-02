@@ -71,15 +71,6 @@
         fullScreenFrame: false
       }
     },
-    async created () {
-      setTimeout(async () => {
-
-        // If we're not on a "device" path, check MQTT subscribtion
-        if (this.path.indexOf('/admin/device') < 0) {
-          this.socket.emit('linto_unsubscribe_all', {})
-        } 
-      }, 500)
-    },
     mounted () {
       bus.$on('iframe-set-fullscreen', () => {
         this.fullScreenFrame = true
@@ -92,6 +83,13 @@
     methods: {
       async initSocket() {
         this.socket = new io(`${process.env.VUE_APP_URL}`)
+      }
+    },
+    watch: {
+      path (data) {
+      if (data.indexOf('/admin/device') < 0) {
+          this.socket.emit('linto_unsubscribe_all', {})
+        }
       }
     },
     computed: {
