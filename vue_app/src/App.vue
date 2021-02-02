@@ -89,11 +89,6 @@
       })
       this.socket = new io(`${process.env.VUE_APP_URL}`)
     },
-    watch: {
-      path (data) {
-        console.log('PATh >>>', data)
-      }
-    },
     methods: {
       async initSocket() {
         this.socket = new io(`${process.env.VUE_APP_URL}`)
