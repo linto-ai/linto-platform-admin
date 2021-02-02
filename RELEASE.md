@@ -1,3 +1,9 @@
+# 0.2.4
+- 2021/02/02
+#### Updates
+- Hotfix: Update docker-entrypoint.sh for development mode
+- App.vue : Update the "path" variable to be computed (url fullPath)
+
 # 0.2.3
 - 2021/02/01
 #### Updates

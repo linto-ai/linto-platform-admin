@@ -65,23 +65,11 @@
 
   import { bus } from './main.js'
   import io from 'socket.io-client'
-  import axios from 'axios'
   export default {
     data () {
       return {
-        fullScreenFrame: false,
-        path: ''
+        fullScreenFrame: false
       }
-    },
-    async created () {
-      setTimeout(async () => {
-        this.path = this.$route.fullPath
-
-        // If we're not on a "device" path, check MQTT subscribtion
-        if (this.path.indexOf('/admin/device') < 0) {
-          this.socket.emit('linto_unsubscribe_all', {})
-        } 
-      }, 500)
     },
     mounted () {
       bus.$on('iframe-set-fullscreen', () => {
@@ -95,6 +83,18 @@
     methods: {
       async initSocket() {
         this.socket = new io(`${process.env.VUE_APP_URL}`)
+      }
+    },
+    watch: {
+      path (data) {
+      if (data.indexOf('/admin/device') < 0) {
+          this.socket.emit('linto_unsubscribe_all', {})
+        }
+      }
+    },
+    computed: {
+      path () {
+        return this.$route.fullPath
       }
     },
     components: {
