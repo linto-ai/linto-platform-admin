@@ -233,8 +233,9 @@ export default new Vuex.Store({
             try {
                 const getCatalogue = await axios.get('https://catalogue.nodered.org/catalogue.json')
                 let lintoNodes = []
+                const unwantedVersion = ['0.0.3', '0.0.4', '0.0.6']
                 if (getCatalogue.status === 200 && !!getCatalogue.data.modules && getCatalogue.data.modules.length > 0) {
-                    lintoNodes = getCatalogue.data.modules.filter(node => node.id.indexOf('@linto-ai/') >= 0 && node.version !== '0.0.3' && node.version !== '0.0.4')
+                    lintoNodes = getCatalogue.data.modules.filter(node => node.id.indexOf('@linto-ai/') >= 0 && unwantedVersion.indexOf(node.version) < 0)
                 }
                 commit('SET_NODERED_CATALOGUE', lintoNodes)
                 return state.nodeRedCatalogue
@@ -590,8 +591,7 @@ export default new Vuex.Store({
                 const allNodes = state.installedNodes
                 let lintoNodes = []
                 let lintoModules = []
-                lintoNodes = allNodes.filter(node => node.id.indexOf('@linto-ai/') >= 0)
-
+                lintoNodes = allNodes.filter(node => node.id.indexOf('@linto-ai/') >= 0 && (node.id !== '@linto-ai/node-red-linto-core' && node.version !== '0.0.6'))
                 if (lintoNodes.length > 0) {
                     lintoNodes.map(node => {
                         if (lintoModules.length > 0) {

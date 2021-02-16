@@ -8,7 +8,7 @@
         <div class="flex col flex1" style="margin-right: 40px;">
           <h2>Installed skills</h2>
           <div class="skills-list-container flex col flex1">
-            <table class="skills-list">
+            <table class="skills-list" v-if="installedNodes.length > 0">
               <thead>
                 <tr>
                   <th>Skill id</th>
@@ -30,13 +30,14 @@
                 </tr>
               </tbody>
             </table>
+            <div class="no-content" v-else>No linto skill installed...</div>
           </div>
         </div>
         <!-- Available skills -->
         <div class="flex col flex1">
           <h2>Available skills</h2>
           <div class="skills-list-container flex col flex1">
-            <table class="skills-list">
+            <table class="skills-list" v-if="lintoSkillsToInstall.length > 0">
               <thead>
                 <tr>
                   <th>Skill id</th>
@@ -58,6 +59,7 @@
                 </tr>
               </tbody>
             </table>
+            <div class="no-content" v-else>No more linto skill available...</div>
           </div>
         </div>
       </div>
@@ -90,6 +92,7 @@
                 </tr>
               </tbody>
             </table>
+            <div class="no-content" v-else>No local skill installed...</div>
           </div>
         </div>
 
@@ -130,7 +133,6 @@
 <script>
 import { bus } from '../main.js'
 import axios from 'axios'
-import { install } from 'vuex'
 export default {
   data () {
     return {
