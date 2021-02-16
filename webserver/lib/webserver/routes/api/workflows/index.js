@@ -42,13 +42,13 @@ module.exports = (webServer) => {
                     workflowPayload.flow.label = payload.workflowName
 
                     // set worlflow language
-                    const nodeConfig = workflowPayload.flow.nodes.filter(node => node.type === 'linto-config')
+                    let nodeConfig = workflowPayload.flow.nodes.filter(node => node.type === 'linto-config')
                     if (nodeConfig.length > 0) {
                         nodeConfig[0].language = payload.sttServiceLanguage
                     }
 
                     // set STT service 
-                    const nodeSttConfig = workflowPayload.flow.configs.filter(node => node.type === 'linto-config-transcribe')
+                    let nodeSttConfig = workflowPayload.flow.configs.filter(node => node.type === 'linto-config-transcribe')
                     if (nodeSttConfig.length > 0) {
                         nodeSttConfig[0].commandOffline = payload.sttCommandService
                         nodeSttConfig[0].largeVocabStreaming = payload.largeVocabStreaming
@@ -56,7 +56,7 @@ module.exports = (webServer) => {
                     }
 
                     // set Tock application
-                    const nodeNluConfig = workflowPayload.flow.configs.filter(node => node.type === 'linto-config-evaluate')
+                    let nodeNluConfig = workflowPayload.flow.configs.filter(node => node.type === 'linto-config-evaluate')
                     if (nodeNluConfig.length > 0) {
                         nodeNluConfig[0].appname = payload.tockApplicationName
                     }

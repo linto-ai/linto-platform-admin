@@ -51,7 +51,7 @@
                   <td>{{ node.version }} </td>
                   <td>
                     <button class="button button-icon-txt button--green install" @click="installNode($event, node.id)">
-                      <span class="button__icon button__icon--add"></span>
+                      <span class="button__icon button__icon--install"></span>
                       <span class="button__label">Install</span>
                     </button>
                   </td>
@@ -61,11 +61,65 @@
           </div>
         </div>
       </div>
+      
       <!-- Import skill form -->
-      <div class="flex col">
-        <h2>Import a skill</h2>
-        <p>Import your own skills locally by uploading ".zip" or ".tar.gz" file:</p>
-        <input type="file" />
+      <div class="flex row">
+        <!-- Local skills -->
+        <div class="flex col flex1" style="margin-right: 40px;">
+          <h2>Local skills</h2>
+          <div class="skills-list-container flex col flex1">
+            <table class="skills-list" v-if="localSkills.length > 0">
+              <thead>
+                <tr>
+                  <th>Skill id</th>
+                  <th colspan>version</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="localSkill in localSkills" :key="localSkill._id">
+                  <td 
+                    class="skill--id"
+                  ><span>{{ localSkill.name }}</span></td>
+                  <td>{{ localSkill.version }} </td>
+                  <td>
+                    <button class="button button-icon-txt button--red install" @click="uninstallLocalNode($event, localSkill)">
+                      <span class="button__icon button__icon--close"></span>
+                      <span class="button__label">Uninstall</span>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="flex col flex1">
+          <h2>Import a skill</h2>
+          <p><strong>Import your own skills locally by uploading ".zip" or ".tar.gz" file:</strong></p>
+          <div class="flex row" style="margin-bottom:10px;">
+            <div class="input-file-container flex col">
+              <input 
+                type="file" 
+                id="file" 
+                ref="file"
+                class="input__file" 
+                v-on:change="handleFileUpload()"
+                accept=".zip,.tar.gz"
+              />
+              <label for="file" class="input__file-label-btn" :class="skillFile.error !== null ? 'error' : ''">
+                <span class="input__file-icon"></span>
+                <span class="input__file-label">{{ fileUploadLabel }}</span>
+              </label>
+            </div>
+            <div class="flex col" style="justify-content:flex-end;">
+              <button class="button button-icon-txt button--green install" @click="instalLocalSkill($event)">
+                <span class="button__icon button__icon--install"></span>
+                <span class="button__label">Install</span>
+              </button>
+            </div>
+          </div>
+          <span class="form__error-field" v-if="skillFile.error !== null">{{skillFile.error }}</span>
+        </div>
       </div>
     </div>
   </div>
@@ -82,22 +136,42 @@ export default {
     return {
       installedNodesLoaded: false,
       nodeRedCatalogueLoaded: false,
-      processing: false
+      localSkillsLoaded: false,
+      processing: false,
+      skillFile: {
+        value: null,
+        valid: false,
+        error: null
+      },
+      fileUploadLabel: 'Choose a file...'
     }
   },
   async mounted () {
     await this.dispatchStore('getNodeRedCatalogue')
     await this.dispatchStore('getInstalledNodes')
+    await this.dispatchStore('getLocalSkills')
   },
   computed: {
     dataLoaded () {
-      return this.nodeRedCatalogueLoaded && this.installedNodesLoaded
+      return this.nodeRedCatalogueLoaded && this.installedNodesLoaded && this.localSkillsLoaded
     },
     lintoSkillsAvailable () {
       return this.$store.state.nodeRedCatalogue
     },
     installedNodes () {
-      return this.$store.state.installedNodes
+      let installed = this.$store.getters.LINTO_SKILLS_INSTALLED
+      if (this.localSkillsLoaded && this.localSkills.length > 0) {
+        let filterLocal = []
+        for(let node of installed){
+          let isLocal = this.localSkills.filter( ls => ls.name === node.module)
+          if(isLocal.length === 0) {
+            filterLocal.push(node)
+          }
+        }
+        return filterLocal
+      } else {
+        return installed
+      }
     },
     lintoSkillsToInstall () {
       let skills = []
@@ -114,9 +188,13 @@ export default {
       } else {
         return []
       }
+    },
+    localSkills () {
+      return this.$store.state.localSkills
     }
   },
   methods: {
+    
     async dispatchStore (topic) {
       try {
         const dispatch = await this.$options.filters.dispatchStore(topic)
@@ -130,6 +208,9 @@ export default {
             break
           case 'getInstalledNodes':
             this.installedNodesLoaded = dispatchSuccess
+            break
+            case 'getLocalSkills':
+            this.localSkillsLoaded = dispatchSuccess
             break
           default:
             return
@@ -172,6 +253,154 @@ export default {
         }
       }
     },
+    /* Install local skill */
+    handleFileUpload() {
+      this.skillFile.value = this.$refs.file.files[0]
+      const acceptedTypes = ['application/zip', 'application/x-tar', 'application/x-gtar']
+      if (typeof(this.skillFile.value) !== 'undefined' && this.skillFile.value !==  null && !!this.skillFile.value.type) {
+        
+        const type = this.skillFile.value.type
+        if (acceptedTypes.indexOf(type) >= 0) {
+          this.skillFile.valid = true
+          this.skillFile.error = null
+          this.fileUploadLabel = '1 file selected'
+        } else {
+          this.skillFile.valid = false
+          this.skillFile.error = 'Invalid file type (accept .zip, .tar, .tar.gz)'
+          this.fileUploadLabel = 'Choose a file...'
+        }
+      } else {
+          this.skillFile.valid = false
+          this.skillFile.error = 'This field is required'
+          this.fileUploadLabel = 'Choose a file...'
+      }
+    },
+    async instalLocalSkill (event) {
+     this.handleFileUpload()
+     try {
+      if (this.skillFile.valid && !this.processing) {
+        this.processing = true
+        this.setBtnLoading(event)
+        
+        let formData = new FormData()
+        formData.append('files', this.skillFile.value)
+        const installSkill = await axios.post(`${process.env.VUE_APP_NODERED_RED}/node/file`,
+          formData, 
+          {
+            headers: {
+              'charset': 'utf-8',
+              'Content-Type': 'multipart/form-data'
+            }
+          }
+        )
+        if (installSkill.status === 202) { // module already installed
+          bus.$emit('app_notif', {
+            status: 'error',
+            msg: 'this module is already installed',
+            timeout: 3000,
+            redirect: false
+          })
+          this.processing = false
+          this.unsetBtnLoading()
+
+        } else if (installSkill.status === 200) { // success
+          let payload = {
+            name: installSkill.data.name,
+            version: installSkill.data.version
+          }
+          const updateLocalSkills = await axios(`${process.env.VUE_APP_URL}/api/localskills`, {
+            method:'post',
+            data: payload
+          })
+          if(updateLocalSkills.data.status === 'success') {
+             bus.$emit('app_notif', {
+              status: 'success',
+              msg: updateLocalSkills.data.msg,
+              timeout: 3000,
+              redirect: false
+            })
+            await this.dispatchStore('getLocalSkills')
+            this.unsetBtnLoading()
+            this.processing = false
+
+          } else {
+            throw installNode
+          }
+        } else {
+          throw installSkill
+        }
+      }
+    } catch (error) {
+        console.error(error)
+        if (!!error.data) {
+          bus.$emit('app_notif', {
+            status: 'error',
+            msg: error.data.msg,
+            timeout: 3000,
+            redirect: false
+          })
+        } else {
+          bus.$emit('app_notif', {
+            status: 'error',
+            msg: `error on installing local skill`,
+            timeout: 3000,
+            redirect: false
+          })
+        }
+        await this.dispatchStore('getLocalSkills')
+        this.unsetBtnLoading()
+        this.processing = false
+      }
+    },
+    async uninstallLocalNode (event, localSkill) {
+      if (!this.processing) {
+        try {
+          await this.uninstallNode(event, localSkill.name)
+
+          const removeFromDb = await axios(`${process.env.VUE_APP_URL}/api/localskills/${localSkill._id}`, {
+            method: 'delete',
+            data: {
+              name: localSkill.name
+            }
+          })
+
+          if (removeFromDb.data.status === 'success') {
+            bus.$emit('app_notif', {
+              status: 'success',
+              msg: removeFromDb.data.msg,
+              timeout: 3000,
+              redirect: false
+            })
+            await this.dispatchStore('getLocalSkills')
+            this.unsetBtnLoading()
+            this.processing = false
+          } else {
+            throw removeFromDb
+          }
+        } catch (error) {
+          console.error(error)
+          if (!!error.data) {
+            bus.$emit('app_notif', {
+              status: 'error',
+              msg: error.data.msg,
+              timeout: 3000,
+              redirect: false
+            })
+          } else {
+            bus.$emit('app_notif', {
+              status: 'error',
+              msg: `error on uninstalling local skill`,
+              timeout: 3000,
+              redirect: false
+            })
+          }
+          await this.dispatchStore('getLocalSkills')
+          this.unsetBtnLoading()
+          this.processing = false
+        }
+      }
+    },
+    /* Install skill via catalogue */
     async installNode (event, nodeId) {
       try {
         if (!this.processing) {

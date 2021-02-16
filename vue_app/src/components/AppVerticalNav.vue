@@ -48,7 +48,7 @@
     <!-- Skills manager -->
     <div class="vertical-nav-item flex col" :class="routePath.indexOf(skillsManagerUrl) >= 0 ? 'active' : ''">
       <a class="vertical-nav-item__link vertical-nav-item__link" :href="skillsManagerUrl">
-        <span class="nav-link__icon nav-link__icon--workflow "></span>
+        <span class="nav-link__icon nav-link__icon--skills-manager "></span>
         <span class="nav-link__label">Skills manager</span>
       </a>
     </div>

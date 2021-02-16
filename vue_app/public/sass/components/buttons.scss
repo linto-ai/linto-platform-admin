@@ -119,6 +119,9 @@
         &.button__icon--mutli-user {
             @include maskImage('../img/svg/multi-user.svg');
         }
+        &.button__icon--install {
+            @include maskImage('../img/svg/install.svg');
+        }
         &.button__icon--loading {
             @include maskImage('../img/svg/loading.svg');
             @include rotate();

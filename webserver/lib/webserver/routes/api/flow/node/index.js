@@ -10,7 +10,6 @@ module.exports = (webServer) => {
             controller: async(req, res, next) => {
                 try {
                     const nodeId = req.body.module
-                    console.log(req.body)
                     const accessToken = await nodered.getBLSAccessToken()
                     const installNode = await axios(`${middlewares.useSSL() + process.env.LINTO_STACK_BLS_SERVICE + process.env.LINTO_STACK_BLS_SERVICE_UI_PATH}/nodes`, {
                         method: 'post',
