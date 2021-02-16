@@ -72,6 +72,9 @@
             &.nav-link__icon--users {
                 @include maskImage('../img/svg/users.svg');
             }
+            &.nav-link__icon--skills-manager {
+                @include maskImage('../img/svg/skills-manager.svg');
+            }
         }
         .nav-link__label {
             display: inline-block;

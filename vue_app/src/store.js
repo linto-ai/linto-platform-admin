@@ -17,6 +17,9 @@ export default new Vuex.Store({
         tockApplications: '',
         webappHosts: '',
         workflowsTemplates: '',
+        nodeRedCatalogue: '',
+        installedNodes: '',
+        localSkills: ''
     },
     mutations: {
         SET_MULTI_USER_APPLICATIONS: (state, data) => {
@@ -48,6 +51,15 @@ export default new Vuex.Store({
         },
         SET_WEB_APP_HOSTS: (state, data) => {
             state.webappHosts = data
+        },
+        SET_NODERED_CATALOGUE: (state, data) => {
+            state.nodeRedCatalogue = data
+        },
+        SET_INSTALLED_NODES: (state, data) => {
+            state.installedNodes = data
+        },
+        SET_LOCAL_SKILLS: (state, data) => {
+            state.localSkills = data
         }
     },
     actions: {
@@ -208,14 +220,53 @@ export default new Vuex.Store({
                     commit('SET_TOCK_APPS', applications)
                     return state.tockApplications
                 } else {
-                    // If no service is created
+                    // If no service is created<
                     commit('SET_TOCK_APPS', [])
                     return state.tockApplications
                 }
             } catch (error) {
                 return { error: 'Error on getting tock applications' }
             }
-        }
+        },
+        // Node red catalogue
+        getNodeRedCatalogue: async({ commit, state }) => {
+            try {
+                const getCatalogue = await axios.get('https://catalogue.nodered.org/catalogue.json')
+                let lintoNodes = []
+                const unwantedVersion = ['0.0.3', '0.0.4', '0.0.6']
+                if (getCatalogue.status === 200 && !!getCatalogue.data.modules && getCatalogue.data.modules.length > 0) {
+                    lintoNodes = getCatalogue.data.modules.filter(node => node.id.indexOf('@linto-ai/') >= 0 && unwantedVersion.indexOf(node.version) < 0)
+                }
+                commit('SET_NODERED_CATALOGUE', lintoNodes)
+                return state.nodeRedCatalogue
+            } catch (error) {
+                return { error }
+            }
+        },
+        getInstalledNodes: async({ commit, state }) => {
+            try {
+                const getNodes = await axios.get(`${process.env.VUE_APP_URL}/api/flow/nodes`)
+                if (getNodes.status === 200 && !!getNodes.data.nodes) {
+                    commit('SET_INSTALLED_NODES', getNodes.data.nodes)
+                    return state.installedNodes
+                } else {
+                    return []
+                }
+            } catch (error) {
+                console.error(error)
+                return { error }
+            }
+        },
+
+        getLocalSkills: async({ commit, state }) => {
+            try {
+                const getLocalSkills = await axios.get(`${process.env.VUE_APP_URL}/api/localskills`)
+                commit('SET_LOCAL_SKILLS', getLocalSkills.data)
+                return state.localSkills
+            } catch (error) {
+                return { error: 'Error on getting local skills' }
+            }
+        },
     },
     getters: {
         STT_SERVICES_AVAILABLE: (state) => {
@@ -531,6 +582,35 @@ export default new Vuex.Store({
                     return workflowNames
                 }
                 return []
+            } catch (error) {
+                return { error }
+            }
+        },
+        LINTO_SKILLS_INSTALLED: (state) => {
+            try {
+                const allNodes = state.installedNodes
+                let lintoNodes = []
+                let lintoModules = []
+                lintoNodes = allNodes.filter(node => node.id.indexOf('@linto-ai/') >= 0 && (node.id !== '@linto-ai/node-red-linto-core' && node.version !== '0.0.6'))
+                if (lintoNodes.length > 0) {
+                    lintoNodes.map(node => {
+                        if (lintoModules.length > 0) {
+                            let moduleExist = lintoModules.findIndex(mod => mod.module === node.module)
+                            if (moduleExist < 0) {
+                                lintoModules.push({
+                                    module: node.module,
+                                    version: node.version
+                                })
+                            }
+                        } else  {
+                            lintoModules.push({
+                                module: node.module,
+                                version: node.version
+                            })
+                        }
+                    })
+                }
+                return lintoModules
             } catch (error) {
                 return { error }
             }

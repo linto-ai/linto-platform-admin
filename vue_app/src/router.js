@@ -16,6 +16,8 @@ import Users from './views/Users.vue'
 import Domains from './views/Domains.vue'
 import TockView from './views/TockView.vue'
 import WorkflowEditor from './views/WorkflowEditor.vue'
+import SkillsManager from './views/SkillsManager.vue'
+
 Vue.use(Router)
 const router = new Router({
     mode: 'history',
@@ -204,6 +206,20 @@ const router = new Router({
                     next('/admin/applications/multi')
                 }
             }
+        },
+        {
+            path: '/admin/skills',
+            name: 'Nodered skills manager',
+            component: SkillsManager,
+            meta: [{
+                    name: 'title',
+                    content: 'Nodered skills manager'
+                },
+                {
+                    name: 'robots',
+                    content: 'noindex, nofollow'
+                }
+            ],
         },
         {
             path: '/admin/workflow-editor',

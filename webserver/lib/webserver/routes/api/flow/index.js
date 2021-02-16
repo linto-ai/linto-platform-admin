@@ -201,6 +201,39 @@ module.exports = (webServer) => {
                     })
                 }
             }
+        },
+        {
+            // Get all the installed nodes
+            path: '/nodes',
+            method: 'get',
+            requireAuth: true,
+            controller: async(req, res, next) => {
+                try {
+                    const accessToken = await nodered.getBLSAccessToken()
+                    const getNodes = await axios(`${middlewares.useSSL() + process.env.LINTO_STACK_BLS_SERVICE + process.env.LINTO_STACK_BLS_SERVICE_UI_PATH}/nodes`, {
+                        method: 'get',
+                        headers: {
+                            'charset': 'utf-8',
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'Authorization': accessToken
+                        }
+
+                    })
+                    if (getNodes.status === 200) {
+                        res.json({ nodes: getNodes.data })
+                    } else {
+                        throw getNodes
+                    }
+                } catch (error) {
+                    console.error(error)
+                    res.json({
+                        status: 'error',
+                        msg: 'Error on getting installed nodes'
+                    })
+
+                }
+            }
         }
     ]
 }
