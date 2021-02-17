@@ -184,7 +184,7 @@ export default {
       if (this.dataLoaded) {
         if (this.lintoSkillsAvailable.length > 0 && this.installedNodes.length > 0) {
           this.lintoSkillsAvailable.map(lintoSkill => {
-            let isInstalled = this.installedNodes.filter(node => node.module.indexOf(lintoSkill.id) >= 0 && node.version <= lintoSkill.version)
+            let isInstalled = this.installedNodes.filter(node => node.module.indexOf(lintoSkill.id) >= 0 && node.version >= lintoSkill.version)
             if (isInstalled.length === 0) {
               skills.push(lintoSkill)
             }
