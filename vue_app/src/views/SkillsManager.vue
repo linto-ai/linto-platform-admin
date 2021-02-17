@@ -21,12 +21,12 @@
                     class="skill--id"
                   ><span>{{ node.module }}</span></td>
                   <td>{{ node.version }} </td>
-                  <td>
+                  <td class="center">
                     <button class="button button-icon-txt button--red install" @click="uninstallNode($event, node.module)" v-if="node.local === true">
                       <span class="button__icon button__icon--close"></span>
                       <span class="button__label">Uninstall</span>
                     </button>
-                    <button class="button button-icon-txt button--grey install" v-else>
+                    <button class="button button-icon-txt button--grey install button--with-desc" data-desc="can't be uninstalled" v-else>
                       <span class="button__icon button__icon--close"></span>
                       <span class="button__label">Uninstall</span>
                     </button>
@@ -54,7 +54,7 @@
                     class="skill--id desc"
                   ><span :data-desc="!!node.description ? node.description : 'no description'">{{ node.id }}</span></td>
                   <td>{{ node.version }} </td>
-                  <td>
+                  <td class="center">
                     <button class="button button-icon-txt button--green install" @click="installNode($event, node.id)">
                       <span class="button__icon button__icon--install"></span>
                       <span class="button__label">Install</span>
@@ -87,7 +87,7 @@
                     class="skill--id"
                   ><span>{{ localSkill.name }}</span></td>
                   <td>{{ localSkill.version }} </td>
-                  <td>
+                  <td class="center">
                     <button class="button button-icon-txt button--red install" @click="uninstallLocalNode($event, localSkill)">
                       <span class="button__icon button__icon--close"></span>
                       <span class="button__label">Uninstall</span>
@@ -99,7 +99,6 @@
             <div class="no-content" v-else>No local skill installed...</div>
           </div>
         </div>
-
         <div class="flex col flex1">
           <h2>Import a skill</h2>
           <p><strong>Import your own skills locally by uploading ".zip" or ".tar.gz" file:</strong></p>
