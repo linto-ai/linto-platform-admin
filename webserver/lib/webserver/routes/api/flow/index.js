@@ -218,7 +218,6 @@ module.exports = (webServer) => {
                             'Content-Type': 'application/json',
                             'Authorization': accessToken
                         }
-
                     })
                     if (getNodes.status === 200) {
                         res.json({ nodes: getNodes.data })
@@ -231,7 +230,6 @@ module.exports = (webServer) => {
                         status: 'error',
                         msg: 'Error on getting installed nodes'
                     })
-
                 }
             }
         }

@@ -53,9 +53,7 @@ module.exports = (webServer) => {
             requireAuth: true,
             controller: async(req, res, next) => {
                 try {
-
                     const nodeId = req.body.nodeId
-
                     const accessToken = await nodered.getBLSAccessToken()
                     const uninstallNode = await axios(`${middlewares.useSSL() + process.env.LINTO_STACK_BLS_SERVICE + process.env.LINTO_STACK_BLS_SERVICE_UI_PATH}/nodes/${nodeId}`, {
                         method: 'delete',

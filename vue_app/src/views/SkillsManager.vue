@@ -22,7 +22,11 @@
                   ><span>{{ node.module }}</span></td>
                   <td>{{ node.version }} </td>
                   <td>
-                    <button class="button button-icon-txt button--red install" @click="uninstallNode($event, node.module)">
+                    <button class="button button-icon-txt button--red install" @click="uninstallNode($event, node.module)" v-if="node.local === true">
+                      <span class="button__icon button__icon--close"></span>
+                      <span class="button__label">Uninstall</span>
+                    </button>
+                    <button class="button button-icon-txt button--grey install" v-else>
                       <span class="button__icon button__icon--close"></span>
                       <span class="button__label">Uninstall</span>
                     </button>
@@ -180,7 +184,7 @@ export default {
       if (this.dataLoaded) {
         if (this.lintoSkillsAvailable.length > 0 && this.installedNodes.length > 0) {
           this.lintoSkillsAvailable.map(lintoSkill => {
-            let isInstalled = this.installedNodes.filter(node => node.module.indexOf(lintoSkill.id) >= 0 && node.version === lintoSkill.version)
+            let isInstalled = this.installedNodes.filter(node => node.module.indexOf(lintoSkill.id) >= 0 && node.version <= lintoSkill.version)
             if (isInstalled.length === 0) {
               skills.push(lintoSkill)
             }
