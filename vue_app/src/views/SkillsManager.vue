@@ -26,7 +26,7 @@
                       <span class="button__icon button__icon--close"></span>
                       <span class="button__label">Uninstall</span>
                     </button>
-                    <button class="button button-icon-txt button--grey install button--with-desc" data-desc="can't be uninstalled" v-else>
+                    <button class="button button-icon-txt button--grey install button--with-desc bottom" data-desc="can't be uninstalled" v-else>
                       <span class="button__icon button__icon--close"></span>
                       <span class="button__label">Uninstall</span>
                     </button>

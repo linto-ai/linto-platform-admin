@@ -280,6 +280,7 @@
                 position: absolute;
                 font-size: 14px;
                 max-width: 180px;
+                min-width: 80px;
                 height: auto;
                 top: 2px;
                 left: 110%;
@@ -296,8 +297,7 @@
             &.bottom {
                 &::after {
                     top: 35px;
-                    left: 50%;
-                    margin-left: -90px;
+                    left: 0;
                 }
             }
         }

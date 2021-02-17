@@ -2,7 +2,6 @@
   <div v-if="dataLoaded && allRequiredAvailable">
     <h1>Deploy a device application</h1>
     <div class="flex col">
-      {{ sttServiceLVOnlineByLanguage }}
       <!-- Workflow name -->
       <AppInput 
         :label="'Application name'" 

@@ -1,12 +1,12 @@
 .skills-list-container {
     max-height: 480px;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .skills-list {
     border-collapse: collapse;
     width: 100%;
-    overflow: auto;
-    max-height: 480px;
     thead {
         width: 100%;
         tr {
