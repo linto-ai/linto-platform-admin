@@ -55,7 +55,7 @@
                   ><span :data-desc="!!node.package.description ? node.package.description : 'no description'">{{ node.package.name }}</span></td>
                   <td>{{ node.package.version }} </td>
                   <td class="center">
-                    <button class="button button-icon-txt button--green install" @click="installNode($event, node.package.id)">
+                    <button class="button button-icon-txt button--green install" @click="installNode($event, node.package.name)">
                       <span class="button__icon button__icon--install"></span>
                       <span class="button__label">Install</span>
                     </button>
