@@ -49,13 +49,13 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="node in lintoSkillsToInstall" :key="node.id">
+                <tr v-for="node in lintoSkillsToInstall" :key="node.package.name">
                   <td 
                     class="skill--id desc"
-                  ><span :data-desc="!!node.description ? node.description : 'no description'">{{ node.id }}</span></td>
-                  <td>{{ node.version }} </td>
+                  ><span :data-desc="!!node.package.description ? node.package.description : 'no description'">{{ node.package.name }}</span></td>
+                  <td>{{ node.package.version }} </td>
                   <td class="center">
-                    <button class="button button-icon-txt button--green install" @click="installNode($event, node.id)">
+                    <button class="button button-icon-txt button--green install" @click="installNode($event, node.package.id)">
                       <span class="button__icon button__icon--install"></span>
                       <span class="button__label">Install</span>
                     </button>
@@ -183,7 +183,7 @@ export default {
       if (this.dataLoaded) {
         if (this.lintoSkillsAvailable.length > 0 && this.installedNodes.length > 0) {
           this.lintoSkillsAvailable.map(lintoSkill => {
-            let isInstalled = this.installedNodes.filter(node => node.module.indexOf(lintoSkill.id) >= 0 && node.version >= lintoSkill.version)
+            let isInstalled = this.installedNodes.filter(node => node.module.indexOf(lintoSkill.package.name) >= 0 && node.version >= lintoSkill.package.version)
             if (isInstalled.length === 0) {
               skills.push(lintoSkill)
             }

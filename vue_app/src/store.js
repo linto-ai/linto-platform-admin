@@ -231,11 +231,12 @@ export default new Vuex.Store({
         // Node red catalogue
         getNodeRedCatalogue: async({ commit, state }) => {
             try {
-                const getCatalogue = await axios.get('https://catalogue.nodered.org/catalogue.json')
+                const getCatalogue = await axios.get('http://registry.npmjs.com/-/v1/search?text=linto-ai')
+
                 let lintoNodes = []
                 const unwantedSkills = '@linto-ai/node-red-linto-skill'
-                if (getCatalogue.status === 200 && !!getCatalogue.data.modules && getCatalogue.data.modules.length > 0) {
-                    lintoNodes = getCatalogue.data.modules.filter(node => node.id.indexOf('@linto-ai/') >= 0 && node.id.indexOf(unwantedSkills) < 0)
+                if (getCatalogue.status === 200 && !!getCatalogue.data && getCatalogue.data.objects.length > 0) {
+                    lintoNodes = getCatalogue.data.objects.filter(node => (node.package.name.indexOf('@linto-ai/node-red-linto') >= 0 || node.package.name.indexOf('@linto-ai/linto-skill') >= 0) && node.package.name.indexOf(unwantedSkills) < 0)
                 }
                 commit('SET_NODERED_CATALOGUE', lintoNodes)
 
