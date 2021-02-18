@@ -231,7 +231,7 @@ export default new Vuex.Store({
         // Node red catalogue
         getNodeRedCatalogue: async({ commit, state }) => {
             try {
-                const getCatalogue = await axios.get('http://registry.npmjs.com/-/v1/search?text=linto-ai')
+                const getCatalogue = await axios.get('https://registry.npmjs.com/-/v1/search?text=linto-ai')
 
                 let lintoNodes = []
                 const unwantedSkills = '@linto-ai/node-red-linto-skill'
