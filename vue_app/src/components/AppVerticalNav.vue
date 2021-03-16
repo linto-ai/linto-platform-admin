@@ -1,7 +1,7 @@
 <template>
   <div id="vertical-nav" class="flex col" :class="extraClass">
 
-    <!-- Static clients -->
+    <!-- Device applications -->
     <div class="vertical-nav-item flex col" :class="routePath.indexOf(staticClientsUrl) >= 0 ? 'active' : ''">
       <a  class="vertical-nav-item__link vertical-nav-item__link" :href="staticClientsUrl" >
         <span class="nav-link__icon nav-link__icon--single-user "></span>
@@ -9,7 +9,7 @@
       </a>
     </div>
     
-    <!-- Applications -->
+    <!-- Multi-user applications -->
     <div class="vertical-nav-item flex col" :class="routePath.indexOf(applicationsUrl) >= 0 ? 'active' : ''">
       <a class="vertical-nav-item__link vertical-nav-item__link" :href="applicationsUrl">
         <span class="nav-link__icon nav-link__icon--multi-user "></span>
@@ -19,7 +19,7 @@
     
     <div class="nav-divider"></div>
       
-    <!-- Terminals -->
+    <!-- Devices -->
     <div class="vertical-nav-item flex col" :class="routePath.indexOf(terminalsUrl) >= 0 ? 'active' : ''">
       <a class="vertical-nav-item__link vertical-nav-item__link" :href="terminalsUrl">
         <span class="nav-link__icon nav-link__icon--terminal"></span>
@@ -35,7 +35,7 @@
       </a>
     </div>
     
-    <!-- webapp hosts -->
+    <!-- Domains -->
     <div class="vertical-nav-item flex col" :class="routePath.indexOf(webAppHostsUrl) >= 0 ? 'active' : ''">
       <a class="vertical-nav-item__link vertical-nav-item__link" :href="webAppHostsUrl">
         <span class="nav-link__icon nav-link__icon--webapp"></span>
@@ -44,7 +44,15 @@
     </div>
     
     <div class="nav-divider"></div>
-
+    
+    <!-- Skills manager -->
+    <div class="vertical-nav-item flex col" :class="routePath.indexOf(skillsManagerUrl) >= 0 ? 'active' : ''">
+      <a class="vertical-nav-item__link vertical-nav-item__link" :href="skillsManagerUrl">
+        <span class="nav-link__icon nav-link__icon--skills-manager "></span>
+        <span class="nav-link__label">Skills manager</span>
+      </a>
+    </div>
+    
     <!-- Workflow editor -->
     <div class="vertical-nav-item flex col" :class="routePath.indexOf(workflowEditorUrl) >= 0 ? 'active' : ''">
       <a class="vertical-nav-item__link vertical-nav-item__link" :href="workflowEditorUrl">
@@ -78,6 +86,7 @@ export default {
       androidUsersUrl: '/admin/users',
       webAppHostsUrl:  '/admin/domains',
       terminalsUrl: '/admin/devices',
+      skillsManagerUrl: '/admin/skills',
       routePath: ''
     }
   },

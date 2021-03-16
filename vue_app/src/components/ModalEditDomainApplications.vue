@@ -252,7 +252,7 @@ export default {
           webappHostId: webappHost._id,
           applicationId:app.applicationId,
           maxSlots: {
-            value: app.maxSlots,
+            value: parseInt(app.maxSlots),
             error: null,
             valid: true
           },
@@ -265,9 +265,10 @@ export default {
     },
     async updateApplicationParameters (applicationId) {
       try {
-        const payload = this.editingObj[this.editingObj.findIndex(item => item.applicationId === applicationId)]
+        let payload = this.editingObj[this.editingObj.findIndex(item => item.applicationId === applicationId)]
         this.$options.filters.testInteger(payload.maxSlots)
-        
+        payload.maxSlots.value = parseInt(payload.maxSlots.value)
+
         if(payload.maxSlots.valid) {
           const updateWebappHostApplication = await axios(`${process.env.VUE_APP_URL}/api/webapphosts/${payload.webappHostId}/applications`, {
           method: 'patch',
@@ -341,11 +342,10 @@ export default {
             payload.applications.push({
               applicationId: app.applicationId,
               requestToken: app.requestToken,
-              maxSlots: app.maxSlots.value,
+              maxSlots: parseInt(app.maxSlots.value),
               slots: []
             })
           })
-          
           const updateWebappHost = await axios(`${process.env.VUE_APP_URL}/api/webapphosts/${this.webappHost._id}/applications`, {
             method: 'put',
             data: { payload }
@@ -408,7 +408,7 @@ export default {
         if (this.maxSlots.valid) {
           const payload = {
             _id: this.webappHost._id,
-            maxSlots: this.maxSlots.value,
+            maxSlots: parseInt(this.maxSlots.value),
             originUrl: this.originUrl.value
           }
         await this.updateWebappHost(payload)

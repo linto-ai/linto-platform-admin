@@ -212,7 +212,7 @@ module.exports = (webServer) => {
                     let webappHost = await webappHostsModel.getWebappHostById(webappHostId)
 
                     webappHost.applications[webappHost.applications.findIndex(item => item.applicationId === payload.applicationId)].requestToken = payload.requestToken
-                    webappHost.applications[webappHost.applications.findIndex(item => item.applicationId === payload.applicationId)].maxSlots = payload.maxSlots.value
+                    webappHost.applications[webappHost.applications.findIndex(item => item.applicationId === payload.applicationId)].maxSlots = parseInt(payload.maxSlots.value)
 
                     // Request
                     const updateWebappHost = await webappHostsModel.updateWebappHost(webappHost)

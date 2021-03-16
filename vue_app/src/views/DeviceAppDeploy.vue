@@ -314,6 +314,7 @@ export default {
       this.associated_device.valid = true
     }
     await this.refreshStore()
+
   },
   methods: {
     showModal () {
