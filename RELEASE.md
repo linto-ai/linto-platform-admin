@@ -1,3 +1,12 @@
+# 0.2.5
+- 2021/03/16
+#### Updates
+- Add "skills manager" 
+  - Install or uninstall skills from http://registry.npmjs.com
+  - Install or uninstall local skills
+  - Skills are filtered by version number
+- last commit : 20edf3f5f34520fb9ef712b7c1c0a2b3172de652
+
 # 0.2.4
 - 2021/02/02
 #### Updates
