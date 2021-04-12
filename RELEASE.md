@@ -8,10 +8,12 @@
 - last commit : 20edf3f5f34520fb9ef712b7c1c0a2b3172de652
 
 # 0.2.4
-- 2021/02/02
-#### Updates
+#### 2021/04/12 - Updates
+- Hotfix: Update removeUserFromApp function for deleting the good application
+#### 2021/02/02 - Updates
 - Hotfix: Update docker-entrypoint.sh for development mode
 - App.vue : Update the "path" variable to be computed (url fullPath)
+
 
 # 0.2.3
 - 2021/02/01
