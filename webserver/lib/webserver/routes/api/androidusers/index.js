@@ -160,21 +160,18 @@ module.exports = (webServer) => {
                     const applicationWorkflow = await applicationWorkflowsModel.getApplicationWorkflowById(applicationId)
 
                     // Format data for update
-                    let applications = user.applications
-                    applications.pop(applicationId)
+                    let filteredApps = user.applications.filter(app => app !== applicationId)
 
                     // Remove MQTT user if user is no longer attached to any application
-                    if (applications.length === 0 && !!user.email) {
+                    if (filteredApps.length === 0 && !!user.email) {
                         await mqttdUsersModel.deleteMqttUserByEmail(user.email)
                     }
 
                     // Request
                     const updateUser = await androidUsersModel.updateAndroidUser({
                         _id: userId,
-                        applications
+                        applications: filteredApps
                     })
-
-
 
                     // Response
                     if (updateUser === 'success') {
