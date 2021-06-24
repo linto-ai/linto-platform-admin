@@ -1,3 +1,7 @@
+# 0.2.5
+#### 2021/06/24 - Updates
+- add environment variable LINTO_STACK_TOCK_BASEHREF to handle Tock version update
+
 # 0.2.4
 #### 2021/04/12 - Updates
 - Hotfix: Update removeUserFromApp function for deleting the good application

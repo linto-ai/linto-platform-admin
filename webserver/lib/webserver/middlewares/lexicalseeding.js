@@ -313,7 +313,7 @@ async function nluLexicalSeedingApplications(flowId) {
                     const formData = new FormData()
                     formData.append('file', fs.createReadStream(appFilePath))
                     axios({
-                        url: `${middlewares.useSSL() + process.env.LINTO_STACK_TOCK_SERVICE}:${process.env.LINTO_STACK_TOCK_SERVICE_PORT}/rest/admin/dump/application`,
+                        url: `${middlewares.useSSL() + process.env.LINTO_STACK_TOCK_SERVICE}:${process.env.LINTO_STACK_TOCK_SERVICE_PORT}${process.env.LINTO_STACK_TOCK_BASEHREF}/rest/admin/dump/application`,
                         method: 'post',
                         data: formData,
                         headers: {
@@ -388,7 +388,7 @@ async function nluLexicalSeedingSentences(flowId) {
                     const formData = new FormData()
                     formData.append('file', fs.createReadStream(sentencesFilePath))
                     axios({
-                        url: `${middlewares.useSSL() + process.env.LINTO_STACK_TOCK_SERVICE}:${process.env.LINTO_STACK_TOCK_SERVICE_PORT}/rest/admin/dump/sentences`,
+                        url: `${middlewares.useSSL() + process.env.LINTO_STACK_TOCK_SERVICE}:${process.env.LINTO_STACK_TOCK_SERVICE_PORT}${process.env.LINTO_STACK_TOCK_BASEHREF}/rest/admin/dump/sentences`,
                         method: 'post',
                         data: formData,
                         headers: {
